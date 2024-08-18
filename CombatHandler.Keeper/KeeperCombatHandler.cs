@@ -80,7 +80,7 @@ namespace CombatHandler.Keeper
                 _settings.AddVariable("TauntTool", false);
 
                 _settings.AddVariable("StimTargetSelection", 0);
-
+                _settings.AddVariable("ReleaseMeNow", false);
                 _settings.AddVariable("Kits", true);
 
                 _settings.AddVariable("RecastAntiFear", false);
@@ -125,6 +125,7 @@ namespace CombatHandler.Keeper
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.KeeperStr_Stam_AgiBuff).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, "KeeperStr_Stam_AgiBuff"));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SelfRoot_SnareResistBuff).OrderByStackingOrder(), BreakRoot, CombatActionPriority.High);
 
                 //Auras
                 RegisterSpellProcessor(RelevantNanos.HealAuras, HpAura);

@@ -82,6 +82,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\EngSpecialAttacksView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\EngineerHealingView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

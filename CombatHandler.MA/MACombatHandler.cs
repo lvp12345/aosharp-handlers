@@ -79,8 +79,8 @@ namespace CombatHandler.MartialArtist
                 _settings.AddVariable("Grenades", true);
                 _settings.AddVariable("TauntTool", false);
 
-                _settings.AddVariable("MASelection", (int)MASelection.StingoftheViper);
-                _settings.AddVariable("DimachSelection", (int)DimachSelection.TouchOfSaiFung);
+                _settings.AddVariable("MASelection", 305542);
+                _settings.AddVariable("DimachSelection", 275018);
                 _settings.AddVariable("RiposteSelection", 0);
                 _settings.AddVariable("StrengthSelection", 0);
                 _settings.AddVariable("IntelligenceSelection", 0);
@@ -120,7 +120,7 @@ namespace CombatHandler.MartialArtist
                 //Heals
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(),
                     Healing.TargetHealing, CombatActionPriority.High);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(), 
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.TeamHealing).OrderByStackingOrder(),
                     Healing.TargetHealingAsTeam, CombatActionPriority.High);
 
                 //Taunts
@@ -168,16 +168,16 @@ namespace CombatHandler.MartialArtist
                         => NonCombatBuff(spell, ref actionTarget, fightingTarget, "RunSpeed"));
                 RegisterSpellProcessor(RelevantNanos.DamageTypeFire,
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                    MADamageType(spell, fightingTarget, ref actionTarget, DamageTypeSelection.Fire));
+                    MADamageType(spell, fightingTarget, ref actionTarget, 1));
                 RegisterSpellProcessor(RelevantNanos.DamageTypeEnergy,
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                    MADamageType(spell, fightingTarget, ref actionTarget, DamageTypeSelection.Energy));
+                    MADamageType(spell, fightingTarget, ref actionTarget, 2));
                 RegisterSpellProcessor(RelevantNanos.DamageTypeChemical,
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                    MADamageType(spell, fightingTarget, ref actionTarget, DamageTypeSelection.Chemical));
+                    MADamageType(spell, fightingTarget, ref actionTarget, 3));
                 RegisterSpellProcessor(RelevantNanos.DamageTypeMelee,
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                    MADamageType(spell, fightingTarget, ref actionTarget, DamageTypeSelection.Melee));
+                    MADamageType(spell, fightingTarget, ref actionTarget, 4));
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledDestructionBuff).Where(s => s.StackingOrder >= 19).OrderByStackingOrder(), ControlledDestructionNoShutdown);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledDestructionBuff).Where(s => s.StackingOrder < 19).OrderByStackingOrder(), ControlledDestructionWithShutdown);
@@ -200,9 +200,9 @@ namespace CombatHandler.MartialArtist
 
                 //Items
                 int maItem = _settings["MASelection"].AsInt32();
-                if (maItem == (int)MASelection.BirdofPrey)
+                if (maItem == 204329)
                 {
-                    foreach(var item in Inventory.FindAll("Bird of Prey").OrderBy(x => x.QualityLevel))
+                    foreach (var item in Inventory.FindAll("Bird of Prey").OrderBy(x => x.QualityLevel))
                     {
 
                         RegisterItemProcessor(item.LowId, item.HighId, MAItem);
@@ -217,7 +217,7 @@ namespace CombatHandler.MartialArtist
                 int strengthItem = _settings["StrengthSelection"].AsInt32();
                 int intelligenceItem = _settings["IntelligenceSelection"].AsInt32();
                 int staminaItem = _settings["StaminaSelection"].AsInt32();
-                
+
                 RegisterItemProcessor(dimachItem, dimachItem, DimachItem);
                 RegisterItemProcessor(riposteItem, riposteItem, RiposteItem);
                 RegisterItemProcessor(strengthItem, strengthItem, StrengthItem);
@@ -882,7 +882,7 @@ namespace CombatHandler.MartialArtist
                     {
                         procView.Tag = SettingsController.settingsWindow;
                         procView.Clicked = HandleProcViewClick;
-                    } 
+                    }
                 }
 
                 #endregion
@@ -1002,18 +1002,9 @@ namespace CombatHandler.MartialArtist
 
         #region Items
 
-        private bool MAItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool MADamageType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, int procType)
         {
-            if (item.Id == 0) { return false; }
-            if (fightingtarget == null) { return false; }
-            if (Item.HasPendingUse) { return false; }
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
-
-            return true;
-        }
-        private bool MADamageType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, DamageTypeSelection procType)
-        {
-            DamageTypeSelection currentSetting = (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32();
+            var currentSetting = _settings["DamageTypeSelection"].AsInt32();
 
             if (currentSetting != procType)
             {
@@ -1024,19 +1015,21 @@ namespace CombatHandler.MartialArtist
         }
         private void CancelBuffs()
         {
-            if (DamageTypeSelection.Fire != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32())
+            var selection = _settings["DamageTypeSelection"].AsInt32();
+
+            if (selection != 1)
             {
                 CancelBuffs(RelevantNanos.DamageTypeFire);
             }
-            if (DamageTypeSelection.Energy != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32())
+            if (selection != 2)
             {
                 CancelBuffs(RelevantNanos.DamageTypeEnergy);
             }
-            if (DamageTypeSelection.Chemical != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32())
+            if (selection != 3)
             {
                 CancelBuffs(RelevantNanos.DamageTypeChemical);
             }
-            if (DamageTypeSelection.Melee != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32())
+            if (selection != 4)
             {
                 CancelBuffs(RelevantNanos.DamageTypeMelee);
             }
@@ -1074,17 +1067,6 @@ namespace CombatHandler.MartialArtist
 
             return true;
         }
-        private bool IntelligenceItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            item.Id = _settings["IntelligenceSelection"].AsInt32();
-
-            if (item.Id == 0) { return false; }
-            if (fightingtarget == null) { return false; }
-            if (Item.HasPendingUse) { return false; }
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Intelligence)) { return false; }
-
-            return true;
-        }
         private bool StaminaItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             item.Id = _settings["StaminaSelection"].AsInt32();
@@ -1102,30 +1084,6 @@ namespace CombatHandler.MartialArtist
 
         #region Buffs
 
-        private bool DamageTypeEnergy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (_settings["DamageTypeSelection"].AsInt32() != 2) { return false; }
-
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        }
-        private bool DamageTypeFire(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (_settings["DamageTypeSelection"].AsInt32() != 1) { return false; }
-
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        }
-        private bool DamageTypeMelee(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (_settings["DamageTypeSelection"].AsInt32() != 0) { return false; }
-
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        }
-        private bool DamageTypeChemical(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (_settings["DamageTypeSelection"].AsInt32() != 3) { return false; }
-
-            return NonCombatBuff(spell, ref actionTarget, fightingTarget);
-        }
 
         private bool SingleTargetTaunt(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1261,7 +1219,7 @@ namespace CombatHandler.MartialArtist
         {
             public const int FistsOfTheWinterFlame = 269470;
             public const int LimboMastery = 28894;
-            public static int[] PercentEvades = { 218060, 218062, 218064, 218066, 218068, 218070 };
+            public static int[] PercentEvades = { 218070, 218068, 218066, 218064, 218062, 218060 };
             public static int[] TargetEvades = { 28903, 28878, 28872 };
             public static int[] TeamCritBuffs = { 160574, 160575, 160576 };
             public static int[] Taunts = { 301936, 100214, 100216, 100215, 100217, 28866 };
@@ -1273,16 +1231,6 @@ namespace CombatHandler.MartialArtist
             public static int[] DamageTypeChemical = { 81822, 81830 };
         }
 
-        public enum MASelection
-        {
-            None, Sappo = 267525, StingoftheViper = 305542, ApeFistofKhalum = 204605, KarmicFist = 206191, Shen = 201281,
-            FlowerofLife = 204326, BrightBlueCloudlessSky = 204328, BlessedwithThunder = 204327, BirdofPrey = 204329,
-            AttackoftheSnake = 204330, AngelofNight = 204331
-        }
-        public enum DimachSelection
-        {
-            None, TouchOfSaiFung = 275018, TheWizdomofHuzzum = 303056, TreeofEnlightenment = 204607
-        }
         public enum DamageTypeSelection
         {
             None, Fire, Energy, Chemical, Melee

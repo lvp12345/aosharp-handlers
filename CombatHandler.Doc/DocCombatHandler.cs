@@ -24,6 +24,7 @@ namespace CombatHandler.Doctor
         private static Window _procWindow;
         private static Window _itemWindow;
         private static Window _perkWindow;
+        private static Window _specialAttacksWindow;
 
         private static View _buffView;
         private static View _debuffView;
@@ -31,6 +32,7 @@ namespace CombatHandler.Doctor
         private static View _procView;
         private static View _itemView;
         private static View _perkView;
+        private static View _specialAttacksView;
 
         private static double _ncuUpdateTime;
 
@@ -113,6 +115,8 @@ namespace CombatHandler.Doctor
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.MassiveVitaePlan);
 
                 _settings.AddVariable("PistolTeam", true);
+                _settings.AddVariable("MASelection", 267525);
+                _settings.AddVariable("IntelligenceSelection", 0);
 
                 _settings.AddVariable("NanoResistSelection", 0);
                 _settings.AddVariable("HealDeltaBuffSelection", 0);
@@ -133,7 +137,7 @@ namespace CombatHandler.Doctor
                 RegisterSpellProcessor(RelevantNanos.Heals, Healing.TargetHealing, CombatActionPriority.High);
                 RegisterSpellProcessor(RelevantNanos.CompleteTargetHealing, Healing.CompleteHealing, CombatActionPriority.High);
 
-                RegisterSpellProcessor(RelevantNanos.TeamHeals ,TeamHealing, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.TeamHeals, TeamHealing, CombatActionPriority.High);
 
                 RegisterSpellProcessor(RelevantNanos.TeamImprovedLifeChanneler, TeamImprovedLifeChannelerAsTeamHeal, CombatActionPriority.High);
 
@@ -205,6 +209,21 @@ namespace CombatHandler.Doctor
 
                 //Items
                 RegisterItemProcessor(new int[] { RelevantItems.SacredTextoftheImmortalOne, RelevantItems.TeachingsoftheImmortalOne }, TOTWHeal);
+                int intelligenceItem = _settings["IntelligenceSelection"].AsInt32();
+                int maItem = _settings["MASelection"].AsInt32();
+                if (maItem == 204329)
+                {
+                    foreach (var item in Inventory.FindAll("Bird of Prey").OrderBy(x => x.QualityLevel))
+                    {
+
+                        RegisterItemProcessor(item.LowId, item.HighId, MAItem);
+                    }
+                }
+                else
+                {
+                    RegisterItemProcessor(maItem, maItem, MAItem);
+                }
+                RegisterItemProcessor(intelligenceItem, intelligenceItem, IntelligenceItem);
 
                 //Buffs
                 RegisterSpellProcessor(RelevantNanos.HPBuffs, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -685,7 +704,22 @@ namespace CombatHandler.Doctor
                 _procWindow = container;
             }
         }
+        private void HandleSpecialAttacksViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_specialAttacksView)) { return; }
 
+                _specialAttacksView = View.CreateFromXml(PluginDirectory + "\\UI\\DocSpecialAttacksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "SpecialAttacks", XmlViewName = "DocSpecialAttacksView" }, _specialAttacksView);
+            }
+            else if (_specialAttacksWindow == null || (_specialAttacksWindow != null && !_specialAttacksWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_specialAttacksWindow, PluginDir, new WindowOptions() { Name = "SpecialAttacks", XmlViewName = "DocSpecialAttacksView" }, _specialAttacksView, out var container);
+                _specialAttacksWindow = container;
+            }
+        }
         #endregion
 
         protected override void OnUpdate(float deltaTime)
@@ -1031,6 +1065,12 @@ namespace CombatHandler.Doctor
                     {
                         procView.Tag = SettingsController.settingsWindow;
                         procView.Clicked = HandleProcViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("SpecialAttacksView", out Button specialAttacksView))
+                    {
+                        specialAttacksView.Tag = SettingsController.settingsWindow;
+                        specialAttacksView.Clicked = HandleSpecialAttacksViewClick;
                     }
                 }
 

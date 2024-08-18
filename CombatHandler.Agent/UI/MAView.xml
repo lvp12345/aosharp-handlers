@@ -33,6 +33,23 @@
 				<RadioButton label="None" value="0"/>
 				<RadioButton label="Self" value="1"/>
 			</OptionRadioButtonGroup>
+			<OptionRadioButtonGroup label="Martial Art Special Attacks" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__MASelection">
+				<RadioButton label="None" value="0"/>
+				<RadioButton label="Sappo" value="267525"/>
+				<RadioButton label="Shen" value="201281"/>
+				<RadioButton label="Flower of Life" value="204326"/>
+				<RadioButton label="Bright, Blue, Cloudless Sky" value="204328"/>
+				<RadioButton label="Blessed with Thunder" value="204327"/>
+				<RadioButton label="Bird of Prey" value="204329"/>
+				<RadioButton label="Attack of the Snake" value="204330"/>
+				<RadioButton label="Angel of Night" value="204331"/>
+			</OptionRadioButtonGroup>
+		</View>
+		<View v_alignment="left" h_alignment="left" view_layout="horizontal" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+			<OptionRadioButtonGroup label="Intelligence Special Attacks" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__IntelligenceSelection">
+				<RadioButton label="None" value="0"/>
+				<RadioButton label="Enigma" value="267522"/>
+			</OptionRadioButtonGroup>
 		</View>
 			<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 	</BorderView>

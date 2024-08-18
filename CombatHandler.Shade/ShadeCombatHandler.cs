@@ -95,11 +95,11 @@ namespace CombatHandler.Shade
 
                 _settings.AddVariable("SLMap", false);
 
-                _settings.AddVariable("MASelection", (int)MASelection.Sappo);
+                _settings.AddVariable("MASelection", 267525);
                 _settings.AddVariable("IntelligenceSelection", 0);
 
                 _settings.AddVariable("ShadeProcSelection", 0);
-
+                _settings.AddVariable("ReleaseMeNow", false);
                 _settings.AddVariable("InitDebuffProc", false);
                 _settings.AddVariable("DamageProc", false);
                 _settings.AddVariable("DOTProc", false);
@@ -156,26 +156,38 @@ namespace CombatHandler.Shade
 
                 RegisterSpellProcessor(RelevantNanos.ShadeDmgProc,
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                    GenericShadeProc(spell, fightingTarget, ref actionTarget, ShadeProcSelection.Damage));
+                    GenericShadeProc(spell, fightingTarget, ref actionTarget, 1));
                 RegisterSpellProcessor(RelevantNanos.ShadeStunProc,
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                    GenericShadeProc(spell, fightingTarget, ref actionTarget, ShadeProcSelection.Stun));
+                    GenericShadeProc(spell, fightingTarget, ref actionTarget, 2));
                 RegisterSpellProcessor(RelevantNanos.ShadeInitDebuffProc,
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                    GenericShadeProc(spell, fightingTarget, ref actionTarget, ShadeProcSelection.InitDebuff));
+                    GenericShadeProc(spell, fightingTarget, ref actionTarget, 3));
                 RegisterSpellProcessor(RelevantNanos.ShadeDOTProc,
                  (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                    GenericShadeProc(spell, fightingTarget, ref actionTarget, ShadeProcSelection.DOT));
+                    GenericShadeProc(spell, fightingTarget, ref actionTarget, 4));
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.RunspeedBuffs).OrderByStackingOrder(), FasterThanYourShadow);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SelfRoot_SnareResistBuff).OrderByStackingOrder(), BreakRoot, CombatActionPriority.High);
 
                 //Items
-                RegisterItemProcessor(RelevantItems.Tattoo, RelevantItems.Tattoo, TattooItem, CombatActionPriority.High);
-
-                int maItem = _settings["MASelection"].AsInt32();
                 int intelligenceItem = _settings["IntelligenceSelection"].AsInt32();
-                RegisterItemProcessor(maItem, maItem, MAItem);
+                int maItem = _settings["MASelection"].AsInt32();
+                if (maItem == 204329)
+                {
+                    foreach (var item in Inventory.FindAll("Bird of Prey").OrderBy(x => x.QualityLevel))
+                    {
+
+                        RegisterItemProcessor(item.LowId, item.HighId, MAItem);
+                    }
+                }
+                else
+                {
+                    RegisterItemProcessor(maItem, maItem, MAItem);
+                }
                 RegisterItemProcessor(intelligenceItem, intelligenceItem, IntelligenceItem);
+
+                RegisterItemProcessor(RelevantItems.Tattoo, RelevantItems.Tattoo, TattooItem, CombatActionPriority.High);
 
                 //LE Proc
                 RegisterPerkProcessor(PerkHash.LEProcShadeBlackenedLegacy, LEProc1, CombatActionPriority.Low);
@@ -904,28 +916,6 @@ namespace CombatHandler.Shade
         }
 
         #region Items
-        private bool MAItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            item.Id = _settings["MASelection"].AsInt32();
-
-            if (item.Id == 0) { return false; }
-            if (fightingtarget == null) { return false; }
-            if (Item.HasPendingUse) { return false; }
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
-
-            return true;
-        }
-        private bool IntelligenceItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            item.Id = _settings["IntelligenceSelection"].AsInt32();
-
-            if (item.Id == 0) { return false; }
-            if (fightingtarget == null) { return false; }
-            if (Item.HasPendingUse) { return false; }
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Intelligence)) { return false; }
-
-            return true;
-        }
         private bool TattooItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
             if (fightingtarget == null) { return false; }
@@ -938,7 +928,6 @@ namespace CombatHandler.Shade
             }
             return false;
         }
-
         #endregion
 
         #region Perks
@@ -948,7 +937,7 @@ namespace CombatHandler.Shade
             if (fightingTarget == null) { return false; }
 
             if (_actionQueue.Any(x => x.CombatAction is PerkAction action && RelevantPerks.TotemicRites.Contains(action.Hash))) { return false; }
-  
+
             if (!(PerkAction.Find(PerkHash.Stab, out PerkAction stab) && PerkAction.Find(PerkHash.DoubleStab, out PerkAction doubleStab)))
                 return true;
 
@@ -1025,7 +1014,7 @@ namespace CombatHandler.Shade
                     return false;
             }
         }
-    
+
         private bool SmokeBombNano(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!_settings["Buffing"].AsBool()) { return false; }
@@ -1108,9 +1097,9 @@ namespace CombatHandler.Shade
 
             return ToggledTargetDebuff("HealthDrain", spell, spell.Nanoline, fightingTarget, ref actionTarget);
         }
-        private bool GenericShadeProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, ShadeProcSelection procType)
+        private bool GenericShadeProc(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, int procType)
         {
-            ShadeProcSelection currentSetting = (ShadeProcSelection)_settings["ShadeProcSelection"].AsInt32();
+            var currentSetting = _settings["ShadeProcSelection"].AsInt32();
 
             if (currentSetting != procType)
             {
@@ -1124,21 +1113,23 @@ namespace CombatHandler.Shade
         #region Misc
         private void CancelBuffs()
         {
-            if (ShadeProcSelection.Damage != (ShadeProcSelection)_settings["ShadeProcSelection"].AsInt32())
+            var selection = _settings["ShadeProcSelection"].AsInt32();
+
+            if (selection != 1)
             {
                 CancelBuffs(RelevantNanos.ShadeDmgProc);
             }
-            if (ShadeProcSelection.InitDebuff != (ShadeProcSelection)_settings["ShadeProcSelection"].AsInt32())
+            if (selection != 2)
+            {
+                CancelBuffs(RelevantNanos.ShadeStunProc);
+            }
+            if (selection != 3)
             {
                 CancelBuffs(RelevantNanos.ShadeInitDebuffProc);
             }
-            if (ShadeProcSelection.DOT != (ShadeProcSelection)_settings["ShadeProcSelection"].AsInt32())
+            if (selection != 4)
             {
                 CancelBuffs(RelevantNanos.ShadeDOTProc);
-            }
-            if (ShadeProcSelection.Stun != (ShadeProcSelection)_settings["ShadeProcSelection"].AsInt32())
-            {
-                CancelBuffs(RelevantNanos.ShadeStunProc);
             }
         }
         private class RelevantItems
@@ -1197,16 +1188,6 @@ namespace CombatHandler.Shade
                 PerkHash.UnsealedContagion,
                 PerkHash.CaptureVitality
             };
-        }
-        public enum MASelection
-        {
-            None, Sappo = 267525, Shen = 201281, FlowerofLife = 204326, BrightBlueCloudlessSky = 204328, BlessedwithThunder = 204327, BirdofPrey = 204329,
-            AttackoftheSnake = 204330, AngelofNight = 204331
-        }
-        
-        public enum ShadeProcSelection
-        {
-            None, Damage, Stun, InitDebuff, DOT
         }
         public enum ProcType1Selection
         {

@@ -289,6 +289,7 @@ namespace CombatHandler.Generic
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                         => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "SLMap"));
 
+
                 if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Melee))
                 {
                     //We are melee
@@ -777,6 +778,21 @@ namespace CombatHandler.Generic
 
         #endregion
 
+        #region Debuff Removal
+        protected bool BreakRoot(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["ReleaseMeNow"].AsBool()) { return false; }
+            if (!CanCast(spell)) { return false; }
+            if (!spell.IsReady) { return false; }
+            if (Spell.HasPendingCast) { return false; }
+            var debuffs = new List<NanoLine> { NanoLine.Root, NanoLine.Snare };
+            if (!debuffs.Any(d => DynelManager.LocalPlayer.Buffs.Contains(d))) { return false; }
+
+            return true;
+        }
+
+        #endregion
+
         #region Debuffs
 
         public bool EnumDebuff(Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string debuffType)
@@ -930,6 +946,28 @@ namespace CombatHandler.Generic
             return true;
         }
 
+        protected bool MAItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            item.Id = _settings["MASelection"].AsInt32();
+
+            if (item.Id == 0) { return false; }
+            if (fightingtarget == null) { return false; }
+            if (Item.HasPendingUse) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
+
+            return true;
+        }
+        protected bool IntelligenceItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            item.Id = _settings["IntelligenceSelection"].AsInt32();
+
+            if (item.Id == 0) { return false; }
+            if (fightingtarget == null) { return false; }
+            if (Item.HasPendingUse) { return false; }
+            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Intelligence)) { return false; }
+
+            return true;
+        }
         #endregion
 
         #region Items

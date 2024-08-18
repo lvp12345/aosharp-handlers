@@ -28,6 +28,7 @@ namespace CombatHandler.Engineer
         private static Window _perkWindow;
         private static Window _trimmersWindow;
         private static Window _healingWindow;
+        private static Window _specialAttacksWindow;
 
         private static View _buffView;
         private static View _petView;
@@ -37,6 +38,7 @@ namespace CombatHandler.Engineer
         private static View _perkView;
         private static View _trimmersView;
         private static View _healingView;
+        private static View _specialAttacksView;
 
         private static double _ncuUpdateTime;
 
@@ -130,6 +132,9 @@ namespace CombatHandler.Engineer
 
                 _settings.AddVariable("BuffingAuraSelection", 0);
                 _settings.AddVariable("DebuffingAuraSelection", 0);
+
+                _settings.AddVariable("MASelection", 267525);
+                _settings.AddVariable("IntelligenceSelection", 0);
 
                 _settings.AddVariable("PetPerkSelection", 0);
                 _settings.AddVariable("PetProcSelection", 0);
@@ -289,6 +294,22 @@ namespace CombatHandler.Engineer
                 RegisterItemProcessor(RelevantTrimmers.PositiveAggressiveDefensive, Trimmers.PositiveAggressiveDefensive);
 
                 Trimmers.LastTrimTime = Time.AONormalTime;
+                //Items
+                int intelligenceItem = _settings["IntelligenceSelection"].AsInt32();
+                int maItem = _settings["MASelection"].AsInt32();
+                if (maItem == 204329)
+                {
+                    foreach (var item in Inventory.FindAll("Bird of Prey").OrderBy(x => x.QualityLevel))
+                    {
+
+                        RegisterItemProcessor(item.LowId, item.HighId, MAItem);
+                    }
+                }
+                else
+                {
+                    RegisterItemProcessor(maItem, maItem, MAItem);
+                }
+                RegisterItemProcessor(intelligenceItem, intelligenceItem, IntelligenceItem);
 
                 //LE Procs
                 RegisterPerkProcessor(PerkHash.LEProcEngineerReactiveArmor, LEProc1, CombatActionPriority.Low);
@@ -786,6 +807,22 @@ namespace CombatHandler.Engineer
                 _procWindow = container;
             }
         }
+        private void HandleSpecialAttacksViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_specialAttacksView)) { return; }
+
+                _specialAttacksView = View.CreateFromXml(PluginDirectory + "\\UI\\EngSpecialAttacksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "SpecialAttacks", XmlViewName = "EngSpecialAttacksView" }, _specialAttacksView);
+            }
+            else if (_specialAttacksWindow == null || (_specialAttacksWindow != null && !_specialAttacksWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_specialAttacksWindow, PluginDir, new WindowOptions() { Name = "SpecialAttacks", XmlViewName = "EngSpecialAttacksView" }, _specialAttacksView, out var container);
+                _specialAttacksWindow = container;
+            }
+        }
         #endregion
 
         protected override void OnUpdate(float deltaTime)
@@ -1102,6 +1139,12 @@ namespace CombatHandler.Engineer
                     {
                         procView.Tag = SettingsController.settingsWindow;
                         procView.Clicked = HandleProcViewClick;
+                    }
+
+                    if (SettingsController.settingsWindow.FindView("SpecialAttacksView", out Button specialAttacksView))
+                    {
+                        specialAttacksView.Tag = SettingsController.settingsWindow;
+                        specialAttacksView.Clicked = HandleSpecialAttacksViewClick;
                     }
 
                     if (!_settings["SyncPets"].AsBool() && _syncPets)

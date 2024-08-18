@@ -1,5 +1,6 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
+using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
@@ -25,6 +26,7 @@ namespace CombatHandler.Trader
         private static Window _itemWindow;
         private static Window _perkWindow;
         private static Window _petWindow;
+        private static Window _specialAttacksWindow;
 
         private static View _buffView;
         private static View _debuffView;
@@ -34,6 +36,7 @@ namespace CombatHandler.Trader
         private static View _itemView;
         private static View _perkView;
         private static View _petView;
+        private static View _specialAttacksView;
 
         private static SimpleChar _drainTarget;
 
@@ -129,7 +132,8 @@ namespace CombatHandler.Trader
                 _settings.AddVariable("GrandTheftHumiditySelection", 2);
                 _settings.AddVariable("MyEnemySelection", 4);
                 _settings.AddVariable("NanoHealSelection", 1);
-
+                _settings.AddVariable("MASelection", 267525);
+                _settings.AddVariable("IntelligenceSelection", 0);
                 _settings.AddVariable("ModeSelection", 0);
 
                 _settings.AddVariable("Root", false);
@@ -221,6 +225,23 @@ namespace CombatHandler.Trader
                 //Perks
                 RegisterPerkProcessor(PerkHash.Sacrifice, Sacrifice);
                 RegisterPerkProcessor(PerkHash.PurpleHeart, PurpleHeart);
+
+                //Items
+                int intelligenceItem = _settings["IntelligenceSelection"].AsInt32();
+                int maItem = _settings["MASelection"].AsInt32();
+                if (maItem == 204329)
+                {
+                    foreach (var item in Inventory.FindAll("Bird of Prey").OrderBy(x => x.QualityLevel))
+                    {
+
+                        RegisterItemProcessor(item.LowId, item.HighId, MAItem);
+                    }
+                }
+                else
+                {
+                    RegisterItemProcessor(maItem, maItem, MAItem);
+                }
+                RegisterItemProcessor(intelligenceItem, intelligenceItem, IntelligenceItem);
 
                 //LE Proc
                 RegisterPerkProcessor(PerkHash.LEProcTraderDebtCollection, LEProc1, CombatActionPriority.Low);
@@ -628,7 +649,22 @@ namespace CombatHandler.Trader
                 _procWindow = container;
             }
         }
+        private void HandleSpecialAttacksViewClick(object s, ButtonBase button)
+        {
+            Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+            if (window != null)
+            {
+                if (window.Views.Contains(_specialAttacksView)) { return; }
 
+                _specialAttacksView = View.CreateFromXml(PluginDirectory + "\\UI\\TraderSpecialAttacksView.xml");
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "SpecialAttacks", XmlViewName = "TraderSpecialAttacksView" }, _specialAttacksView);
+            }
+            else if (_specialAttacksWindow == null || (_specialAttacksWindow != null && !_specialAttacksWindow.IsValid))
+            {
+                SettingsController.CreateSettingsTab(_specialAttacksWindow, PluginDir, new WindowOptions() { Name = "SpecialAttacks", XmlViewName = "TraderSpecialAttacksView" }, _specialAttacksView, out var container);
+                _specialAttacksWindow = container;
+            }
+        }
         #endregion
 
         protected override void OnUpdate(float deltaTime)
@@ -928,6 +964,11 @@ namespace CombatHandler.Trader
                     {
                         procView.Tag = SettingsController.settingsWindow;
                         procView.Clicked = HandleProcViewClick;
+                    }
+                    if (SettingsController.settingsWindow.FindView("SpecialAttacksView", out Button specialAttacksView))
+                    {
+                        specialAttacksView.Tag = SettingsController.settingsWindow;
+                        specialAttacksView.Clicked = HandleSpecialAttacksViewClick;
                     }
                 }
 

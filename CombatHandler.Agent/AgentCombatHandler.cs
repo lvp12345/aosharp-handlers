@@ -140,8 +140,12 @@ namespace CombatHandler.Agent
                 _settings.AddVariable("SLMap", false);
 
                 _settings.AddVariable("ProcSelection", 1);
+                _settings.AddVariable("AgentDamageBuff", 0);
 
                 _settings.AddVariable("Concentration", false);
+
+                _settings.AddVariable("MASelection", 267525);
+                _settings.AddVariable("IntelligenceSelection", 0);
 
                 _settings.AddVariable("TheShot", false);
 
@@ -227,7 +231,6 @@ namespace CombatHandler.Agent
                 _settings.AddVariable("MAEvades", false);
                 _settings.AddVariable("ControlledDestructionWithShutdown", false);
                 _settings.AddVariable("DamageTypeSelection", 0);
-                _settings.AddVariable("MASelection", (int)MASelection.Sappo);
 
                 RegisterSettingsWindow("Agent Handler", "AgentSettingsView.xml");
 
@@ -266,9 +269,11 @@ namespace CombatHandler.Agent
                 RegisterSpellProcessor(RelevantNanos.DOTProcs, DamageProc);
 
                 //Team Buffs
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageBuffs_LineA).OrderByStackingOrder(),
-                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                        => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget));
+
+                RegisterSpellProcessor(RelevantNanos.AgentDamageBuffs,
+                (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                 => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "AgentDamageBuff"));
+
                 RegisterSpellProcessor(RelevantNanos.TeamCritBuffs, AAO);
 
                 //Debuffs
@@ -279,6 +284,22 @@ namespace CombatHandler.Agent
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.EvasionDebuffs_Agent).OrderByStackingOrder(),
                    (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                    => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "EvasionDebuffSelection"), CombatActionPriority.Low);
+                //Items
+                int intelligenceItem = _settings["IntelligenceSelection"].AsInt32();
+                int maItem = _settings["MASelection"].AsInt32();
+                if (maItem == 204329)
+                {
+                    foreach (var item in Inventory.FindAll("Bird of Prey").OrderBy(x => x.QualityLevel))
+                    {
+
+                        RegisterItemProcessor(item.LowId, item.HighId, MAItem);
+                    }
+                }
+                else
+                {
+                    RegisterItemProcessor(maItem, maItem, MAItem);
+                }
+                RegisterItemProcessor(intelligenceItem, intelligenceItem, IntelligenceItem);
 
                 //LE Procs
                 //type1
@@ -1223,18 +1244,14 @@ namespace CombatHandler.Agent
                                  => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "MABuff"));
                             RegisterSpellProcessor(RelevantNanos.DamageTypeFire,
                                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                                MADamageType(spell, fightingTarget, ref actionTarget, DamageTypeSelection.Fire));
+                                MADamageType(spell, fightingTarget, ref actionTarget, 1));
                             RegisterSpellProcessor(RelevantNanos.DamageTypeEnergy,
                                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                                MADamageType(spell, fightingTarget, ref actionTarget, DamageTypeSelection.Energy));
+                                MADamageType(spell, fightingTarget, ref actionTarget, 2));
                             RegisterSpellProcessor(RelevantNanos.DamageTypeChemical,
                                 (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget) =>
-                                MADamageType(spell, fightingTarget, ref actionTarget, DamageTypeSelection.Chemical));
-
-
+                                MADamageType(spell, fightingTarget, ref actionTarget, 3));
                             RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ControlledDestructionBuff).Where(s => s.StackingOrder < 19).OrderByStackingOrder(), ControlledDestructionWithShutdown);
-                            int maItem = _settings["MASelection"].AsInt32();
-                            RegisterItemProcessor(maItem, maItem, MAItem);
 
                             #endregion
                             Chat.WriteLine("Setting FP to Martial artist");
@@ -3050,21 +3067,9 @@ namespace CombatHandler.Agent
 
             return CombatBuff(spell, NanoLine.ControlledDestructionBuff, fightingTarget, ref actionTarget);
         }
-        private bool MAItem(Item item, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool MADamageType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, int procType)
         {
-            item.Id = _settings["MASelection"].AsInt32();
-
-            if (item.Id == 0) { return false; }
-            if (fightingtarget == null) { return false; }
-            if (Item.HasPendingUse) { return false; }
-            if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.MartialArts)) { return false; }
-
-            return true;
-        }
-
-        private bool MADamageType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, DamageTypeSelection procType)
-        {
-            DamageTypeSelection currentSetting = (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32();
+            var currentSetting = _settings["DamageTypeSelection"].AsInt32();
 
             if (currentSetting != procType)
             {
@@ -3075,15 +3080,17 @@ namespace CombatHandler.Agent
         }
         private void CancelBuffs()
         {
-            if (DamageTypeSelection.Fire != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32())
+            var selection = _settings["DamageTypeSelection"].AsInt32();
+
+            if (selection != 1)
             {
                 CancelBuffs(RelevantNanos.DamageTypeFire);
             }
-            if (DamageTypeSelection.Energy != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32())
+            if (selection != 2)
             {
                 CancelBuffs(RelevantNanos.DamageTypeEnergy);
             }
-            if (DamageTypeSelection.Chemical != (DamageTypeSelection)_settings["DamageTypeSelection"].AsInt32())
+            if (selection != 3)
             {
                 CancelBuffs(RelevantNanos.DamageTypeChemical);
             }
@@ -3236,6 +3243,7 @@ namespace CombatHandler.Agent
             public const int SuperiorHoldVictim = 270249;
             public const int GreaterDelayPursuers = 85316;
             public const int GreaterDelayTheInevitable = 82545;
+            public static readonly int[] AgentDamageBuffs = { 81856, 222838, 222837, 81851, 222835, 81852, 222833, 81853, 81854 };
 
             public static int CompleteHealing = 28650;
 
@@ -3325,7 +3333,7 @@ namespace CombatHandler.Agent
             public static readonly int[] AOEBlinds = { 83959, 83960, 83961, 83962, 83963, 83964 };
 
             //crat
-            public const int GreaterFearofAttention = 82166; 
+            public const int GreaterFearofAttention = 82166;
             public const int ShacklesofObedience = 82463;
             public static readonly int[] ShadowlandsCalms = { 224147, 224145,
             224137, 224135, 224133, 224131, 219020 };
@@ -3333,7 +3341,7 @@ namespace CombatHandler.Agent
             30093, 30056, 30065 };
             public static readonly int[] AOECalms = { 100422, 100424, 100426 };
             public static readonly int[] CratNuke = { 82000, 78396, 78397, 30091, 78399, 81996, 30083, 81997, 30068, 81998, 78398, 29618 };
-            public static readonly int[] CratSpecialNuke = { 78400, 30082, 78394, 78395}; 
+            public static readonly int[] CratSpecialNuke = { 78400, 30082, 78394, 78395 };
 
             //fixer
             public const int SpinNanoweb = 85216;
@@ -3369,14 +3377,6 @@ namespace CombatHandler.Agent
         }
         #endregion
 
-        #region MA Item
-        public enum MASelection
-        {
-            None, Sappo = 267525, Shen = 201281, FlowerofLife = 204326, BrightBlueCloudlessSky = 204328, BlessedwithThunder = 204327, BirdofPrey = 204329,
-            AttackoftheSnake = 204330, AngelofNight = 204331
-        }
-        #endregion
-
         #region Trader Selections
 
         public enum RansackSelection
@@ -3398,12 +3398,6 @@ namespace CombatHandler.Agent
 
         #endregion
 
-        #region MA Damage Selections
-        public enum DamageTypeSelection
-        {
-            None, Fire, Energy, Chemical
-        }
-        #endregion
         private static class RelevantIgnoreNanos
         {
             public static int[] CompNanoSkills = new[] { 220331, 220333, 220335, 220337, 292299, 220339, 220341, 220343 };

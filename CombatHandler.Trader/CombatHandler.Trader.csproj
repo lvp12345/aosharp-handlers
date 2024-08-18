@@ -72,6 +72,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="UI\TraderSpecialAttacksView.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UI\TraderHealingView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

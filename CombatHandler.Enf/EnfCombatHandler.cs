@@ -4,6 +4,7 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace CombatHandler.Enf
@@ -102,6 +103,7 @@ namespace CombatHandler.Enf
 
                 _settings.AddVariable("CycleChallenger", false);
                 _settings.AddVariable("CycleRage", false);
+                _settings.AddVariable("ReleaseMeNow", false);
                 _settings.AddVariable("TauntProc", true);
                 _settings.AddVariable("AbsorbACBuff", true);
                 _settings.AddVariable("TargetedHpBuff", true);
@@ -137,7 +139,7 @@ namespace CombatHandler.Enf
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
                 RegisterSpellProcessor(RelevantNanos.FortifyBuffs, CycleAbsorbs, CombatActionPriority.High);
-
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SelfRoot_SnareResistBuff).OrderByStackingOrder(), BreakRoot, CombatActionPriority.High);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Rage).OrderByStackingOrder(), CycleRage, CombatActionPriority.High);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Challenger).OrderByStackingOrder(), CycleChallenger, CombatActionPriority.High);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DamageShields).OrderByStackingOrder(),

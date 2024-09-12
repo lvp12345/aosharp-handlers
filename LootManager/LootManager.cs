@@ -28,8 +28,6 @@ namespace LootManager
 
         public static List<Rule> Rules;
 
-        private Dictionary<Identity, BackpackInfo> backpackDictionary = new Dictionary<Identity, BackpackInfo>();
-
         List<int> ourMobs = new List<int>();//mob instance
         Dictionary<int, int> ourCorpses = new Dictionary<int, int>(); // corpse instance and mob instance
         List<int> openedCorpses = new List<int>();//corpse instance
@@ -52,7 +50,7 @@ namespace LootManager
 
                 Game.OnUpdate += OnUpdate;
                 Network.N3MessageReceived += N3MessageReceived;
-                Inventory.ContainerOpened += ProcessItemsInCorpseContainer;
+                Inventory.ContainerOpened += ContainerOpened;
 
                 RegisterSettingsWindow("Loot Manager", "LootManagerSettingWindow.xml");
 
@@ -70,6 +68,7 @@ namespace LootManager
 
                 Chat.RegisterCommand("printlm", (string command, string[] param, ChatWindow chatWindow) =>
                 {
+
                     if (ourMobs.Count > 1)
                     {
                         foreach (var mob in ourMobs)
@@ -133,6 +132,8 @@ namespace LootManager
             {
                 case N3MessageType.CorpseFullUpdate:
                     var corpsemsg = (CorpseFullUpdateMessage)e;
+                    //var containerDyel = DynelManager.AllDynels.FirstOrDefault(x => x.Identity.Instance == corpsemsg.Identity.Instance);
+                    //Chat.WriteLine($"{containerDyel?.Name}, corpse instance = {corpsemsg.Identity.Instance}, mob instance = {corpsemsg.UnknownIdentity.Instance}");
                     if (!ourMobs.Contains(corpsemsg.UnknownIdentity.Instance)) { return; }
                     ourCorpses.Add(corpsemsg.Identity.Instance, corpsemsg.UnknownIdentity.Instance);
                     break;
@@ -143,10 +144,99 @@ namespace LootManager
                     ourMobs.Remove(mobToRemove);
                     ourCorpses.Remove(despawnMsg.Identity.Instance);
                     openedCorpses.Remove(despawnMsg.Identity.Instance);
-                    //Chat.WriteLine("Corpse despawned");
                     break;
-                default:
+                case N3MessageType.ContainerAddItem:
+                    var addItemMsg = (ContainerAddItem)e;
+                    if (addItemMsg.Identity != DynelManager.LocalPlayer.Identity) { return; }
+
+                    switch (addItemMsg.Target.Type)
+                    {
+                        case IdentityType.Inventory:
+                            break;
+                        case IdentityType.Container:
+                            break;
+                    }
                     break;
+            }
+        }
+
+        private void ContainerOpened(object sender, Container container)
+        {
+            try
+            {
+                if (!_settings["Enabled"].AsBool()) { return; }
+
+                switch (container.Identity.Type)
+                {
+                    case IdentityType.Corpse:
+
+                        if (!ourCorpses.ContainsKey(container.Identity.Instance)) { return; }
+
+                        openedCorpses.Add(container.Identity.Instance);
+
+                        foreach (var item in container.Items)
+                        {
+                            if (Inventory.NumFreeSlots <= 1) { return; }
+
+                            if (CheckRules(item, true))
+                            {
+                                item.MoveToInventory();
+                            }
+                            else
+                            {
+                                if (_settings["Delete"].AsBool())
+                                {
+                                    item?.Delete();
+                                }
+                            }
+                        }
+
+                        if (!_settings["Delete"].AsBool())
+                        {
+                            if (container.Items.Any(item => !CheckRules(item)))
+                            {
+                                var corpse = DynelManager.Corpses.FirstOrDefault(c => c.Identity.Instance == container.Identity.Instance);
+
+                                if (openedCorpses.Contains(container.Identity.Instance))
+                                {
+                                    if (ourCorpses.ContainsKey(container.Identity.Instance))
+                                    {
+                                        var mobToRemove = ourCorpses[container.Identity.Instance]; //get value from ourcorpse key
+                                        ourMobs.Remove(mobToRemove);
+                                        ourCorpses.Remove(container.Identity.Instance);
+                                        openedCorpses.Remove(container.Identity.Instance);
+                                        openDelay = 0;
+                                        //Chat.WriteLine($"Closing {corpse.Name}");
+                                        corpse.Open();//close corpse
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                        //case IdentityType.Container:
+                        //    //Chat.WriteLine($"{container.Identity.Type} opened");
+                        //    var backpack = Inventory.Backpacks.FirstOrDefault(c => c.Identity.Instance == container.Identity.Instance);
+                        //    if (backpack == null || !backpack.Name.Contains("loot")) { return; }
+
+                        //    //if (!backpackDictionary.ContainsKey(container.Identity.Instance))
+                        //    //{
+                        //    //    backpackDictionary[container.Identity.Instance] = backpack;
+                        //    //}
+
+                        //    //Chat.WriteLine($"{backpack.Name} opened, instance = {container.Identity.Instance}");
+                        //    break;
+                }
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
+
+                if (errorMessage != previousErrorMessage)
+                {
+                    Chat.WriteLine(errorMessage);
+                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
+                    previousErrorMessage = errorMessage;
+                }
             }
         }
 
@@ -159,67 +249,24 @@ namespace LootManager
 
         private void MoveItemsToBag()
         {
-            if (!backpackDictionary.Any()) { return; }
 
-            var availableBackpack = backpackDictionary.FirstOrDefault(backpack =>
-                 backpack.Value.FreeSlots > 0 &&
-                 backpack.Value.FreeSlots <= 21);
+            var backpack = Inventory.Backpacks.Where(a => a.Name.Contains("loot")).OrderBy(b => b.Name).FirstOrDefault(c => c.Items.Count >= 0 && c.Items.Count < 21);
 
-            if (!availableBackpack.Equals(default(KeyValuePair<Identity, BackpackInfo>)))
+            if (Time.AONormalTime < moveDelay) { return; }
+
+            foreach (var itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
             {
-                if (Time.AONormalTime < moveDelay) { return; }
+                if (backpack == null) { return; }
 
-                foreach (var itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
+                if (CheckRules(itemtomove))
                 {
-                    if (CheckRules(itemtomove))
-                    {
-                        itemtomove.MoveToContainer(availableBackpack.Key);
-                        availableBackpack.Value.FreeSlots--;
-                        break;
-                    }
-                    if (availableBackpack.Value.FreeSlots == 0)
-                    {
-                        break;
-                    }
-                }
-
-                moveDelay = Time.AONormalTime + 1.0;
-            }
-        }
-
-        private void UpdateBackpackDictionary()
-        {
-            bool dictionaryChanged = false;
-
-            foreach (var backpack in Inventory.Backpacks.Where(b => b.Name.Contains("loot")))
-            {
-                int freeSlots = 21 - backpack.Items.Count;
-
-                if (backpackDictionary.ContainsKey(backpack.Identity))
-                {
-                    if (backpackDictionary[backpack.Identity].FreeSlots != freeSlots)
-                    {
-                        backpackDictionary[backpack.Identity].FreeSlots = freeSlots;
-                        dictionaryChanged = true;
-                        SaveBackpackDictionaryToJson();
-                    }
-                }
-                else
-                {
-                    backpackDictionary.Add(backpack.Identity, new BackpackInfo
-                    {
-                        Name = backpack.Name,
-                        FreeSlots = freeSlots
-                    });
-                    dictionaryChanged = true;
-                    SaveBackpackDictionaryToJson();
+                    itemtomove.MoveToContainer(backpack);
+                    break;
                 }
             }
 
-            if (dictionaryChanged)
-            {
-                isBackpackInfoInitialized = true;
-            }
+            moveDelay = Time.AONormalTime + 0.2;
+
         }
 
         private void InitializeBackpackInfo()
@@ -238,70 +285,6 @@ namespace LootManager
             }
 
             isBackpackInfoInitialized = true;
-        }
-
-
-        private void ProcessItemsInCorpseContainer(object sender, Container container)
-        {
-            try
-            {
-                if (!_settings["Enabled"].AsBool()) { return; }
-                if (container.Identity.Type != IdentityType.Corpse) { return; }
-
-                if (!ourCorpses.ContainsKey(container.Identity.Instance)) { return; }
-                //Chat.WriteLine("Corpse open");
-                openedCorpses.Add(container.Identity.Instance);
-
-                foreach (var item in container.Items)
-                {
-                    if (Inventory.NumFreeSlots <= 1) { return; }
-
-                    if (CheckRules(item, true))
-                    {
-                        item.MoveToInventory();
-                    }
-                    else
-                    {
-                        if (_settings["Delete"].AsBool())
-                        {
-                            item?.Delete();
-                        }
-                    }
-                }
-
-                if (!_settings["Delete"].AsBool())
-                {
-                    if (container.Items.Any(item => !CheckRules(item)))
-                    {
-                        var corpse = DynelManager.Corpses.FirstOrDefault(c => c.Identity.Instance == container.Identity.Instance);
-
-                        if (openedCorpses.Contains(container.Identity.Instance))
-                        {
-                            if (ourCorpses.ContainsKey(container.Identity.Instance))
-                            {
-                                var mobToRemove = ourCorpses[container.Identity.Instance]; //get value from ourcorpse key
-                                ourMobs.Remove(mobToRemove);
-                                ourCorpses.Remove(container.Identity.Instance);
-                                openedCorpses.Remove(container.Identity.Instance);
-                                openDelay = 0;
-                                //Chat.WriteLine($"Closing {corpse.Name}");
-                                corpse.Open();//close corpse
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = "An error occurred on line " + GetLineNumber(ex) + ": " + ex.Message;
-
-                if (errorMessage != previousErrorMessage)
-                {
-                    Chat.WriteLine(errorMessage);
-                    Chat.WriteLine("Stack Trace: " + ex.StackTrace);
-                    previousErrorMessage = errorMessage;
-                }
-            }
         }
 
         public void ProcessCorpses()
@@ -367,34 +350,39 @@ namespace LootManager
 
                     if (Team.IsInTeam)
                     {
-                        var teamCharacter = Team.Members.FirstOrDefault(t => t.Character != null && t.Character.IsAttacking
-                        && !ourMobs.Contains(t.Character.FightingTarget.Identity.Instance))?.Character;
-
-                        if (teamCharacter != null)
+                        foreach (var teamMember in Team.Members)
                         {
-                            ourMobs.Add(teamCharacter.FightingTarget.Identity.Instance);
+                            var character = teamMember.Character;
+
+                            if (character != null && character.IsAttacking)
+                            {
+                                var fightingTarget = character.FightingTarget;
+
+                                if (fightingTarget != null && !ourMobs.Contains(fightingTarget.Identity.Instance))
+                                {
+                                    //Chat.WriteLine($"Adding {fightingTarget.Identity.Instance} to ourMobs");
+                                    ourMobs.Add(fightingTarget.Identity.Instance);
+                                }
+                            }
                         }
 
+
+                        //var teamCharacter = Team.Members.FirstOrDefault(t => t.Character != null && t.Character.IsAttacking
+                        //&& !ourMobs.Contains(t.Character.FightingTarget.Identity.Instance))?.Character;
+
+                        //if (teamCharacter != null)
+                        //{
+                        //    Chat.WriteLine($"Adding {teamCharacter.FightingTarget?.Identity.Instance} to ourMobs");
+                        //    ourMobs.Add(teamCharacter.FightingTarget.Identity.Instance);
+                        //}
                     }
                     else if (player.FightingTarget != null && !ourMobs.Contains(player.FightingTarget.Identity.Instance))
                     {
                         ourMobs.Add(player.FightingTarget.Identity.Instance);
                     }
 
-                    if (_settings["Disable"].AsBool())
-                    {
-                        if (backpackDictionary.Values.All(backpack => backpack.FreeSlots == 0))
-                        {
-                            if (Inventory.NumFreeSlots == 0)
-                            {
-                                _settings["Enabled"] = false;
-                            }
-                        }
-                    }
-
                     ProcessCorpses();
                     MoveItemsToBag();
-                    UpdateBackpackDictionary();
                 }
             }
             catch (Exception ex)
@@ -586,36 +574,6 @@ namespace LootManager
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
             SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
-        }
-
-        private void SaveBackpackDictionaryToJson()
-        {
-            try
-            {
-                List<BackpackInfo> backpackInfoList = new List<BackpackInfo>();
-
-                foreach (var backpackInfo in backpackDictionary.Values)
-                {
-                    backpackInfoList.Add(new BackpackInfo
-                    {
-                        Name = backpackInfo.Name,
-                        FreeSlots = backpackInfo.FreeSlots,
-                        ItemNames = backpackInfo.ItemNames
-                    });
-                }
-
-                string json = JsonConvert.SerializeObject(backpackInfoList, Formatting.Indented);
-
-                string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\" +
-                    $"{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\BackpackInfo.json";
-
-                File.WriteAllText(filename, json);
-
-            }
-            catch (Exception ex)
-            {
-                Chat.WriteLine("Error while saving backpackDictionary to JSON: " + ex.Message);
-            }
         }
 
         private void LoadRules()
@@ -812,27 +770,6 @@ namespace LootManager
 
         [FieldOffset(0x9C)]
         public IntPtr Name;
-    }
-
-    public class BackpackInfo
-    {
-        public string Name { get; set; }
-        public int FreeSlots { get; set; }
-        public List<string> ItemNames { get; set; }
-
-        public BackpackInfo()
-        {
-            Name = string.Empty;
-            FreeSlots = 0;
-            ItemNames = new List<string>();
-        }
-
-        public BackpackInfo(string name, int freeSlots)
-        {
-            Name = name;
-            FreeSlots = freeSlots;
-            ItemNames = new List<string>();
-        }
     }
 
     public class RemoveItemModel

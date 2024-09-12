@@ -313,7 +313,6 @@ namespace LootManager
             if (Time.AONormalTime < openDelay) { return; }
             if (Spell.HasPendingCast) { return; }
             if (Item.HasPendingUse) { return; }
-            if (Spell.List.Any(nano => !nano.IsReady)) { return; }
             if (PerkAction.List.Any(perk => perk.IsExecuting)) { return; }
 
             foreach (var corpse in corpses)

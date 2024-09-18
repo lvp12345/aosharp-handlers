@@ -43,7 +43,7 @@
       <HintPath>..\packages\AOSharpSDK.Nav.1.0.5\lib\net48\AOSharp.Recast.dll</HintPath>
     </Reference>
     <Reference Include="AOSharp.SharpNav, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\AOSharpSDK.SharpNav.1.0.28\lib\net48\AOSharp.SharpNav.dll</HintPath>
+      <HintPath>..\packages\AOSharpSDK.SharpNav.1.0.30\lib\net48\AOSharp.SharpNav.dll</HintPath>
     </Reference>
     <Reference Include="NavmeshMovementController, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\AOSharpSDK.Nav.1.0.5\lib\net48\NavmeshMovementController.dll</HintPath>

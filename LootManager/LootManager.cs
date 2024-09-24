@@ -170,11 +170,6 @@ namespace LootManager
                 {
                     case IdentityType.Corpse:
 
-                        //foreach (var item in container.Items)
-                        //{
-                        //    Chat.WriteLine(item.Name);
-                        //}
-
                         if (!ourCorpses.ContainsKey(container.Identity.Instance)) { return; }
 
                         openedCorpses.Add(container.Identity.Instance);
@@ -182,6 +177,8 @@ namespace LootManager
                         foreach (var item in container.Items)
                         {
                             if (Inventory.NumFreeSlots <= 1) { return; }
+
+                            //Chat.WriteLine(item.Name);
 
                             if (CheckRules(item, true))
                             {

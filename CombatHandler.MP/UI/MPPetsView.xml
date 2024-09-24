@@ -2,19 +2,31 @@
 <root>
 	<BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="HelperHelpBox" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
-		<OptionCheckBox label="Spawn pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SpawnPets" layout_borders="Rect(10,1,5,1)"/>
+		<TextView value="Spawn pets" layout_borders="Rect(5,5,5,5)"/>
+		<OptionCheckBox label="Attack Pet" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__AttackPet" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Heal Pet" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__HealPet" layout_borders="Rect(10,1,5,1)"/>
+		<OptionCheckBox label="Mezz Pet" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__SupportPet" layout_borders="Rect(10,1,5,1)"/>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 		<OptionCheckBox label="Buff pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__BuffPets" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Construct Empowerment*" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__CEPetBuff" layout_borders="Rect(10,1,5,1)"/>
 		<OptionCheckBox label="Warp pets" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__WarpPets" layout_borders="Rect(10,1,5,1)"/>
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
-		
-		<OptionCheckBox label="Mezz Pet" opt_category="AOSharp" opt_type="variant" opt_variable="CombatHandler__MezzPet" layout_borders="Rect(10,1,5,1)"/>
 		<View v_alignment="TOP" h_alignment="Left" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
 			<OptionRadioButtonGroup label="Pet mezzing" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__PetMezzingSelection">
-				<RadioButton label="Target" value="0"/>
-				<RadioButton label="Adds" value="1"/>
+				<RadioButton label="None" value="0"/>
+				<RadioButton label="Target" value="1"/>
+				<RadioButton label="Adds" value="2"/>
 			</OptionRadioButtonGroup>
-			<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		</View>
+		<View v_alignment="TOP" h_alignment="Left" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+			<OptionRadioButtonGroup label="Pet healing" layout_borders="Rect(10,1,5,1)" opt_type="variant" opt_variable="CombatHandler__PetHealingSelection">
+				<RadioButton label="None" value="0"/>
+				<RadioButton label="Self" value="1"/>
+				<RadioButton label="Leader" value="2"/>
+				<RadioButton label="Team" value="3"/>
+			</OptionRadioButtonGroup>
 		</View>
 		<TextView value=" " layout_borders="Rect(5,5,5,5)"/>
 		<View v_alignment="TOP" h_alignment="Left" view_layout="vertical" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">

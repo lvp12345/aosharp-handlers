@@ -81,7 +81,7 @@
     <Content Include="UI\MPHealingView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UI\MPWeaponView .xml">
+    <Content Include="UI\MPWeaponView.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="UI\MPNukesView.xml">

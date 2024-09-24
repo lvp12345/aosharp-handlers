@@ -129,14 +129,19 @@ namespace CombatHandler.Metaphysicist
                 _settings.AddVariable("Sacrificial", false);
 
                 _settings.AddVariable("SyncPets", true);
-                _settings.AddVariable("SpawnPets", true);
+
+                _settings.AddVariable("AttackPet", true);
+                _settings.AddVariable("HealPet", true);
+                _settings.AddVariable("SupportPet", true);
+
                 _settings.AddVariable("BuffPets", true);
+
                 _settings.AddVariable("CEPetBuff", false);
-                _settings.AddVariable("MezzPet", false);
                 _settings.AddVariable("WarpPets", false);
 
                 _settings.AddVariable("PetProcSelection", 0);
-                _settings.AddVariable("PetMezzingSelection", 1);
+                _settings.AddVariable("PetMezzingSelection", 2);
+                _settings.AddVariable("PetHealingSelection", 3);
 
                 _settings.AddVariable("CompositeNanoSkillsBuffSelection", 0);
                 _settings.AddVariable("CostBuffSelection", 1);
@@ -200,9 +205,8 @@ namespace CombatHandler.Metaphysicist
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MajorEvasionBuffs).OrderByStackingOrder(), SelfEvades);
                 RegisterSpellProcessor(RelevantNanos.Sacrificial, Sacrificial);
 
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(),
-                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MartialArtistBowBuffs).OrderByStackingOrder(), BowBuff);
+
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Psy_IntBuff).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
@@ -247,7 +251,7 @@ namespace CombatHandler.Metaphysicist
                 RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamage, CombatActionPriority.High);
                 RegisterSpellProcessor(RelevantNanos.ChantBuffs, Chant, CombatActionPriority.High);
 
-                RegisterSpellProcessor(RelevantNanos.MPCompositeNano, MezzPetMochies, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.MPCompositeNano, PetMochies, CombatActionPriority.High);
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MesmerizationConstructEmpowerment).OrderByStackingOrder(), MezzPetSeed, CombatActionPriority.High);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealingConstructEmpowerment).OrderByStackingOrder(), HealPetSeed, CombatActionPriority.High);
@@ -599,16 +603,17 @@ namespace CombatHandler.Metaphysicist
         private void HandleWeaponViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
+
             if (window != null)
             {
                 if (window.Views.Contains(_weaponView)) { return; }
 
                 _weaponView = View.CreateFromXml(PluginDirectory + "\\UI\\MPWeaponView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Weapon", XmlViewName = "MPWeaponView" }, _weaponView);
+                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Weapons", XmlViewName = "MPWeaponView" }, _weaponView);
             }
-            else if (_weaponView == null || (_weaponView != null && !_weaponWindow.IsValid))
+            else if (_weaponWindow == null || (_weaponWindow != null && !_weaponWindow.IsValid))
             {
-                SettingsController.CreateSettingsTab(_weaponWindow, PluginDir, new WindowOptions() { Name = "Weapon", XmlViewName = "MPWeaponView " }, _weaponView, out var container);
+                SettingsController.CreateSettingsTab(_weaponWindow, PluginDir, new WindowOptions() { Name = "Weapons", XmlViewName = "MPWeaponView" }, _weaponView, out var container);
                 _weaponWindow = container;
             }
         }
@@ -1231,31 +1236,43 @@ namespace CombatHandler.Metaphysicist
 
         private bool AttackPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!_settings["AttackPet"].AsBool()) { return false; }
+            if (DynelManager.LocalPlayer.Pets.Any(c => c.Type == PetType.Attack)) { return false; }
+            if (!CanLookupPetsAfterZone()) { return false; }
             if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
 
-            return NoShellPetSpawner(PetType.Attack, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool SupportPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!_settings["MezzPet"].AsBool()) { return false; }
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
-
-            return NoShellPetSpawner(PetType.Support, spell, fightingTarget, ref actionTarget);
+            actionTarget.ShouldSetTarget = false;
+            return true;
         }
 
         private bool HealPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!_settings["HealPet"].AsBool()) { return false; }
+            if (DynelManager.LocalPlayer.Pets.Any(c => c.Type == PetType.Heal)) { return false; }
+            if (!CanLookupPetsAfterZone()) { return false; }
             if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
 
-            return NoShellPetSpawner(PetType.Heal, spell, fightingTarget, ref actionTarget);
+            actionTarget.ShouldSetTarget = false;
+            return true;
+        }
+
+        private bool SupportPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (!_settings["SupportPet"].AsBool()) { return false; }
+            if (DynelManager.LocalPlayer.Pets.Any(c => c.Type == PetType.Support)) { return false; }
+            if (!CanLookupPetsAfterZone()) { return false; }
+            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
+
+            actionTarget.ShouldSetTarget = false;
+            return true;
         }
 
         #region Buffs
 
-        private bool MezzPetMochies(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool PetMochies(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return PetTargetBuff(NanoLine.SenseImpBuff, PetType.Support, spell, fightingTarget, ref actionTarget);
+            return PetTargetBuff(NanoLine.SenseImpBuff, PetType.Support, spell, fightingTarget, ref actionTarget)
+                || PetTargetBuff(NanoLine.SenseImpBuff, PetType.Heal, spell, fightingTarget, ref actionTarget);
         }
 
         private bool MezzPetSeed(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1310,7 +1327,13 @@ namespace CombatHandler.Metaphysicist
 
         private bool DefensivePet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return PetTargetBuff(NanoLine.PetDefensiveNanos, PetType.Attack, spell, fightingTarget, ref actionTarget);
+            if (_settings["AttackPet"].AsBool() && !DynelManager.LocalPlayer.Pets.Any(c => c.Type == PetType.Attack)) { return false; }
+            if (_settings["HealPet"].AsBool() && !DynelManager.LocalPlayer.Pets.Any(c => c.Type == PetType.Heal)) { return false; }
+            if (_settings["SupportPet"].AsBool() && !DynelManager.LocalPlayer.Pets.Any(c => c.Type == PetType.Support)) { return false; }
+
+            return PetTargetBuff(NanoLine.PetDefensiveNanos, PetType.Attack, spell, fightingTarget, ref actionTarget)
+                || PetTargetBuff(NanoLine.PetDefensiveNanos, PetType.Heal, spell, fightingTarget, ref actionTarget)
+                || PetTargetBuff(NanoLine.PetDefensiveNanos, PetType.Support, spell, fightingTarget, ref actionTarget);
         }
 
         private bool NanoResistancePet(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1398,6 +1421,11 @@ namespace CombatHandler.Metaphysicist
         #endregion
 
         #region Buffs
+
+        protected bool BowBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Bow);
+        }
 
         private bool Sacrificial(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
@@ -1643,7 +1671,7 @@ namespace CombatHandler.Metaphysicist
             }
             else
             {
-                Pet dyingPet = DynelManager.LocalPlayer.Pets
+                var dyingPet = DynelManager.LocalPlayer.Pets
                      .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social || pet.Type == PetType.Support)
                      .Where(pet => pet.Character.HealthPercent < 80)
                      .Where(pet => pet.Character.DistanceFrom(DynelManager.LocalPlayer) < 60f)
@@ -1661,57 +1689,70 @@ namespace CombatHandler.Metaphysicist
 
         private void AssignTargetToHealPet()
         {
-            var dyingTarget = GetTargetToHeal();
+            if (_settings["PetHealingSelection"].AsInt32() == 0) { return; }
 
-            Pet healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal
+            var healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal
             && pet.Character.Nano >= 1).FirstOrDefault();
+            if (healPet == null) { return; }
+            if (Time.AONormalTime < _lastHealPetHealTime) { return; }
+            _lastHealPetHealTime = Time.AONormalTime + 3;
 
-            if (healPet != null)
+            switch (_settings["PetHealingSelection"].AsInt32())
             {
-                if (dyingTarget != null)
-                {
-                    if (Time.AONormalTime > _lastHealPetHealTime)
-                    {
-                        healPet.Heal(dyingTarget.Identity);
-                        _lastHealPetHealTime = Time.AONormalTime + 3;
-                    }
-                }
+                case 1:
+                    healPet.Heal(DynelManager.LocalPlayer.Identity);
+                    break;
+                case 2:
+                    if (!Team.IsInTeam) { return; }
+                    var leader = Team.Members.FirstOrDefault(t => t.IsLeader);
+                    if (leader == null) { return; }
+                    healPet.Heal(leader.Identity);
+                    break;
+                case 3:
+                    var dyingTarget = GetTargetToHeal();
+                    if (dyingTarget == null) { return; }
+                    healPet.Heal(dyingTarget.Identity);
+                    break;
             }
         }
 
         private void AssignTargetToMezzPet()
         {
-            var mezzPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Support
+            if (_settings["PetMezzingSelection"].AsInt32() == 0) { return; }
+
+                var mezzPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Support
             && pet.Character.Nano >= 1).FirstOrDefault();
 
             if (mezzPet != null)
             {
-                if (_settings["PetMezzingSelection"].AsInt32() == 0)
+                switch (_settings["PetMezzingSelection"].AsInt32())
                 {
+                    case 1:
                         if (CanLookupPetsAfterZone() && Time.AONormalTime - _lastMezzPetMezzTime > 1)
                         {
                             SynchronizePetCombatState(mezzPet);
 
                             _lastMezzPetMezzTime = Time.AONormalTime;
                         }
-                    }
-                else
-                {
-                    var targetToMezz = GetTargetToMezz();
+                        break;
 
-                    if (targetToMezz != null)
-                    {
-                        PetMezzing(mezzPet, targetToMezz);
-                    }
-                    else
-                    {
-                        if (CanLookupPetsAfterZone() && Time.AONormalTime - _lastMezzPetMezzTime > 1)
+                    case 2:
+                        var targetToMezz = GetTargetToMezz();
+
+                        if (targetToMezz != null)
                         {
-                            SynchronizePetCombatState(mezzPet);
-
-                            _lastMezzPetMezzTime = Time.AONormalTime;
+                            PetMezzing(mezzPet, targetToMezz);
                         }
-                    }
+                        else
+                        {
+                            if (CanLookupPetsAfterZone() && Time.AONormalTime - _lastMezzPetMezzTime > 1)
+                            {
+                                SynchronizePetCombatState(mezzPet);
+
+                                _lastMezzPetMezzTime = Time.AONormalTime;
+                            }
+                        }
+                        break;
                 }
             }
         }

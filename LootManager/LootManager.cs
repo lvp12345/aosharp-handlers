@@ -169,8 +169,7 @@ namespace LootManager
                 switch (container.Identity.Type)
                 {
                     case IdentityType.Corpse:
-
-                        if (!ourCorpses.ContainsKey(container.Identity.Instance)) { return; }
+                        if (!ourCorpses.TryGetValue(container.Identity.Instance, out var mobToRemove)) { return; }
 
                         openedCorpses.Add(container.Identity.Instance);
 
@@ -178,55 +177,34 @@ namespace LootManager
                         {
                             if (Inventory.NumFreeSlots <= 1) { return; }
 
-                            //Chat.WriteLine(item.Name);
+                            Chat.WriteLine($"{item.Name}");
 
                             if (CheckRules(item, true))
                             {
+                                Chat.WriteLine($"{item.Name} matches loot list");
                                 item.MoveToInventory();
                             }
-                            else
+                            else if (_settings["Delete"].AsBool())
                             {
-                                if (_settings["Delete"].AsBool())
-                                {
-                                    item?.Delete();
-                                }
+                                item?.Delete();
                             }
                         }
 
-                        if (!_settings["Delete"].AsBool())
+                        if (!_settings["Delete"].AsBool() && container.Items.Any(item => !CheckRules(item)))
                         {
-                            if (container.Items.Any(item => !CheckRules(item)))
-                            {
-                                var corpse = DynelManager.Corpses.FirstOrDefault(c => c.Identity.Instance == container.Identity.Instance);
+                            var corpse = DynelManager.Corpses.FirstOrDefault(c => c.Identity.Instance == container.Identity.Instance);
 
-                                if (openedCorpses.Contains(container.Identity.Instance))
-                                {
-                                    if (ourCorpses.ContainsKey(container.Identity.Instance))
-                                    {
-                                        var mobToRemove = ourCorpses[container.Identity.Instance]; //get value from ourcorpse key
-                                        ourMobs.Remove(mobToRemove);
-                                        ourCorpses.Remove(container.Identity.Instance);
-                                        openedCorpses.Remove(container.Identity.Instance);
-                                        openDelay = 0;
-                                        //Chat.WriteLine($"Closing {corpse.Name}");
-                                        corpse.Open();//close corpse
-                                    }
-                                }
+                            if (openedCorpses.Contains(container.Identity.Instance))
+                            {
+                                ourMobs.Remove(mobToRemove);
+                                ourCorpses.Remove(container.Identity.Instance);
+                                openedCorpses.Remove(container.Identity.Instance);
+                                corpse.Open(); // Close corpse
+                                openDelay = 0;
                             }
                         }
+
                         break;
-                        //case IdentityType.Container:
-                        //    //Chat.WriteLine($"{container.Identity.Type} opened");
-                        //    var backpack = Inventory.Backpacks.FirstOrDefault(c => c.Identity.Instance == container.Identity.Instance);
-                        //    if (backpack == null || !backpack.Name.Contains("loot")) { return; }
-
-                        //    //if (!backpackDictionary.ContainsKey(container.Identity.Instance))
-                        //    //{
-                        //    //    backpackDictionary[container.Identity.Instance] = backpack;
-                        //    //}
-
-                        //    //Chat.WriteLine($"{backpack.Name} opened, instance = {container.Identity.Instance}");
-                        //    break;
                 }
             }
             catch (Exception ex)

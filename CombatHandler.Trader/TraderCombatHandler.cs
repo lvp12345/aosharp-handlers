@@ -43,6 +43,8 @@ namespace CombatHandler.Trader
         private static double _drainTick;
         private static double _ncuUpdateTime;
 
+        int petColor;
+
         public TraderCombatHandler(string pluginDir) : base(pluginDir)
         {
             try
@@ -278,6 +280,40 @@ namespace CombatHandler.Trader
                 TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
                 BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
                 StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
+
+                Chat.RegisterCommand("petstats", (string command, string[] param, ChatWindow chatWindow) =>
+                {
+                    foreach (var pet in DynelManager.LocalPlayer.Pets)
+                    {
+                        switch (pet.Type)
+                        {
+                            case PetType.Attack:
+                                petColor = (int)ChatColor.Red;
+                                break;
+                            case PetType.Heal:
+                                petColor = (int)ChatColor.LightBlue;
+                                break;
+                            case PetType.Support:
+                                petColor = (int)ChatColor.Green;
+                                break;
+                            case PetType.Social:
+                                petColor = (int)ChatColor.Yellow;
+                                break;
+                            default:
+                                petColor = (int)ChatColor.White;
+                                break;
+                        }
+
+                        var petassimplechar = pet.Character;
+
+                        Chat.WriteLine($"{petassimplechar.Name} lvl {petassimplechar.Level} type {pet.Type}", (ChatColor)petColor);
+                        Chat.WriteLine($"AddAllOff = {petassimplechar.GetStat(Stat.AddAllOff)}", (ChatColor)petColor);
+                        Chat.WriteLine($"AddAllDef = {petassimplechar.GetStat(Stat.AddAllDef)}", (ChatColor)petColor);
+                        Chat.WriteLine($"Aggressiveness = {petassimplechar.GetStat(Stat.Aggressiveness)}", (ChatColor)petColor);
+                        Chat.WriteLine($"AggDef = {petassimplechar.GetStat(Stat.AggDef)}", (ChatColor)petColor);
+                        Chat.WriteLine($"NPCType = {petassimplechar.GetStat(Stat.NPCFamily)}", (ChatColor)petColor);
+                    }
+                });
             }
             catch (Exception ex)
             {

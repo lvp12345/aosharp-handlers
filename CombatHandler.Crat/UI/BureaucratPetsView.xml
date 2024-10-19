@@ -23,5 +23,7 @@
 			<RadioButton label="Droid Pressure Matrix" value="2"/>
 		</OptionRadioButtonGroup>
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="/petstats for pet stats" layout_borders="Rect(5,5,5,5)"/>
+		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 	</BorderView>
 </root>

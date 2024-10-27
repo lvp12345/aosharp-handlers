@@ -1293,12 +1293,20 @@ namespace CombatHandler.Generic
 
             if (!CanCast(spell)) { return false; }
 
-            var rootedPet = DynelManager.LocalPlayer.Pets.FirstOrDefault(c => !c.Character.Buffs.Contains(224391)
-            && (c.Character.Buffs.Contains(NanoLine.Root) || c.Character.Buffs.Contains(NanoLine.Snare) || c.Character.Buffs.Contains(NanoLine.Mezz)));
+            foreach(var pet in DynelManager.LocalPlayer.Pets)
+            {
+                if(pet.Character == null || pet.Character.Buffs == null) { continue; }
+                if (pet.Character.Buffs.Contains(224391)) { continue; }
+                if (!pet.Character.Buffs.Contains(NanoLine.Root) &&
+                     !pet.Character.Buffs.Contains(NanoLine.Snare) &&
+                     !pet.Character.Buffs.Contains(NanoLine.Mezz)) { continue; }
 
-            if (rootedPet == null) { return false; }
 
-            actionTarget.Target = rootedPet.Character;
+                actionTarget.Target = pet.Character;
+            }
+
+            if (actionTarget.Target == null) { return false; }
+
             actionTarget.ShouldSetTarget = true;
             return true;
         }

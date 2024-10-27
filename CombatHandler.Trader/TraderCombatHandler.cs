@@ -1195,7 +1195,6 @@ namespace CombatHandler.Trader
             var settingValue = _settings[SelectionName].AsInt32();
 
             if (settingValue == 0) { return false; }
-            if (fightingTarget == null) { return false; }
             if (NeedsReload()) { return false; }
             if (!CanCast(spell)) { return false; }
 

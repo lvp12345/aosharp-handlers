@@ -34,16 +34,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AOSharp.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\AOSharpSDK.1.0.85\lib\net48\AOSharp.Common.dll</HintPath>
+      <HintPath>..\packages\AOSharpSDK.1.0.86\lib\net48\AOSharp.Common.dll</HintPath>
     </Reference>
     <Reference Include="AOSharp.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\AOSharpSDK.1.0.85\lib\net48\AOSharp.Core.dll</HintPath>
+      <HintPath>..\packages\AOSharpSDK.1.0.86\lib\net48\AOSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="AOSharp.Recast, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\AOSharpSDK.Nav.1.0.5\lib\net48\AOSharp.Recast.dll</HintPath>
     </Reference>
     <Reference Include="AOSharp.SharpNav, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\AOSharpSDK.SharpNav.1.0.31\lib\net48\AOSharp.SharpNav.dll</HintPath>
+      <HintPath>..\packages\AOSharpSDK.SharpNav.1.0.33\lib\net48\AOSharp.SharpNav.dll</HintPath>
     </Reference>
     <Reference Include="NavmeshMovementController, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\AOSharpSDK.Nav.1.0.5\lib\net48\NavmeshMovementController.dll</HintPath>

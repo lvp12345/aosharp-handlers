@@ -1316,13 +1316,13 @@ namespace CombatHandler.Engineer
         {
             if (Team.IsInTeam && _settings["GrenadeTeam"].AsBool())
             {
-                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade) || TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+                return TeamBuffExclusionCharacterWieldedWeapon(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade) || TeamBuffExclusionCharacterWieldedWeapon(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
             }
 
             if (DynelManager.LocalPlayer.Buffs.Contains(269482)) { return false; }
 
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade)
-                    || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+            return BuffWeaponSkill(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade)
+                    || BuffWeaponSkill(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }
 
         private bool InitBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

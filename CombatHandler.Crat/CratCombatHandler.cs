@@ -1333,7 +1333,7 @@ namespace CombatHandler.Bureaucrat
 
         private bool PistolSelfOnly(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+            return BuffWeaponSkill(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }
 
         private bool NanoDelta(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

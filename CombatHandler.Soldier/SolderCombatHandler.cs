@@ -1,5 +1,6 @@
 ﻿using AOSharp.Common.GameData;
 using AOSharp.Core;
+using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
@@ -153,9 +154,6 @@ namespace CombatHandler.Soldier
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierShotgunBuff).OrderByStackingOrder(), Shotgun);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HeavyWeaponsBuffs).OrderByStackingOrder(), HeavyWeapon);
-
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.ArmorBuff).OrderByStackingOrder(),
                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                     => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "TeamArmorBuff"));
@@ -164,21 +162,32 @@ namespace CombatHandler.Soldier
                 (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                     => NonComabtTeamBuff(buffSpell, fightingTarget, ref actionTarget, "InitBuff"));
 
-                RegisterSpellProcessor(RelevantNanos.ArBuffs, AssaultRifle);
-                RegisterSpellProcessor(RelevantNanos.CompositeHeavyArtillery, HeavyCompBuff);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierDamageBase).OrderByStackingOrder(),
-                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), AAO);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
+                //Weapon buffs
+                RegisterSpellProcessor(RelevantNanos.AssaultRifleBuffs, AssaultRifle);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierShotgunBuff).OrderByStackingOrder(), Shotgun);
+                RegisterSpellProcessor(RelevantNanos.HeavyWeaponsBuffs, HeavyWeapon);
+                RegisterSpellProcessor(RelevantNanos.RangedEnergyBuffs, RangedEnergy);
+
+
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.BurstBuff).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                              => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
-                RegisterSpellProcessor(29251, TeamRiotControl);
+
+
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SoldierDamageBase).OrderByStackingOrder(),
+                    (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+                                => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAOBuffs).OrderByStackingOrder(), AAO);
+
+
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SelfRoot_SnareResistBuff).OrderByStackingOrder(), BreakRoot, CombatActionPriority.High);
 
                 //Team Buffs
                 RegisterSpellProcessor(RelevantNanos.Precognition, Evades);
+                RegisterSpellProcessor(RelevantNanos.CompositeHeavyArtillery, HeavyCompBuff);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
+                RegisterSpellProcessor(29251, TeamRiotControl);
 
                 //LE Proc
                 RegisterPerkProcessor(PerkHash.LEProcSoldierFuriousAmmunition, LEProc1, CombatActionPriority.Low);
@@ -215,6 +224,7 @@ namespace CombatHandler.Soldier
                 TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
                 BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
                 StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
+
             }
             catch (Exception ex)
             {
@@ -625,7 +635,7 @@ namespace CombatHandler.Soldier
                         }
                     }
                 }
-                
+
                 if (FountainOfLifeInput != null && !string.IsNullOrEmpty(FountainOfLifeInput.Text))
                 {
                     if (int.TryParse(FountainOfLifeInput.Text, out int Value))
@@ -1019,7 +1029,7 @@ namespace CombatHandler.Soldier
             if (fightingTarget == null) { return false; }
             if (debuffAreaTargetsToIgnore.Contains(fightingTarget?.Name)) { return false; }
             if (!CanCast(spell)) { return false; }
-            if ( DynelManager.LocalPlayer.HealthPercent <= 30) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent <= 30) { return false; }
             if (Time.AONormalTime < _timedTaunt + TimedTauntDelay) { return false; }
 
             switch (selection)
@@ -1074,7 +1084,7 @@ namespace CombatHandler.Soldier
             if (!_settings["RiotControl"].AsBool()) { return false; }
             if (!Team.IsInTeam) { return false; }
 
-            var teamMember = Team.Members.Where(t => t?.Character != null
+            var teamMember = Team.Members.Where(t => t?.Character != null && t.Identity != DynelManager.LocalPlayer.Identity
             && t.Character.Health > 0
             && t.Character.IsInLineOfSight
             && t.Character.SpecialAttacks.Contains(SpecialAttack.Burst)
@@ -1090,53 +1100,42 @@ namespace CombatHandler.Soldier
 
         private bool HeavyCompBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (_settings["CompHeavyArt"].AsBool())
-            {
-                if (Team.IsInTeam) 
-                {
-                    var target = Team.Members.Where(t => t?.Character != null
-                        && t.Character.Health > 0
-                        && t.Character.IsInLineOfSight
-                        && !t.Character.Buffs.Contains(NanoLine.FixerSuppressorBuff) && !t.Character.Buffs.Contains(NanoLine.AssaultRifleBuffs)
-                        && HeavyCompWeaponChecks(t.Character)
-                        && SpellChecksOther(spell, spell.Nanoline, t.Character)).FirstOrDefault()?.Character;
+            if (!_settings["CompHeavyArt"].AsBool()) { return false; }
 
-                    if (target == null) { return false; }
+            if (!Team.IsInTeam) { return false; }
 
-                    if (target.Identity == DynelManager.LocalPlayer.Identity
-                        && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.AssaultRifle)) { return false; }
+            var target = Team.Members.Where(t => t?.Character != null && t.Identity != DynelManager.LocalPlayer.Identity
+                && t.Character.Health > 0
+                && t.Character.IsInLineOfSight
+                && !t.Character.Buffs.Contains(NanoLine.FixerSuppressorBuff) && !t.Character.Buffs.Contains(NanoLine.AssaultRifleBuffs)
+                && HeavyCompWeaponChecks(t.Character)
+                && SpellChecksOther(spell, spell.Nanoline, t.Character)).FirstOrDefault()?.Character;
 
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = target;
-                    return true;
-                }
-                else
-                {
-                    return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg)
-                      || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Shotgun)
-                      || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade);
-                }
-                
-            }
+            if (target == null) { return false; }
 
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Smg)
-                                || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Shotgun)
-                                || BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Grenade);
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = target;
+            return true;
         }
 
         private bool HeavyWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.HeavyWeapons);
+            return BuffWeaponSkill(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.HeavyWeapons);
         }
 
         private bool Shotgun(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Shotgun);
+            return BuffWeaponSkill(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Shotgun);
         }
 
         private bool AssaultRifle(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.AssaultRifle);
+            return BuffWeaponSkill(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.AssaultRifle);
+        }
+
+        private bool RangedEnergy(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            return GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged) && BuffWeaponSkill(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Energy);
         }
 
         private bool RKReflects(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1164,11 +1163,11 @@ namespace CombatHandler.Soldier
 
         private bool AMS(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actiontarget)
         {
-            if   (!_settings["Buffing"].AsBool()) {  return false; }
-            if   (!CanCast(spell)) { return false; }
+            if (!_settings["Buffing"].AsBool()) { return false; }
+            if (!CanCast(spell)) { return false; }
 
             return DynelManager.LocalPlayer.HealthPercent <= AMSPercentage;
-                       
+
         }
 
         #endregion
@@ -1189,9 +1188,11 @@ namespace CombatHandler.Soldier
         private bool HeavyCompWeaponChecks(SimpleChar _target)
         {
             return GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.AssaultRifle)
-                                || GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Smg)
-                                || GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Shotgun)
-                                || (GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Grenade) && _target.Profession != Profession.Engineer);
+                || (GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Grenade) && _target.Profession != Profession.Engineer)
+                || GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.HeavyWeapons)
+                || (GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Rifle) && _target.Profession != Profession.Agent)
+                || (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged) && GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Energy))
+                || (GetWieldedWeapons(_target).HasFlag(CharacterWieldedWeapon.Smg) && _target.Profession != Profession.Fixer);
         }
 
         public enum ProcType1Selection
@@ -1222,9 +1223,13 @@ namespace CombatHandler.Soldier
             229090};
             public static readonly int[] DeTaunt = { 223221, 223219, 223217, 223215, 223213, 223211 };
             public const int CompositeHeavyArtillery = 269482;
+
+            public static int[] AssaultRifleBuffs = { 275027, 269482, 203119, 29220, 203121 };
+            public static int[] RangedEnergyBuffs = { 275905, 269482, 29230, 203135 };
+            public static int[] HeavyWeaponsBuffs = { 223227, 269482, 223225, 223223 };
+
             public const int Phalanx = 29245;
             public const int Precognition = 29247;
-            public static readonly int[] ArBuffs = { 275027, 203119, 29220, 203121 };
         }
 
         private static class RelevantItems

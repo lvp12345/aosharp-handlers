@@ -1297,12 +1297,12 @@ namespace CombatHandler.Adventurer
 
         protected bool Ranged(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Ranged);
+            return BuffWeaponSkill(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Ranged);
         }
 
         protected bool Melee(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
+            return BuffWeaponSkill(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Melee);
         }
 
         private bool Armor(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

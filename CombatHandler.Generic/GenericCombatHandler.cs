@@ -289,20 +289,21 @@ namespace CombatHandler.Generic
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                         => NonComabtTeamBuff(spell, fightingTarget, ref actionTarget, "SLMap"));
 
+                var wieldedWeapons = GetWieldedWeapons(DynelManager.LocalPlayer);
 
-                if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Melee))
+                switch (wieldedWeapons)
                 {
-                    //We are melee
-                    RegisterSpellProcessor(RelevantGenericNanos.CompositeMartial, CompositeBuff);
-                    RegisterSpellProcessor(RelevantGenericNanos.CompositeMelee, CompositeBuff);
-                    RegisterSpellProcessor(RelevantGenericNanos.CompositePhysicalSpecial, CompositeBuff);
-                }
+                    case var _ when wieldedWeapons.HasFlag(CharacterWieldedWeapon.Melee) ||
+                   wieldedWeapons.HasFlag(CharacterWieldedWeapon.Fists):
+                        RegisterSpellProcessor(RelevantGenericNanos.CompositeMartial, CompositeBuff);
+                        RegisterSpellProcessor(RelevantGenericNanos.CompositeMelee, CompositeBuff);
+                        break;
+                    case var _ when wieldedWeapons.HasFlag(CharacterWieldedWeapon.Ranged):
+                        RegisterSpellProcessor(RelevantGenericNanos.CompositeRanged, CompositeBuff);
+                        RegisterSpellProcessor(RelevantGenericNanos.CompositeRangedSpecial, CompositeBuff);
+                        break;
 
-                if (GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(CharacterWieldedWeapon.Ranged))
-                {
-                    //We are ranged
-                    RegisterSpellProcessor(RelevantGenericNanos.CompositeRanged, CompositeBuff);
-                    RegisterSpellProcessor(RelevantGenericNanos.CompositeRangedSpecial, CompositeBuff);
+
                 }
 
                 Game.TeleportEnded += TeleportEnded;
@@ -319,6 +320,13 @@ namespace CombatHandler.Generic
                 Chat.RegisterCommand("cleancache", (c, p, cw) =>
                 {
                     SettingsController.RemainingNCU.Clear();
+                });
+
+                Chat.RegisterCommand("print", (string command, string[] param, ChatWindow chatWindow) =>
+                {
+                    ulong equippedWeaponsStat = (ulong)DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons);
+                    Chat.WriteLine($"0x{equippedWeaponsStat:X}");
+                    Chat.WriteLine($"Skill = {(CharacterWieldedWeapon)DynelManager.LocalPlayer.GetStat(Stat.EquippedWeapons)}");
                 });
             }
             catch (Exception ex)
@@ -605,10 +613,10 @@ namespace CombatHandler.Generic
         {
             if (Team.IsInTeam && _settings["PistolTeam"].AsBool())
             {
-                return TeamBuffExclusionWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+                return TeamBuffExclusionCharacterWieldedWeapon(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
             }
 
-            return BuffWeaponType(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
+            return BuffWeaponSkill(spell, fightingTarget, ref actionTarget, CharacterWieldedWeapon.Pistol);
         }
 
         protected bool NonCombatBuff(Spell spell, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, SimpleChar fightingTarget = null,
@@ -884,11 +892,12 @@ namespace CombatHandler.Generic
 
         #region Weapon Type
 
-        protected bool BuffWeaponType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWieldedWeapon supportedWeaponType)
+       
+        protected bool BuffWeaponSkill(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWieldedWeapon supportedCharacterWieldedWeapon)
         {
             if (fightingTarget != null) { return false; }
 
-            if (SpellChecksPlayer(spell, spell.Nanoline) && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(supportedWeaponType))
+            if (SpellChecksPlayer(spell, spell.Nanoline) && GetWieldedWeapons(DynelManager.LocalPlayer).HasFlag(supportedCharacterWieldedWeapon))
             {
                 actionTarget.Target = DynelManager.LocalPlayer;
                 actionTarget.ShouldSetTarget = true;
@@ -898,12 +907,12 @@ namespace CombatHandler.Generic
             return false;
         }
 
-        protected bool TeamBuffWeaponType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWieldedWeapon supportedWeaponType)
+        protected bool TeamBuffWeaponSkill(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWieldedWeapon supportedCharacterWieldedWeapon)
         {
             if (!Team.IsInTeam) { return false; }
 
             var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
-             && spell.IsInRange(t?.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) && GetWieldedWeapons(t.Character).HasFlag(supportedWeaponType))
+             && spell.IsInRange(t?.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) && GetWieldedWeapons(t.Character).HasFlag(supportedCharacterWieldedWeapon))
             .FirstOrDefault();
 
             if (teamMember == null) { return false; }
@@ -922,12 +931,12 @@ namespace CombatHandler.Generic
             return true;
         }
 
-        protected bool TeamBuffExclusionWeaponType(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWieldedWeapon supportedWeaponType)
+        protected bool TeamBuffExclusionCharacterWieldedWeapon(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, CharacterWieldedWeapon supportedCharacterWieldedWeapon)
         {
             if (!Team.IsInTeam) { return false; }
 
             var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive && t.Character.Profession != Profession.NanoTechnician
-            && spell.IsInRange(t?.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) && GetWieldedWeapons(t.Character).HasFlag(supportedWeaponType))
+            && spell.IsInRange(t?.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) && GetWieldedWeapons(t.Character).HasFlag(supportedCharacterWieldedWeapon))
            .FirstOrDefault();
 
             if (teamMember == null) { return false; }
@@ -1811,8 +1820,8 @@ namespace CombatHandler.Generic
         [Flags]
         public enum CharacterWieldedWeapon
         {
-            Fists = 0x0,              // 0x00000000000000000000b Fists / invalid
-            MartialArts = 0x01,       // 0x00000000000000000001b martialarts / fists
+            Fists = 0x1,              // 0x00000000000000000000b Fists / invalid
+            MartialArts = 0x3,       // 0x00000000000000000001b martialarts / fists
             Melee = 0x02,             // 0x00000000000000000010b
             Ranged = 0x04,            // 0x00000000000000000100b
             Bow = 0x08,               // 0x00000000000000001000b
@@ -1827,8 +1836,7 @@ namespace CombatHandler.Generic
             Rifle = 0x1000,           // 0x00000001000000000000b
             Shotgun = 0x2000,         // 0x00000010000000000000b
             Grenade = 0x8000,         // 0x00000100000000000000b // 0x00001000000000000000b grenade / martial arts
-            MeleeEnergy = 0x4000,     // 0x00001000000000000000b // 0x00000100000000000000b
-            RangedEnergy = 0x10000,   // 0x00010000000000000000b
+            Energy = 0x4000,
             Grenade2 = 0x20000,       // 0x00100000000000000000b
             HeavyWeapons = 0x40000,   // 0x01000000000000000000b
         }

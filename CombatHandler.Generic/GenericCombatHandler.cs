@@ -1530,8 +1530,7 @@ namespace CombatHandler.Generic
         }
         protected bool SpellChecksOther(Spell spell, NanoLine nanoline, SimpleChar fightingTarget)
         {
-            if (!_settings["Buffing"].AsBool()
-                || !CanCast(spell)
+            if (!CanCast(spell)
                 || !fightingTarget.IsInLineOfSight
                 || (fightingTarget.IsPlayer && !SettingsController.IsCharacterRegistered(fightingTarget.Identity))) { return false; }
 

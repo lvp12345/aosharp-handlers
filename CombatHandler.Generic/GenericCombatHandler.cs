@@ -2181,6 +2181,13 @@ namespace CombatHandler.Generic
             Config.Save();
         }
 
+        public static void ShortHotHealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].ShortHotHealPercentage = e;
+            Healing.ShortHotHealPercentage = e;
+            Config.Save();
+        }
+
         public static void TargetHealPercentage_Changed(object s, int e)
         {
             Config.CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage = e;

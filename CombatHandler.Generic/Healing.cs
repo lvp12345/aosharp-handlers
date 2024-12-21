@@ -1,10 +1,12 @@
-﻿using AOSharp.Core;
+﻿using AOSharp.Common.GameData;
+using AOSharp.Core;
 using System.Linq;
 
 namespace CombatHandler.Generic
 {
     public class Healing
     {
+        public static int ShortHotHealPercentage = 0;
         public static int TargetHealPercentage = 0;
         public static int CompleteHealPercentage = 0;
         public static int FountainOfLifeHealPercentage = 0;
@@ -15,6 +17,58 @@ namespace CombatHandler.Generic
 
         #region target
 
+        public static bool ShortHotHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (ShortHotHealPercentage == 0) { return false; }
+
+            if (!GenericCombatHandler.CanCast(spell)) { return false; }
+
+            if (!GenericCombatHandler._settings["SelfShortHot"].AsBool())
+            {
+                if (GenericCombatHandler._settings["AllPlayers"].AsBool())
+                {
+                    var player = DynelManager.Players
+                        .Where(c => c != null && c.Health > 0 && c.HealthPercent <= ShortHotHealPercentage && c.IsInLineOfSight && spell.IsInRange(c) && !c.Buffs.Contains(NanoLine.HealOverTime))
+                        .OrderBy(c => c.HealthPercent).FirstOrDefault();
+
+                    if (player == null) { return false; }
+
+                    actionTarget.Target = player;
+                }
+                else if (Team.IsInTeam)
+                {
+                    var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.Health > 0 &&
+                    t.Character.HealthPercent <= ShortHotHealPercentage && spell.IsInRange(t?.Character) && !t.Character.Buffs.Contains(NanoLine.HealOverTime))
+                        .OrderBy(t => t.Character.HealthPercent).FirstOrDefault();
+
+                    if (teamMember == null) { return false; }
+
+                    actionTarget.Target = teamMember.Character;
+                }
+                else
+                {
+                    var localPlayer = DynelManager.LocalPlayer;
+                    if (localPlayer.HealthPercent > ShortHotHealPercentage) { return false; }
+                    if (localPlayer.Buffs.Contains(NanoLine.HealOverTime)) { return false; }
+
+                    actionTarget.Target = DynelManager.LocalPlayer;
+                }
+            }
+            else
+            {
+                var localPlayer = DynelManager.LocalPlayer;
+                if (localPlayer.HealthPercent > ShortHotHealPercentage) { return false; }
+                if (localPlayer.Buffs.Contains(NanoLine.HealOverTime)) { return false; }
+
+                actionTarget.Target = DynelManager.LocalPlayer;
+            }
+
+            if (actionTarget.Target == null) { return false; }
+
+            actionTarget.ShouldSetTarget = true;
+            return true;
+        }
+
         public static bool TargetHealing(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (TargetHealPercentage == 0) { return false; }
@@ -23,8 +77,7 @@ namespace CombatHandler.Generic
             {
                 return FindPlayerWithHealthBelow(TargetHealPercentage, spell, ref actionTarget);
             }
-
-            if (Team.IsInTeam)
+            else if (Team.IsInTeam)
             {
                 return FindMemberForTargetHeal(TargetHealPercentage, spell, ref actionTarget);
             }
@@ -45,8 +98,7 @@ namespace CombatHandler.Generic
             {
                 return FindPlayerWithHealthBelow(TeamHealPercentage, spell, ref actionTarget);
             }
-
-            if (Team.IsInTeam)
+            else if (Team.IsInTeam)
             {
                 return FindMemberForTargetHeal(TeamHealPercentage, spell, ref actionTarget);
             }
@@ -68,8 +120,7 @@ namespace CombatHandler.Generic
             {
                 return FindPlayerWithHealthBelow(CompleteHealPercentage, spell, ref actionTarget);
             }
-
-            if (Team.IsInTeam)
+            else if (Team.IsInTeam)
             {
                 return FindMemberForTargetHeal(CompleteHealPercentage, spell, ref actionTarget);
             }
@@ -91,8 +142,7 @@ namespace CombatHandler.Generic
             {
                 return FindPlayerWithHealthBelow(FountainOfLifeHealPercentage, spell, ref actionTarget);
             }
-
-            if (Team.IsInTeam)
+            else if (Team.IsInTeam)
             {
                 return FindMemberForTargetHeal(FountainOfLifeHealPercentage, spell, ref actionTarget);
             }

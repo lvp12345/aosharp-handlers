@@ -29,10 +29,10 @@ namespace CombatHandler.Generic
         public int KitNanoPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].KitNanoPercentage : 66;
         [JsonIgnore]
         public int HealthDrainPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].HealthDrainPercentage : 90;
-       
+        [JsonIgnore]
+        public int ShortHotHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].ShortHotHealPercentage : 60;
         [JsonIgnore]
         public int TargetHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].TargetHealPercentage : 70;
-        
         [JsonIgnore]
         public int CompleteHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CompleteHealPercentage : 35;
         
@@ -141,8 +141,10 @@ namespace CombatHandler.Generic
         public void Save()
         {
             if (!Directory.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\Generic\\{DynelManager.LocalPlayer.Name}"))
+            {
                 Directory.CreateDirectory($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\Generic\\{DynelManager.LocalPlayer.Name}");
-
+            }
+               
             File.WriteAllText(_path, JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented));
         }
     }
@@ -336,6 +338,25 @@ namespace CombatHandler.Generic
                 {
                     _healthDrainPercentage = value;
                     HealthDrainPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+
+        public event EventHandler<int> ShortHotHealPercentageChangedEvent;
+
+        private int _shortHotHealPercentage = 60;
+        public int ShortHotHealPercentage
+        {
+            get
+            {
+                return _shortHotHealPercentage;
+            }
+            set
+            {
+                if (_shortHotHealPercentage != value)
+                {
+                    _shortHotHealPercentage = value;
+                    ShortHotHealPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }

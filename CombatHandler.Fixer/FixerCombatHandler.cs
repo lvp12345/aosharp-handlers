@@ -51,6 +51,7 @@ namespace CombatHandler.Fixer
                 IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
                 IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
+                Config.CharSettings[DynelManager.LocalPlayer.Name].ShortHotHealPercentageChangedEvent += ShortHotHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentageChangedEvent += FountainOfLifeHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentageChangedEvent += StimHealthPercentage_Changed;
@@ -89,7 +90,7 @@ namespace CombatHandler.Fixer
 
                 _settings.AddVariable("Kits", true);
 
-                _settings.AddVariable("ShortHOT", false);
+                _settings.AddVariable("SelfShortHot", false);
                 _settings.AddVariable("LongHOTSelection", 0);
                 _settings.AddVariable("SLMap", false);
 
@@ -125,7 +126,7 @@ namespace CombatHandler.Fixer
                     (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                     => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "LongHOTSelection"));
 
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), ShortHOT);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealOverTime).OrderByStackingOrder(), Healing.ShortHotHealing);
 
                 RegisterSpellProcessor(RelevantNanos.GreaterPreservationMatrix,
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -175,6 +176,7 @@ namespace CombatHandler.Fixer
 
                 PluginDirectory = pluginDir;
 
+                Healing.ShortHotHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].ShortHotHealPercentage;
                 Healing.FountainOfLifeHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage;
                 StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
                 StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
@@ -270,8 +272,13 @@ namespace CombatHandler.Fixer
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\FixerHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "FixerHealingView" }, _healingView);
 
+                window.FindView("ShortHotHealPercentageBox", out TextInputView ShortHotHealInput);
                 window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
 
+                if (ShortHotHealInput != null)
+                {
+                    ShortHotHealInput.Text = $"{Healing.ShortHotHealPercentage}";
+                }
                 if (FountainOfLifeInput != null)
                 {
                     FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
@@ -282,7 +289,13 @@ namespace CombatHandler.Fixer
                 SettingsController.CreateSettingsTab(_healingWindow, PluginDir, new WindowOptions() { Name = "Healing", XmlViewName = "FixerHealingView" }, _healingView, out var container);
                 _healingWindow = container;
 
+                container.FindView("ShortHotHealPercentageBox", out TextInputView ShortHotHealInput);
                 container.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+
+                if (ShortHotHealInput != null)
+                {
+                    ShortHotHealInput.Text = $"{Healing.ShortHotHealPercentage}";
+                }
 
                 if (FountainOfLifeInput != null)
                 {
@@ -519,6 +532,7 @@ namespace CombatHandler.Fixer
 
             if (window != null && window.IsValid)
             {
+                window.FindView("ShortHotHealPercentageBox", out TextInputView ShortHotHealInput);
                 window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
                 window.FindView("StimTargetBox", out TextInputView stimTargetInput);
                 window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
@@ -535,6 +549,18 @@ namespace CombatHandler.Fixer
 
                 window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                 window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+
+                if (ShortHotHealInput != null && !string.IsNullOrEmpty(ShortHotHealInput.Text))
+                {
+                    if (int.TryParse(ShortHotHealInput.Text, out int healValue))
+                    {
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].ShortHotHealPercentage != healValue)
+                        {
+
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].ShortHotHealPercentage = healValue;
+                        }
+                    }
+                }
 
                 if (FountainOfLifeInput != null && !string.IsNullOrEmpty(FountainOfLifeInput.Text))
                 {
@@ -906,12 +932,12 @@ namespace CombatHandler.Fixer
 
         #region Hots
 
-        private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!_settings["ShortHOT"].AsBool() || !InCombat()) { return false; }
+        //private bool ShortHOT(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        //{
+        //    if (!_settings["ShortHOT"].AsBool() || !InCombat()) { return false; }
 
-            return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
-        }
+        //    return CombatBuff(spell, spell.Nanoline, fightingTarget, ref actionTarget);
+        //}
 
         #endregion
 

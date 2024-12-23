@@ -6,13 +6,14 @@ namespace CombatHandler.Soldier
 {
     public class Main : AOPluginEntry
     {
-        public override void Run(string pluginDir)
+        public override void Run()
         {
             try
             {
+                base.Run();
                 Chat.WriteLine("Soldier Combat Handler Loaded!");
                 Chat.WriteLine("/handler for settings.");
-                AOSharp.Core.Combat.CombatHandler.Set(new SoldCombathandler(pluginDir));
+                AOSharp.Core.Combat.CombatHandler.Set(new SoldCombathandler(PluginDirectory));
             }
             catch (Exception e)
             {

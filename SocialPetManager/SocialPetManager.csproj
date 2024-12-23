@@ -57,9 +57,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\CommonParameters.cs">
-      <Link>CommonParameters.cs</Link>
-    </Compile>
     <Compile Include="SettingsController.cs" />
     <Compile Include="SocialPetManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -304,7 +304,7 @@ namespace CombatHandler.Engineer
                     foreach (var item in Inventory.FindAll("Bird of Prey").OrderBy(x => x.QualityLevel))
                     {
 
-                        RegisterItemProcessor(item.LowId, item.HighId, MAItem);
+                        RegisterItemProcessor(item.Id, item.HighId, MAItem);
                     }
                 }
                 else
@@ -1339,7 +1339,7 @@ namespace CombatHandler.Engineer
                 case 2:
                     var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
                        && t.Profession != Profession.Doctor && t.Profession != Profession.NanoTechnician && spell.IsInRange(t?.Character)
-                       && GetWieldedWeapons(t.Character).HasFlag(CharacterWieldedWeapon.Ranged) && SpellChecksOther(spell, spell.Nanoline, t.Character))
+                       && GetWieldedWeapons(t.Character).HasFlag(CharacterWieldedWeapon.Ranged) && SpellCheckLocalTeam(spell, t.Character))
                        .FirstOrDefault();
 
                     if (teamMember == null) return false;

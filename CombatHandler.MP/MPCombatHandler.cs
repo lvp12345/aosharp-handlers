@@ -1496,7 +1496,7 @@ namespace CombatHandler.Metaphysicist
                         .Where(c => Team.Members.Any(t => t != null && t.Identity.Instance == c.Identity.Instance)
                             && spell.IsInRange(c)
                             && c.Health > 0
-                            && SpellChecksOther(spell, spell.Nanoline, c))
+                            && SpellCheckLocalTeam(spell, c))
                         .FirstOrDefault();
 
                     if (target == null) { return false; }
@@ -1569,7 +1569,7 @@ namespace CombatHandler.Metaphysicist
                         && Team.Members.Any(t => t != null && t.Identity.Instance == c.Identity.Instance)
                         && spell.IsInRange(c)
                         && c.Health > 0
-                        && SpellChecksNanoSkillsOther(spell, c))
+                        && SpellCheckLocalTeam(spell, c))
                     .FirstOrDefault();
 
                 if (target == null) { return false; }
@@ -1579,7 +1579,7 @@ namespace CombatHandler.Metaphysicist
                 return true;
             }
 
-            if (!SpellChecksNanoSkillsPlayer(spell, fightingTarget)) { return false; }
+            if (!SpellCheckSelf(spell)) { return false; }
             
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = DynelManager.LocalPlayer;
@@ -1643,7 +1643,7 @@ namespace CombatHandler.Metaphysicist
                        && Team.Members.Any(t => t != null && t.Identity.Instance == c.Identity.Instance)
                        && c.Profession != Profession.NanoTechnician
                        && spell.IsInRange(c)
-                       && c.Health > 0 && SpellChecksOther(spell, spell.Nanoline, c))
+                       && c.Health > 0 && SpellCheckLocalTeam(spell, c))
                    .FirstOrDefault();
 
                     if (target == null) { return false; }
@@ -1852,7 +1852,7 @@ namespace CombatHandler.Metaphysicist
             if (Team.IsInTeam)
             {
                 targets = targets.Where(c =>
-                   Team.Members.Any(teammate =>
+                   Team.Members.Any(teammate => teammate != null && teammate.Character != null &&
                       c.FightingTarget?.Identity == teammate?.Character.Identity));
             }
 

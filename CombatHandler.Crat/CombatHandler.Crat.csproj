@@ -38,12 +38,9 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\CommonParameters.cs">
-      <Link>CommonParameters.cs</Link>
-    </Compile>
     <Compile Include="CratCombatHandler.cs" />
     <Compile Include="IPCMessages\ClearBuffsMessage.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
     <Compile Include="IPCMessages\DisbandMessage.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

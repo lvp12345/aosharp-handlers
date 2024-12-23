@@ -41,7 +41,7 @@ namespace MailManager
             _settings = new Settings("MailManager");
             PluginDir = pluginDir;
 
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\MailManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\MailManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
             Config.CharSettings[DynelManager.LocalPlayer.Name].MailCharacterNameChangedEvent += MailCharacterName_Changed;
             Config.CharSettings[DynelManager.LocalPlayer.Name].MailAmountChangedEvent += MailAmount_Changed;

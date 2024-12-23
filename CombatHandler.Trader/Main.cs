@@ -6,10 +6,11 @@ namespace CombatHandler.Trader
 {
     public class Main : AOPluginEntry
     {
-        public override void Run(string pluginDir)
+        public override void Run()
         {
             try
             {
+                base.Run();
                 if (Game.IsNewEngine)
                 {
                     Chat.WriteLine("Does not work on this engine!");
@@ -18,7 +19,7 @@ namespace CombatHandler.Trader
                 {
                     Chat.WriteLine("Trader Combat Handler Loaded!");
                     Chat.WriteLine("/handler for settings.");
-                    AOSharp.Core.Combat.CombatHandler.Set(new TraderCombatHandler(pluginDir));
+                    AOSharp.Core.Combat.CombatHandler.Set(new TraderCombatHandler(PluginDirectory));
                 }
             }
             catch (Exception e)

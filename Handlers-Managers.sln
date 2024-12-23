@@ -62,8 +62,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetManager", "PetHelper\Pet
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BagManager", "BagManager\BagManager.csproj", "{4A13427B-52F5-48DA-AE2F-BCCDB3806E54}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5E9EA0E3-BAC5-4C8A-8B91-22A6096A1F15}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialPetManager", "SocialPetManager\SocialPetManager.csproj", "{0589ADCD-0319-4897-AAD1-3CDED5663244}"
 EndProject
 Global

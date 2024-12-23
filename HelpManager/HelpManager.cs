@@ -111,7 +111,7 @@ namespace HelpManager
 
                 PluginDir = pluginDir;
 
-                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\HelpManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\HelpManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
                 SMovementControllerSettings mSettings = new SMovementControllerSettings
                 {

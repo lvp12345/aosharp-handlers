@@ -1189,7 +1189,7 @@ namespace CombatHandler.MartialArtist
                         && Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                         && !(c.Profession == Profession.NanoTechnician || c.Profession == Profession.Trader)
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && c.Health > 0 && SpellChecksOther(spell, spell.Nanoline, c))
+                        && c.Health > 0 && SpellCheckLocalTeam(spell, c))
                     .FirstOrDefault();
 
                 if (target == null) { return false; }

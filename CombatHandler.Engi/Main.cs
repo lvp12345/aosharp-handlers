@@ -6,10 +6,11 @@ namespace CombatHandler.Engineer
 {
     public class Main : AOPluginEntry
     {
-        public override void Run(string pluginDir)
+        public override void Run()
         {
             try
             {
+                base.Run();
                 if (Game.IsNewEngine)
                 {
                     Chat.WriteLine("Does not work on this engine!");
@@ -18,7 +19,7 @@ namespace CombatHandler.Engineer
                 {
                     Chat.WriteLine("Engi Combat Handler Loaded!");
                     Chat.WriteLine("/handler for settings.");
-                    AOSharp.Core.Combat.CombatHandler.Set(new EngiCombatHandler(pluginDir));
+                    AOSharp.Core.Combat.CombatHandler.Set(new EngiCombatHandler(PluginDirectory));
                 }
             }
             catch (Exception e)

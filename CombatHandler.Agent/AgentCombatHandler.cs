@@ -294,7 +294,7 @@ namespace CombatHandler.Agent
                     foreach (var item in Inventory.FindAll("Bird of Prey").OrderBy(x => x.QualityLevel))
                     {
 
-                        RegisterItemProcessor(item.LowId, item.HighId, MAItem);
+                        RegisterItemProcessor(item.Id, item.HighId, MAItem);
                     }
                 }
                 else
@@ -2513,7 +2513,7 @@ namespace CombatHandler.Agent
                         .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance)
                             && spell.IsInRange(c)
                             && c.Health > 0
-                            && SpellChecksOther(spell, spell.Nanoline, c))
+                            && SpellCheckLocalTeam(spell, c))
                         .FirstOrDefault();
 
                     if (target == null) { return false; }
@@ -2636,7 +2636,7 @@ namespace CombatHandler.Agent
             && t.Character.Health > 0
             && t.Character.IsInLineOfSight
             && t.Character.SpecialAttacks.Contains(SpecialAttack.Burst)
-            && SpellChecksOther(spell, spell.Nanoline, t.Character)
+            && SpellCheckLocalTeam(spell, t.Character)
             && spell.IsInRange(t?.Character)).FirstOrDefault();
 
             if (teamMember == null) { return false; }

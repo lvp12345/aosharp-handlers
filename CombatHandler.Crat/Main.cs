@@ -6,10 +6,11 @@ namespace CombatHandler.Bureaucrat
 {
     public class Main : AOPluginEntry
     {
-        public override void Run(string pluginDir)
+        public override void Run()
         {
             try
             {
+                base.Run();
                 if (Game.IsNewEngine)
                 {
                     Chat.WriteLine("Does not work on this engine!");
@@ -18,7 +19,7 @@ namespace CombatHandler.Bureaucrat
                 {
                     Chat.WriteLine("Crat Combat Handler Loaded!");
                     Chat.WriteLine("/handler for settings.");
-                    AOSharp.Core.Combat.CombatHandler.Set(new CratCombatHandler(pluginDir));
+                    AOSharp.Core.Combat.CombatHandler.Set(new CratCombatHandler(PluginDirectory));
                 }
             }
             catch (Exception e)

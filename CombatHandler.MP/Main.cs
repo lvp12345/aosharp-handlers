@@ -6,10 +6,11 @@ namespace CombatHandler.Metaphysicist
 {
     public class Main : AOPluginEntry
     {
-        public override void Run(string pluginDir)
+        public override void Run()
         {
             try
             {
+                base.Run();
                 if (Game.IsNewEngine)
                 {
                     Chat.WriteLine("Does not work on this engine!");
@@ -18,7 +19,7 @@ namespace CombatHandler.Metaphysicist
                 {
                     Chat.WriteLine("MP Combat Handler Loaded!");
                     Chat.WriteLine("/handler for settings.");
-                    AOSharp.Core.Combat.CombatHandler.Set(new MPCombatHandler(pluginDir));
+                    AOSharp.Core.Combat.CombatHandler.Set(new MPCombatHandler(PluginDirectory));
                 }
             }
             catch (Exception e)

@@ -1272,7 +1272,7 @@ namespace CombatHandler.Enf
             if (Team.IsInTeam)
             {
                 var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive &&
-                spell.IsInRange(t?.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) && t.Identity != DynelManager.LocalPlayer.Identity)
+                spell.IsInRange(t?.Character) && SpellCheckLocalTeam(spell, t.Character) && t.Identity != DynelManager.LocalPlayer.Identity)
                .FirstOrDefault();
 
                 if (teamMember != null)

@@ -121,6 +121,8 @@ namespace CombatHandler.Fixer
                 RegisterItemProcessor(RelevantItems.ClusterBullets, Cluster);
                 RegisterItemProcessor(RelevantItems.HomingPermorphaBullets, Permorpha);
 
+                RegisterSpellProcessor(RelevantNanos.NCU, NCU);
+
                 //Hots
                 RegisterSpellProcessor(RelevantNanos.LongHOT,
                     (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -153,7 +155,6 @@ namespace CombatHandler.Fixer
                 RegisterSpellProcessor(RelevantNanos.WakeUpCall, WakeUpCall);
                 RegisterSpellProcessor(RelevantNanos.RefactorNCUMatrix, RefactorNCUMatrix);
 
-                RegisterSpellProcessor(RelevantNanos.NCU, NCU);
 
                 //Spawn Armor
                 RegisterSpellProcessor(RelevantNanos.Grid, Grid);
@@ -843,12 +844,33 @@ namespace CombatHandler.Fixer
 
         private bool NCU(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (DynelManager.LocalPlayer.FightingTarget != null || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
+            if (!_settings["Buffing"].AsBool()) { return false; }
 
-            if (!SpellChecksPlayer(spell, NanoLine.FixerNCUBuff)) { return false; }
+            var localPlayer = DynelManager.LocalPlayer;
 
+            if (localPlayer.FightingTarget != null) { return false; }
+            if (!CanCast(spell)) { return false; }
+
+            if (localPlayer.RemainingNCU < spell.NCU) { return false; }
+
+            var ExistingBuff = localPlayer.Buffs.FirstOrDefault(b => b.Nanoline == NanoLine.FixerNCUBuff);
+
+            if (ExistingBuff == null)
+            {
+                actionTarget.Target = localPlayer;
+            }
+            else
+            {
+                if (spell.StackingOrder < ExistingBuff.StackingOrder || localPlayer.RemainingNCU < Math.Abs(spell.NCU - ExistingBuff.NCU)) { return false; }
+                if (spell.StackingOrder == ExistingBuff.StackingOrder && ExistingBuff.RemainingTime > 20f) { return false; }
+                if (ExistingBuff.RemainingTime > 300f) { return false; }
+
+                actionTarget.Target = localPlayer;
+            }
+
+            if (actionTarget.Target == null) { return false; }
+            
             actionTarget.ShouldSetTarget = true;
-            actionTarget.Target = DynelManager.LocalPlayer;
             return true;
         }
 

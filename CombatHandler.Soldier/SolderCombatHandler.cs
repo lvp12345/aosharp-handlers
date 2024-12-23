@@ -964,7 +964,7 @@ namespace CombatHandler.Soldier
                         && c.Health > 0
                         && c.IsInLineOfSight
                         && c.DistanceFrom(DynelManager.LocalPlayer) < 30f
-                        && SpellChecksOther(spell, spell.Nanoline, c))
+                        && SpellCheckFightingTarget(spell, c))
                     .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                     .FirstOrDefault();
 
@@ -1088,7 +1088,7 @@ namespace CombatHandler.Soldier
             && t.Character.Health > 0
             && t.Character.IsInLineOfSight
             && t.Character.SpecialAttacks.Contains(SpecialAttack.Burst)
-            && SpellChecksOther(spell, spell.Nanoline, t.Character)
+            && SpellCheckLocalTeam(spell, t.Character)
             && spell.IsInRange(t?.Character)).FirstOrDefault();
 
             if (teamMember == null) { return false; }
@@ -1109,7 +1109,7 @@ namespace CombatHandler.Soldier
                 && t.Character.IsInLineOfSight
                 && !t.Character.Buffs.Contains(NanoLine.FixerSuppressorBuff) && !t.Character.Buffs.Contains(NanoLine.AssaultRifleBuffs)
                 && HeavyCompWeaponChecks(t.Character)
-                && SpellChecksOther(spell, spell.Nanoline, t.Character)).FirstOrDefault()?.Character;
+                && SpellCheckLocalTeam(spell, t.Character)).FirstOrDefault()?.Character;
 
             if (target == null) { return false; }
 

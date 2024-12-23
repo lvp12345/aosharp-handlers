@@ -37,7 +37,7 @@ namespace CombatHandler.NanoTechnician
         private static View _perkView;
         private static View _healingView;
 
-        private static SimpleChar _drainTarget;
+        //private static SimpleChar _drainTarget;
 
         private static double _ncuUpdateTime;
 
@@ -1239,7 +1239,7 @@ namespace CombatHandler.NanoTechnician
                     && c.Health > 0
                     && c.IsInLineOfSight
                     && spell.IsInRange(c)
-                    && SpellChecksOther(spell, spell.Nanoline, c))
+                    && SpellCheckFightingTarget(spell, c))
                 .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
                 .FirstOrDefault();
 
@@ -1415,7 +1415,7 @@ namespace CombatHandler.NanoTechnician
             if (!Team.IsInTeam) { return false; }
 
             var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
-             && spell.IsInRange(t?.Character) && SpellChecksOther(spell, spell.Nanoline, t.Character) 
+             && spell.IsInRange(t?.Character) && SpellCheckLocalTeam(spell, t.Character) 
              && t.Character.Identity != DynelManager.LocalPlayer.Identity)
             .FirstOrDefault();
 

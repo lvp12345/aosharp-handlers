@@ -46,7 +46,7 @@ namespace LootManager
 
                 PluginDir = pluginDir;
 
-                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+                Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
                 Game.OnUpdate += OnUpdate;
                 Network.N3MessageReceived += N3MessageReceived;
@@ -562,7 +562,7 @@ namespace LootManager
             {
                 Rules = new List<Rule>();
 
-                string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\Global.json";
+                string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager\\Global.json";
 
                 if (File.Exists(filename))
                 {
@@ -586,7 +586,7 @@ namespace LootManager
                     }
                 }
 
-                filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
+                filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
 
                 if (File.Exists(filename))
                 {
@@ -636,7 +636,7 @@ namespace LootManager
                 List<Rule> GlobalRules = new List<Rule>();
                 List<Rule> ScopeRules = new List<Rule>();
 
-                string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\Global.json";
+                string filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager\\Global.json";
 
                 GlobalRules = Rules.Where(o => o.Global == true).ToList();
                 ScopeRules = Rules.Where(o => o.Global == false).ToList();
@@ -644,7 +644,7 @@ namespace LootManager
                 string rulesJson = JsonConvert.SerializeObject(GlobalRules);
                 File.WriteAllText(filename, rulesJson);
 
-                filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
+                filename = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager\\{DynelManager.LocalPlayer.Name}\\Rules.json";
                 rulesJson = JsonConvert.SerializeObject(ScopeRules);
                 File.WriteAllText(filename, rulesJson);
                 //Chat.WriteLine($"Saved {ScopeRules.Count} Rules");

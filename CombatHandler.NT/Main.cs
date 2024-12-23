@@ -6,10 +6,11 @@ namespace CombatHandler.NanoTechnician
 {
     public class Main : AOPluginEntry
     {
-        public override void Run(string pluginDir)
+        public override void Run()
         {
             try
             {
+                base.Run();
                 if (Game.IsNewEngine)
                 {
                     Chat.WriteLine("Does not work on this engine!");
@@ -18,7 +19,7 @@ namespace CombatHandler.NanoTechnician
                 {
                     Chat.WriteLine("NT Combat Handler Loaded!");
                     Chat.WriteLine("/handler for settings.");
-                    AOSharp.Core.Combat.CombatHandler.Set(new NTCombatHandler(pluginDir));
+                    AOSharp.Core.Combat.CombatHandler.Set(new NTCombatHandler(PluginDirectory));
                 }
             }
             catch (Exception e)

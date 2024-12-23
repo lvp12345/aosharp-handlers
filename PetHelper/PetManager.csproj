@@ -57,9 +57,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\CommonParameters.cs">
-      <Link>CommonParameters.cs</Link>
-    </Compile>
     <Compile Include="Config.cs" />
     <Compile Include="IPCMessages\IPCOpcode.cs" />
     <Compile Include="IPCMessages\PetAttackMessage.cs" />

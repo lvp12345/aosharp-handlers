@@ -237,7 +237,7 @@ namespace CombatHandler.Trader
                     foreach (var item in Inventory.FindAll("Bird of Prey").OrderBy(x => x.QualityLevel))
                     {
 
-                        RegisterItemProcessor(item.LowId, item.HighId, MAItem);
+                        RegisterItemProcessor(item.Id, item.HighId, MAItem);
                     }
                 }
                 else
@@ -1148,7 +1148,7 @@ namespace CombatHandler.Trader
             if (HealthDrainPercentage == 0) { return false; }
             if (fightingTarget == null) { return false; }
             if (DynelManager.LocalPlayer.HealthPercent >= HealthDrainPercentage) { return false; }
-            if (!SpellChecksOther(spell, spell.Nanoline, fightingTarget)) { return false; }
+            if (!SpellCheckFightingTarget(spell, fightingTarget)) { return false; }
 
             actionTarget.ShouldSetTarget = true;
             actionTarget.Target = fightingTarget;

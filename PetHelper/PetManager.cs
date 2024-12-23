@@ -16,8 +16,6 @@ namespace PetManager
 
         public static Config Config { get; private set; }
 
-        public static string PluginDirectory;
-
         public static bool _syncPets;
 
         public static Window _infoWindow;
@@ -29,12 +27,11 @@ namespace PetManager
 
         protected Settings _settings;
 
-        public static string PluginDir;
-
-        public override void Run(string pluginDir)
+        public override void Run()
         {
+            base.Run();
 
-            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\{CommonParameters.BasePath}\\{CommonParameters.AppPath}\\PetManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
+            Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\PetManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
 
             IPCChannel.RegisterCallback((int)IPCOpcode.PetAttack, OnPetAttack);
@@ -43,8 +40,6 @@ namespace PetManager
             IPCChannel.RegisterCallback((int)IPCOpcode.PetWarp, OnPetWarp);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOn, SyncPetsOnMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
-
-            PluginDir = pluginDir;
 
             _settings = new Settings("PetManager");
 
@@ -72,8 +67,6 @@ namespace PetManager
                 Chat.WriteLine("/PetManager for settings.");
             }
 
-            PluginDirectory = pluginDir;
-
             //Network.N3MessageSent += Network_N3MessageSent;
         }
 
@@ -97,7 +90,7 @@ namespace PetManager
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
-            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDirectory + "\\UI\\" + xmlName, _settings);
         }
 
         private void OnUpdate(object s, float deltaTime)

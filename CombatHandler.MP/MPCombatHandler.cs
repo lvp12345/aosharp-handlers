@@ -1798,7 +1798,9 @@ namespace CombatHandler.Metaphysicist
 
         private void PetMezzing(Pet mezzPet, SimpleChar targetToMezz)
         {
-            if (mezzPet == null || targetToMezz == null) { return; } 
+            if (mezzPet == null || targetToMezz == null) { return; }
+
+            if (mezzPet.Character.IsAttacking && mezzPet.Character.FightingTarget == targetToMezz) { return; }
 
             if (targetToMezz != null)
             {
@@ -1831,7 +1833,7 @@ namespace CombatHandler.Metaphysicist
         private SimpleChar GetTargetToMezz()
         {
             var targets = DynelManager.NPCs
-                .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name))
+                .Where(c => c.IsAttacking && !debuffAreaTargetsToIgnore.Contains(c.Name))
                 .Where(c => !(c.Buffs.Contains(NanoLine.Mezz) || c.Buffs.Contains(NanoLine.AOEMezz) || c.Buffs.Contains(NanoLine.Charm_Short)
                 || c.Buffs.Contains(NanoLine.CharmOther)))
                 .Where(c => !c.IsPlayer)
@@ -1855,6 +1857,12 @@ namespace CombatHandler.Metaphysicist
                    Team.Members.Any(teammate => teammate != null && teammate.Character != null &&
                       c.FightingTarget?.Identity == teammate?.Character.Identity));
             }
+
+            foreach (var target in targets)
+            {
+                Chat.WriteLine($"target to mezz = {target.Name}, {target.Identity.Instance}");
+            }
+            
 
             return targets
                 .Where(c => c.IsValid)

@@ -672,7 +672,7 @@ namespace CombatHandler.Generic
             if (Team.IsInTeam)
             {
                 var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
-                 && spell.IsInRange(t?.Character) && SpellCheckLocalTeam(spell, t.Character))
+                 && spell.IsInRange(t?.Character) && !SpellCheckLocalTeam(spell, t.Character))
                 .FirstOrDefault();
 
                 if (teamMember == null) { return false; }
@@ -684,7 +684,7 @@ namespace CombatHandler.Generic
             }
             else
             {
-                if (SpellCheckSelf(spell))
+                if (!SpellCheckSelf(spell))
                 {
                     actionTarget.ShouldSetTarget = true;
                     actionTarget.Target = DynelManager.LocalPlayer;
@@ -1525,7 +1525,7 @@ namespace CombatHandler.Generic
             if (!_settings["Buffing"].AsBool() || !CanCast(spell) || Playfield.ModelIdentity.Instance == 152) { return false; }
 
             var localPlayer = DynelManager.LocalPlayer;
-            var ExistingBuff = localPlayer.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline);
+            var ExistingBuff = localPlayer.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline || b.Name == spell.Name);
 
             if (ExistingBuff != null)
             {

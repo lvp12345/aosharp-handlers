@@ -1525,7 +1525,7 @@ namespace CombatHandler.Generic
             if (!_settings["Buffing"].AsBool() || !CanCast(spell) || Playfield.ModelIdentity.Instance == 152) { return false; }
 
             var localPlayer = DynelManager.LocalPlayer;
-            var ExistingBuff = localPlayer.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline || b.Name == spell.Name);
+            var ExistingBuff = localPlayer.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline);
 
             if (ExistingBuff != null)
             {

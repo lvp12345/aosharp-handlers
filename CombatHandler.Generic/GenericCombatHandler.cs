@@ -598,6 +598,7 @@ namespace CombatHandler.Generic
         #region Comps
         protected bool CompositeBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (Game.IsZoning) { return false; }
             if (!_settings["Composites"].AsBool() || RelevantGenericNanos.ShrinkingGrowingflesh.Contains(spell.Id)) { return false; }
             if (spell.Id == RelevantGenericNanos.CompositeMartial && IsInsideInnerSanctum()) { return false; }
             if (!SpellCheckSelf(spell)) { return false; }
@@ -1525,13 +1526,23 @@ namespace CombatHandler.Generic
             if (!_settings["Buffing"].AsBool() || !CanCast(spell) || Playfield.ModelIdentity.Instance == 152) { return false; }
 
             var localPlayer = DynelManager.LocalPlayer;
-            var ExistingBuff = localPlayer.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline);
+            Buff ExistingBuff = null;
+
+            if (int.TryParse(spell.Nanoline.ToString(), out int result))
+            {
+                ExistingBuff = localPlayer.Buffs.FirstOrDefault(b => b.Name == spell.Name);
+            }
+            else
+            {
+                ExistingBuff = localPlayer.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline);
+            }
 
             if (ExistingBuff != null)
             {
                 if (spell.StackingOrder < ExistingBuff.StackingOrder || localPlayer.RemainingNCU < Math.Abs(spell.NCU - ExistingBuff.NCU)) { return false; }
                 if (spell.StackingOrder == ExistingBuff.StackingOrder && ExistingBuff.RemainingTime > 20f) { return false; }
             }
+
             return localPlayer.RemainingNCU >= spell.NCU;
         }
         protected bool SpellCheckLocalTeam(Spell spell, SimpleChar teamMember)
@@ -1540,7 +1551,16 @@ namespace CombatHandler.Generic
 
             if (!CanCast(spell) || !teamMember.IsInLineOfSight || !SettingsController.IsCharacterRegistered(teamMember.Identity)) { return false; }
 
-            var ExistingBuff = teamMember.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline);
+            Buff ExistingBuff = null;
+
+            if (int.TryParse(spell.Nanoline.ToString(), out int result))
+            {
+                ExistingBuff = teamMember.Buffs.FirstOrDefault(b => b.Name == spell.Name);
+            }
+            else
+            {
+                ExistingBuff = teamMember.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline);
+            }
 
             if (ExistingBuff != null)
             {
@@ -1550,9 +1570,27 @@ namespace CombatHandler.Generic
 
             return HasNCU(spell, teamMember);
         }
+
         bool SpellCheckOtherPlayer(Spell spell, SimpleChar player)
         {
             if (!_settings["Buffing"].AsBool() || !CanCast(spell) || Playfield.ModelIdentity.Instance == 152) { return false; }
+            Buff ExistingBuff = null;
+
+            if (int.TryParse(spell.Nanoline.ToString(), out int result))
+            {
+                ExistingBuff = player.Buffs.FirstOrDefault(b => b.Name == spell.Name);
+            }
+            else
+            {
+                ExistingBuff = player.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline);
+            }
+
+            if (ExistingBuff != null)
+            {
+                if (spell.StackingOrder < ExistingBuff.StackingOrder) { return false; }
+
+                if (spell.StackingOrder == ExistingBuff.StackingOrder && ExistingBuff.RemainingTime > 8f) { return false; }
+            }
 
             return true;
         }
@@ -1560,7 +1598,16 @@ namespace CombatHandler.Generic
         {
             if (!CanCast(spell) || !fightingTarget.IsInLineOfSight) { return false; }
 
-            var ExistingBuff = fightingTarget.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline);
+            Buff ExistingBuff = null;
+
+            if (int.TryParse(spell.Nanoline.ToString(), out int result))
+            {
+                ExistingBuff = fightingTarget.Buffs.FirstOrDefault(b => b.Name == spell.Name);
+            }
+            else
+            {
+                ExistingBuff = fightingTarget.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline);
+            }
 
             if (ExistingBuff != null)
             {

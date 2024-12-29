@@ -311,6 +311,7 @@ namespace CombatHandler.Generic
                 Game.TeleportEnded += TeleportEnded;
                 Team.TeamRequest += Team_TeamRequest;
                 Network.N3MessageReceived += Network_N3MessageReceived;
+                Game.TeleportStarted += TeleportStarted;
 
                 Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
 
@@ -342,6 +343,11 @@ namespace CombatHandler.Generic
                     previousErrorMessage = errorMessage;
                 }
             }
+        }
+
+        private void TeleportStarted(object sender, EventArgs e)
+        {
+            return;
         }
 
         public void OnDisband(int sender, IPCMessage msg)

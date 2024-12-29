@@ -35,7 +35,6 @@ namespace CombatHandler.MartialArtist
 
         private static double _ncuUpdateTime;
 
-        [Obsolete]
         public MACombatHandler(string pluginDir) : base(pluginDir)
         {
             try
@@ -205,7 +204,7 @@ namespace CombatHandler.MartialArtist
                     foreach (var item in Inventory.FindAll("Bird of Prey").OrderBy(x => x.QualityLevel))
                     {
 
-                        RegisterItemProcessor(item.LowId, item.HighId, MAItem);
+                        RegisterItemProcessor(item.Id, item.HighId, MAItem);
                     }
                 }
                 else

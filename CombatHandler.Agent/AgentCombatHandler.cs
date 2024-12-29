@@ -70,6 +70,7 @@ namespace CombatHandler.Agent
         int check;
 
         private static SimpleChar _drainTarget;
+        private static double _drainTick;
 
         int petColor;
 
@@ -1069,6 +1070,22 @@ namespace CombatHandler.Agent
                 if (CanLookupPetsAfterZone())
                 {
                     AssignTargetToHealPet();
+                }
+
+                if ((_settings["RansackSelection"].AsInt32() == 3 || _settings["DepriveSelection"].AsInt32() == 3 || _settings["MPDamageDebuffLineASelection"].AsInt32() == 3
+                   || _settings["DrawACSelection"].AsInt32() == 3 || _settings["SiphonACSelection"].AsInt32() == 3 || _settings["TraderBadassACDebuffsSelection"].AsInt32() == 3
+                   || _settings["AAODrainSelection"].AsInt32() == 3 || _settings["AADDrainSelection"].AsInt32() == 3)
+                   && Time.NormalTime > _drainTick + 1)
+                {
+                    _drainTarget = DynelManager.NPCs
+                        .Where(c => !debuffAreaTargetsToIgnore.Contains(c.Name)
+                            && c.IsInLineOfSight
+                            && !c.Buffs.Contains(NanoLine.Mezz) && !c.Buffs.Contains(NanoLine.AOEMezz)
+                            && c.DistanceFrom(DynelManager.LocalPlayer) < 30f)
+                        .OrderBy(c => c.DistanceFrom(DynelManager.LocalPlayer))
+                        .FirstOrDefault();
+
+                    _drainTick = Time.NormalTime;
                 }
 
                 var uiSetting = _settings["FalseProfSelection"].AsInt32();

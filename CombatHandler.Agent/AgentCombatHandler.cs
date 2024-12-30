@@ -1072,9 +1072,7 @@ namespace CombatHandler.Agent
                     AssignTargetToHealPet();
                 }
 
-                if ((_settings["RansackSelection"].AsInt32() == 3 || _settings["DepriveSelection"].AsInt32() == 3 || _settings["MPDamageDebuffLineASelection"].AsInt32() == 3
-                   || _settings["DrawACSelection"].AsInt32() == 3 || _settings["SiphonACSelection"].AsInt32() == 3 || _settings["TraderBadassACDebuffsSelection"].AsInt32() == 3
-                   || _settings["AAODrainSelection"].AsInt32() == 3 || _settings["AADDrainSelection"].AsInt32() == 3)
+                if ((_settings["RansackSelection"].AsInt32() == 3 || _settings["DepriveSelection"].AsInt32() == 3 || _settings["ACDrainSelection"].AsInt32() == 3)
                    && Time.NormalTime > _drainTick + 1)
                 {
                     _drainTarget = DynelManager.NPCs

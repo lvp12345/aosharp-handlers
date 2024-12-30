@@ -1565,7 +1565,9 @@ namespace CombatHandler.Generic
             }
             else
             {
-                ExistingBuff = teamMember.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline);
+                if (spell.Nanoline == NanoLine.ExperienceConstructs_XPBonus) 
+                { ExistingBuff = teamMember.Buffs.FirstOrDefault(b => b.Nanoline == NanoLine.XPBonus); }
+                else { ExistingBuff = teamMember.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline); }
             }
 
             if (ExistingBuff != null)

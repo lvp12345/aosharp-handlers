@@ -1570,6 +1570,8 @@ namespace CombatHandler.Generic
                 else { ExistingBuff = teamMember.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline); }
             }
 
+            if ((spell.Nanoline == NanoLine.HPBuff || spell.Nanoline == NanoLine.StrengthBuff) && teamMember.Buffs.Any(b => b.Nanoline == NanoLine.KeeperStr_Stam_AgiBuff)) { return false; }
+
             if (ExistingBuff != null)
             {
                 if (spell.StackingOrder < ExistingBuff.StackingOrder || !HasNCU(spell, teamMember)) { return false; }

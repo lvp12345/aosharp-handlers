@@ -866,11 +866,6 @@ namespace CombatHandler.Bureaucrat
                     _ncuUpdateTime = Time.NormalTime;
                 }
 
-                if (_settings["SyncPets"].AsBool())
-                {
-                    SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
-                }
-
                 #region UI
 
                 var window = SettingsController.FindValidWindow(_windows);

@@ -4,7 +4,9 @@ using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -41,9 +43,6 @@ namespace CombatHandler.Metaphysicist
         private static View _nukesView;
         private static View _weaponView;
         private static View _healingView;
-
-        private double _lastHealPetHealTime = 0.0;
-        private double _lastMezzPetMezzTime = 0.0;
 
         private static double _ncuUpdateTime;
         public static double weaponDelay;
@@ -235,7 +234,7 @@ namespace CombatHandler.Metaphysicist
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(),
                     (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                     => GenericSelectionBuff(buffSpell, fightingTarget, ref actionTarget, "InterruptSelection"));
-                
+
                 RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
@@ -811,15 +810,10 @@ namespace CombatHandler.Metaphysicist
                     _ncuUpdateTime = Time.NormalTime;
                 }
 
-                if (_settings["SyncPets"].AsBool())
-                {
-                    SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
-                }
-
                 if (CanLookupPetsAfterZone())
                 {
                     AssignTargetToHealPet();
-                    AssignTargetToMezzPet();
+                    HandleMezzPet();
                 }
 
                 if (_settings["SummonedWeaponSelection"].AsInt32() != 0)
@@ -1132,89 +1126,89 @@ namespace CombatHandler.Metaphysicist
                         syncPetsOnEnabled();
                     }
                 }
-                    #endregion
+                #endregion
 
-                    #region GlobalBuffing
+                #region GlobalBuffing
 
-                    if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+                if (!_settings["GlobalBuffing"].AsBool() && ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
                     {
-                        IPCChannel.Broadcast(new GlobalBuffingMessage()
-                        {
-                            Switch = false
-                        });
+                        Switch = false
+                    });
 
-                        ToggleBuffing = false;
-                        _settings["Buffing"] = false;
-                        _settings["GlobalBuffing"] = false;
-                    }
+                    ToggleBuffing = false;
+                    _settings["Buffing"] = false;
+                    _settings["GlobalBuffing"] = false;
+                }
 
-                    if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+                if (_settings["GlobalBuffing"].AsBool() && !ToggleBuffing)
+                {
+                    IPCChannel.Broadcast(new GlobalBuffingMessage()
                     {
-                        IPCChannel.Broadcast(new GlobalBuffingMessage()
-                        {
-                            Switch = true
-                        });
+                        Switch = true
+                    });
 
-                        ToggleBuffing = true;
-                        _settings["Buffing"] = true;
-                        _settings["GlobalBuffing"] = true;
-                    }
+                    ToggleBuffing = true;
+                    _settings["Buffing"] = true;
+                    _settings["GlobalBuffing"] = true;
+                }
 
-                    #endregion
+                #endregion
 
-                    #region Global Composites
+                #region Global Composites
 
-                    if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+                if (!_settings["GlobalComposites"].AsBool() && ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
                     {
-                        IPCChannel.Broadcast(new GlobalCompositesMessage()
-                        {
-                            Switch = false
-                        });
+                        Switch = false
+                    });
 
-                        ToggleComposites = false;
-                        _settings["Composites"] = false;
-                        _settings["GlobalComposites"] = false;
-                    }
-                    if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+                    ToggleComposites = false;
+                    _settings["Composites"] = false;
+                    _settings["GlobalComposites"] = false;
+                }
+                if (_settings["GlobalComposites"].AsBool() && !ToggleComposites)
+                {
+                    IPCChannel.Broadcast(new GlobalCompositesMessage()
                     {
-                        IPCChannel.Broadcast(new GlobalCompositesMessage()
-                        {
-                            Switch = true
-                        });
+                        Switch = true
+                    });
 
-                        ToggleComposites = true;
-                        _settings["Composites"] = true;
-                        _settings["GlobalComposites"] = true;
-                    }
+                    ToggleComposites = true;
+                    _settings["Composites"] = true;
+                    _settings["GlobalComposites"] = true;
+                }
 
-                    #endregion
+                #endregion
 
-                    #region Global Resurrection
+                #region Global Resurrection
 
-                    if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                if (!_settings["GlobalRez"].AsBool() && ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
                     {
-                        IPCChannel.Broadcast(new GlobalRezMessage()
-                        {
 
-                            Switch = false
-                        });
+                        Switch = false
+                    });
 
-                        ToggleRez = false;
-                        _settings["GlobalRez"] = false;
-                    }
-                    if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                    ToggleRez = false;
+                    _settings["GlobalRez"] = false;
+                }
+                if (_settings["GlobalRez"].AsBool() && !ToggleRez)
+                {
+                    IPCChannel.Broadcast(new GlobalRezMessage()
                     {
-                        IPCChannel.Broadcast(new GlobalRezMessage()
-                        {
-                            Switch = true
-                        });
+                        Switch = true
+                    });
 
-                        ToggleRez = true;
-                        _settings["GlobalRez"] = true;
-                    }
+                    ToggleRez = true;
+                    _settings["GlobalRez"] = true;
+                }
 
-                    #endregion
-                
+                #endregion
+
 
                 base.OnUpdate(deltaTime);
             }
@@ -1580,10 +1574,10 @@ namespace CombatHandler.Metaphysicist
             }
 
             if (!SpellCheckSelf(spell)) { return false; }
-            
-                actionTarget.ShouldSetTarget = true;
-                actionTarget.Target = DynelManager.LocalPlayer;
-                return true;
+
+            actionTarget.ShouldSetTarget = true;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
         }
 
         #endregion
@@ -1687,6 +1681,38 @@ namespace CombatHandler.Metaphysicist
             return null;
         }
 
+        private void AssignTargetToHealPet()
+        {
+            if (_settings["PetHealingSelection"].AsInt32() == 0) { return; }
+
+            var healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal
+            && pet.Character.Nano >= 1).FirstOrDefault();
+
+            if (healPet == null) { return; }
+
+            switch (_settings["PetHealingSelection"].AsInt32())
+            {
+                case 1:
+                    HealTarget = DynelManager.LocalPlayer.Identity;
+                    break;
+                case 2:
+                    if (!Team.IsInTeam) { return; }
+                    var leader = Team.Members.FirstOrDefault(t => t.IsLeader);
+                    if (leader == null) { return; }
+                    HealTarget = leader.Identity;
+                    break;
+                case 3:
+                    var dyingTarget = GetTargetToHeal();
+                    if (dyingTarget == null) { return; }
+                    HealTarget = dyingTarget.Identity;
+                    break;
+            }
+
+            if (HealTarget == null) { return; }
+            if (HealTarget == CurrentHealTarget) { return; }
+            healPet.Heal(HealTarget);
+            CurrentHealTarget = HealTarget;
+        }
         private SimpleChar GetTargetToHeal()
         {
             if (DynelManager.LocalPlayer.HealthPercent < 90)
@@ -1726,152 +1752,36 @@ namespace CombatHandler.Metaphysicist
             return null;
         }
 
-        private void AssignTargetToHealPet()
+        private void HandleMezzPet()
         {
-            if (_settings["PetHealingSelection"].AsInt32() == 0) { return; }
-
-            var healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal
-            && pet.Character.Nano >= 1).FirstOrDefault();
-            if (healPet == null) { return; }
-            if (Time.AONormalTime < _lastHealPetHealTime) { return; }
-            _lastHealPetHealTime = Time.AONormalTime + 3;
-
-            switch (_settings["PetHealingSelection"].AsInt32())
+            if (_settings["PetMezzingSelection"].AsInt32() != 2) { return; }
+            var mezzPet = DynelManager.LocalPlayer.Pets.Where(pet => pet?.Type == PetType.Support && pet?.Character.Nano >= 1).FirstOrDefault();
+            if (mezzPet == null) { return; }
+            if (!CurrentPetCommand.ContainsKey(mezzPet.Identity.Instance))
             {
-                case 1:
-                    healPet.Heal(DynelManager.LocalPlayer.Identity);
+                CurrentPetCommand.Add(mezzPet.Identity.Instance, PetCommand.Follow);
+            }
+
+            var target = DynelManager.Characters.FirstOrDefault(c => !c.IsPlayer && !c.IsPet && c.IsAttacking && !c.Buffs.Contains(NanoLine.Mezz) &&
+            (c.FightingTarget?.Identity == DynelManager.LocalPlayer.Identity || Team.Members.Any(t => t?.Identity == c.FightingTarget?.Identity)));
+
+            switch (CurrentPetCommand[mezzPet.Identity.Instance])
+            {
+                case PetCommand.Follow:
+                    if (target == null) { return; }
+                    mezzPet?.Attack(target.Identity);
+                    MezzTarget = target.Identity;
                     break;
-                case 2:
-                    if (!Team.IsInTeam) { return; }
-                    var leader = Team.Members.FirstOrDefault(t => t.IsLeader);
-                    if (leader == null) { return; }
-                    healPet.Heal(leader.Identity);
-                    break;
-                case 3:
-                    var dyingTarget = GetTargetToHeal();
-                    if (dyingTarget == null) { return; }
-                    healPet.Heal(dyingTarget.Identity);
+                case PetCommand.Attack:
+                    if (MezzTarget != Identity.None && target?.Identity == MezzTarget) { return; }
+                    if (mezzPet.Character.IsAttacking && mezzPet?.Character.FightingTarget != null && !mezzPet.Character.FightingTarget.Buffs.Contains(NanoLine.Mezz)) { return; }
+                    mezzPet?.Follow();
+                    MezzTarget = Identity.None;
                     break;
             }
         }
 
-        private void AssignTargetToMezzPet()
-        {
-            if (_settings["PetMezzingSelection"].AsInt32() == 0) { return; }
 
-                var mezzPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Support
-            && pet.Character.Nano >= 1).FirstOrDefault();
-
-            if (mezzPet != null)
-            {
-                switch (_settings["PetMezzingSelection"].AsInt32())
-                {
-                    case 1:
-                        if (CanLookupPetsAfterZone() && Time.AONormalTime - _lastMezzPetMezzTime > 1)
-                        {
-                            SynchronizePetCombatState(mezzPet);
-
-                            _lastMezzPetMezzTime = Time.AONormalTime;
-                        }
-                        break;
-
-                    case 2:
-                        var targetToMezz = GetTargetToMezz();
-
-                        if (targetToMezz != null)
-                        {
-                            PetMezzing(mezzPet, targetToMezz);
-                        }
-                        else
-                        {
-                            if (CanLookupPetsAfterZone() && Time.AONormalTime - _lastMezzPetMezzTime > 1)
-                            {
-                                SynchronizePetCombatState(mezzPet);
-
-                                _lastMezzPetMezzTime = Time.AONormalTime;
-                            }
-                        }
-                        break;
-                }
-            }
-        }
-
-        private void PetMezzing(Pet mezzPet, SimpleChar targetToMezz)
-        {
-            if (mezzPet == null || targetToMezz == null) { return; }
-
-            if (mezzPet.Character.IsAttacking && mezzPet.Character.FightingTarget == targetToMezz) { return; }
-
-            if (targetToMezz != null)
-            {
-                if (Time.AONormalTime > _lastMezzPetMezzTime)
-                {
-                    if (mezzPet?.Character.IsAttacking == true)
-                    {
-                        if (mezzPet?.Character.FightingTarget.Identity != targetToMezz.Identity)
-                        {
-                            mezzPet?.Attack(targetToMezz.Identity);
-                            _lastMezzPetMezzTime = Time.AONormalTime + 2;
-                        }
-                    }
-                    else
-                    {
-                        mezzPet?.Attack(targetToMezz.Identity);
-                        _lastMezzPetMezzTime = Time.AONormalTime + 2;
-                    }
-                }
-            }
-            else
-            {
-                if (mezzPet?.Character.IsAttacking == true)
-                {
-                    mezzPet.Follow();
-                }
-            }
-        }
-
-        private SimpleChar GetTargetToMezz()
-        {
-            var targets = DynelManager.NPCs
-                .Where(c => c.IsAttacking && !debuffAreaTargetsToIgnore.Contains(c.Name))
-                .Where(c => !(c.Buffs.Contains(NanoLine.Mezz) || c.Buffs.Contains(NanoLine.AOEMezz) || c.Buffs.Contains(NanoLine.Charm_Short)
-                || c.Buffs.Contains(NanoLine.CharmOther)))
-                .Where(c => !c.IsPlayer)
-                .Where(c => !c.IsPet)
-                .Where(c =>
-                {
-                    if (DynelManager.LocalPlayer.IsAttacking)
-                    {
-                        return c.Identity != DynelManager.LocalPlayer.FightingTarget.Identity;
-                    }
-                    else
-                    {
-                        return c.FightingTarget?.Identity == DynelManager.LocalPlayer.Identity;
-                    }
-                });
-
-
-            if (Team.IsInTeam)
-            {
-                targets = targets.Where(c =>
-                   Team.Members.Any(teammate => teammate != null && teammate.Character != null &&
-                      c.FightingTarget?.Identity == teammate?.Character.Identity));
-            }
-
-            foreach (var target in targets)
-            {
-                Chat.WriteLine($"target to mezz = {target.Name}, {target.Identity.Instance}");
-            }
-            
-
-            return targets
-                .Where(c => c.IsValid)
-                .Where(c => c.IsInLineOfSight)
-                .OrderBy(c => c.Position.DistanceFrom(DynelManager.LocalPlayer.Position))
-                .ThenBy(c => c.HealthPercent)
-                .FirstOrDefault();
-
-        }
 
         private static void PetWaitCommand(string command, string[] param, ChatWindow chatWindow)
         {

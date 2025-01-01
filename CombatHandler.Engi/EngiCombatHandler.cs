@@ -878,11 +878,6 @@ namespace CombatHandler.Engineer
                     _ncuUpdateTime = Time.NormalTime;
                 }
 
-                if (_settings["SyncPets"].AsBool())
-                {
-                    SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
-                }
-
                 CancelBuffs();
                 CancelHostileAuras(RelevantNanos.Blinds);
                 CancelHostileAuras(RelevantNanos.ShieldRippers);

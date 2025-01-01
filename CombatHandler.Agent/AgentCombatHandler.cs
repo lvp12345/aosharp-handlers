@@ -1062,11 +1062,6 @@ namespace CombatHandler.Agent
 
                 Morphs();
 
-                if (_settings["SyncPets"].AsBool())
-                {
-                    SynchronizePetCombatStateWithOwner(PetType.Attack, PetType.Support);
-                }
-
                 if (CanLookupPetsAfterZone())
                 {
                     AssignTargetToHealPet();

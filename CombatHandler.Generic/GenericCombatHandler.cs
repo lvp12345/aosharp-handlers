@@ -181,6 +181,15 @@ namespace CombatHandler.Generic
         public static Form CurrentTeamState = new Form();
         public static string[] parm;
 
+        public Dictionary<int, PetCommand> CurrentPetCommand = new Dictionary<int, PetCommand>();
+
+        public Identity HealTarget;
+        public Identity CurrentHealTarget;
+        public Identity MezzTarget;
+        public Identity CurrentMezzTarget;
+
+        public List<Identity> MezzTargets = new List<Identity>();
+
         public GenericCombatHandler(string pluginDir)
         {
             try
@@ -304,14 +313,14 @@ namespace CombatHandler.Generic
                         RegisterSpellProcessor(RelevantGenericNanos.CompositeRanged, CompositeBuff);
                         RegisterSpellProcessor(RelevantGenericNanos.CompositeRangedSpecial, CompositeBuff);
                         break;
-
-
                 }
-
-                Game.TeleportEnded += TeleportEnded;
+                
                 Team.TeamRequest += Team_TeamRequest;
                 Network.N3MessageReceived += Network_N3MessageReceived;
+                Network.N3MessageSent += N3MessageSent;
                 Game.TeleportStarted += TeleportStarted;
+                Game.TeleportEnded += TeleportEnded;
+                Game.PlayfieldInit += PlayfieldInit;
 
                 Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannelChangedEvent += IPCChannel_Changed;
 
@@ -343,6 +352,93 @@ namespace CombatHandler.Generic
                     previousErrorMessage = errorMessage;
                 }
             }
+        }
+
+        private void PlayfieldInit(object sender, uint e)
+        {
+            CurrentHealTarget = Identity.None;
+        }
+
+        private void N3MessageSent(object sender, N3Message e)
+        {
+            switch (e.N3MessageType)
+            {
+                case N3MessageType.PetCommand:
+                    var petMsg = (PetCommandMessage)e;
+
+                    foreach (var pet in petMsg.Pets)
+                    {
+                        if (!CurrentPetCommand.ContainsKey(pet.Identity.Instance))
+                        {
+                            CurrentPetCommand.Add(pet.Identity.Instance, petMsg.Command);
+                        }
+                        else
+                        {
+                            CurrentPetCommand[pet.Identity.Instance] = petMsg.Command;
+                        }
+                    }
+                    break;
+            }
+        }
+
+        private void Network_N3MessageReceived(object sender, N3Message e)
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+            var attackPet = localPlayer.Pets.FirstOrDefault(a => a.Type == PetType.Attack);
+            var supportPet = localPlayer.Pets.FirstOrDefault(a => a.Type == PetType.Support);
+
+            switch (e.N3MessageType)
+            {
+                case N3MessageType.AttackInfo:
+                    var attackInfoMessage = (AttackInfoMessage)e;
+                    lastAttackInfoMessage = attackInfoMessage;
+                    break;
+                case N3MessageType.Attack:
+                    var attack = (AttackMessage)e;
+
+                    if (_settings["SyncPets"] == null || !_settings["SyncPets"].AsBool()) { return; }
+
+                    switch (localPlayer.Profession)
+                    {
+                        case Profession.Metaphysicist:
+                            switch (_settings["PetMezzingSelection"].AsInt32())
+                            {
+                                case 0:
+                                case 2:
+                                    if (attack.Identity != localPlayer.Identity) { return; }
+                                    attackPet?.Attack(attack.Target);
+                                    break;
+                                case 1:
+                                    if (attack.Identity != localPlayer.Identity) { return; }
+                                    attackPet?.Attack(attack.Target);
+                                    supportPet?.Attack(attack.Target);
+                                    break;
+                            }
+                            break;
+                        case Profession.Bureaucrat:
+                        case Profession.Engineer:
+                            if (attack.Identity != localPlayer.Identity) { return; }
+                            attackPet?.Attack(attack.Target);
+                            supportPet?.Attack(attack.Target);
+                            break;
+                    }
+                    break;
+                case N3MessageType.StopFight:
+
+                    var stop = (StopFightMessage)e;
+
+                    if (stop.Identity != localPlayer.Identity) { return; }
+
+                    attackPet?.Follow();
+                    supportPet?.Follow();
+
+                    break;
+            }
+        }
+        private void TeleportEnded(object sender, EventArgs e)
+        {
+            _lastZonedTime = Time.NormalTime;
+            _lastCombatTime = double.MinValue;
         }
 
         private void TeleportStarted(object sender, EventArgs e)
@@ -1338,7 +1434,7 @@ namespace CombatHandler.Generic
             {
                 if (pet.Character == null || pet.Character.Buffs == null) { continue; }
                 if (pet.Character.Buffs.Contains(224391)) { continue; }
-                if (pet.Character.Buffs.Contains(NanoLine.Root)) {actionTarget.Target = pet.Character;}
+                if (pet.Character.Buffs.Contains(NanoLine.Root)) { actionTarget.Target = pet.Character; }
                 if (pet.Character.Buffs.Contains(NanoLine.Snare)) { actionTarget.Target = pet.Character; }
                 if (pet.Character.Buffs.Contains(NanoLine.Mezz)) { actionTarget.Target = pet.Character; }
                 if (actionTarget.Target != pet.Character) { return false; }
@@ -1366,46 +1462,6 @@ namespace CombatHandler.Generic
             actionTarget.Target = target.Character;
             actionTarget.ShouldSetTarget = true;
             return true;
-        }
-
-        protected void SynchronizePetCombatStateWithOwner(PetType Attack, PetType Support)
-        {
-            if (CanLookupPetsAfterZone() && Time.AONormalTime > _lastPetSyncTime)
-            {
-                foreach (var pet in DynelManager.LocalPlayer.Pets.Where(c => c.Type == Attack || c.Type == Support))
-                {
-                    SynchronizePetCombatState(pet);
-                }
-
-                _lastPetSyncTime = Time.AONormalTime + 0.5;
-            }
-        }
-
-        protected void SynchronizePetCombatState(Pet pet)
-        {
-            var localPlayer = DynelManager.LocalPlayer;
-
-            if (localPlayer.IsAttacking == true)
-            {
-                if (pet.Character.IsAttacking == true)
-                {
-                    if (pet.Character.FightingTarget?.Identity != localPlayer.FightingTarget?.Identity)
-                    {
-                        pet?.Attack(localPlayer.FightingTarget.Identity);
-                    }
-                }
-                else
-                {
-                    pet?.Attack(localPlayer.FightingTarget.Identity);
-                }
-            }
-            else
-            {
-                if (pet.Character.IsAttacking == true)
-                {
-                    pet?.Follow();
-                }
-            }
         }
 
         #endregion
@@ -1565,7 +1621,7 @@ namespace CombatHandler.Generic
             }
             else
             {
-                if (spell.Nanoline == NanoLine.ExperienceConstructs_XPBonus) 
+                if (spell.Nanoline == NanoLine.ExperienceConstructs_XPBonus)
                 { ExistingBuff = teamMember.Buffs.FirstOrDefault(b => b.Nanoline == NanoLine.XPBonus); }
                 else { ExistingBuff = teamMember.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline); }
             }
@@ -1575,7 +1631,7 @@ namespace CombatHandler.Generic
             if (ExistingBuff != null)
             {
                 if (spell.StackingOrder < ExistingBuff.StackingOrder || !HasNCU(spell, teamMember)) { return false; }
-                if (spell.StackingOrder == ExistingBuff.StackingOrder && ExistingBuff .RemainingTime > 20f) { return false; }
+                if (spell.StackingOrder == ExistingBuff.StackingOrder && ExistingBuff.RemainingTime > 20f) { return false; }
             }
 
             return HasNCU(spell, teamMember);
@@ -1862,14 +1918,6 @@ namespace CombatHandler.Generic
             IPCChannel.Broadcast(new ClearBuffsMessage());
         }
 
-        private void Network_N3MessageReceived(object sender, N3Message e)
-        {
-            if (e is AttackInfoMessage attackInfoMessage)
-            {
-                lastAttackInfoMessage = attackInfoMessage;
-            }
-        }
-
         [Flags]
         public enum CharacterWieldedWeapon
         {
@@ -1941,12 +1989,6 @@ namespace CombatHandler.Generic
                 default:
                     throw new Exception($"No skill lock stat defined for item id {item.HighId}");
             }
-        }
-
-        private void TeleportEnded(object sender, EventArgs e)
-        {
-            _lastZonedTime = Time.NormalTime;
-            _lastCombatTime = double.MinValue;
         }
 
         public static void Team_TeamRequest(object s, TeamRequestEventArgs e)

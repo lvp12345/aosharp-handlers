@@ -212,7 +212,7 @@ namespace CombatHandler.Generic
                 RegisterPerkProcessor(PerkHash.DanceOfFools, DanceOfFools);
                 RegisterPerkProcessor(PerkHash.BioRegrowth, BioRegrowth, CombatActionPriority.High);
                 RegisterPerkProcessor(PerkHash.EncaseInStone, EncaseInStone);
-                RegisterPerkProcessor(PerkHash.CrushBone, ToggledDamagePerk);
+                RegisterPerkProcessor(PerkHash.CrushBone, CrushBone);
                 RegisterPerkProcessor(PerkHash.LegShot, LegShot);
                 RegisterPerkProcessor(PerkHash.PowerVolley, PowerUp);
                 RegisterPerkProcessor(PerkHash.PowerShock, PowerUp);
@@ -586,9 +586,9 @@ namespace CombatHandler.Generic
             return true;
         }
 
-        protected bool ToggledDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        protected bool CrushBone(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_settings["DamagePerk"].AsBool()) { return false; }
+            if (!_settings["CrushBone"].AsBool()) { return false; }
 
             return TargetedDamagePerk(perkAction, fightingTarget, ref actionTarget);
         }

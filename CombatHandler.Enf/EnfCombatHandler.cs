@@ -4,7 +4,6 @@ using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace CombatHandler.Enf
@@ -120,7 +119,7 @@ namespace CombatHandler.Enf
 
                 _settings.AddVariable("TrollForm", false);
                 _settings.AddVariable("EncaseInStone", false);
-                _settings.AddVariable("DamagePerk", false);
+                _settings.AddVariable("CrushBone", false);
                 RegisterSettingsWindow("Enforcer Handler", "EnforcerSettingsView.xml");
 
                 //Troll Form

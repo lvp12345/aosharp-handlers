@@ -1665,8 +1665,8 @@ namespace CombatHandler.Metaphysicist
 
         private Spell[] GetAttackPetsWithSLPetsFirst()
         {
-            List<Spell> attackPetsWithoutSL = Spell.GetSpellsForNanoline(NanoLine.AttackPets).Where(spell => !RelevantNanos.SLAttackPets.Contains(spell.Id)).OrderByStackingOrder().ToList();
-            List<Spell> attackPets = RelevantNanos.SLAttackPets.Select(FindSpell).Where(spell => spell != null).ToList();
+            var attackPetsWithoutSL = Spell.GetSpellsForNanoline(NanoLine.AttackPets).Where(spell => !RelevantNanos.SLAttackPets.Contains(spell.Id)).OrderByStackingOrder().ToList();
+            var attackPets = RelevantNanos.SLAttackPets.Select(FindSpell).Where(spell => spell != null && !RelevantNanos.Crystalizer.Contains(spell.Id)).ToList();
             attackPets.AddRange(attackPetsWithoutSL);
             return attackPets.ToArray();
         }
@@ -1812,6 +1812,7 @@ namespace CombatHandler.Metaphysicist
             public static readonly int[] CostBuffs = { 95409, 29307, 95411, 95408, 95410 };
             public static readonly int[] HealPets = { 225902, 125746, 125739, 125740, 125741, 125742, 125743, 125744, 125745, 125738 }; //Belamorte has a higher stacking order than Moritficant
             public static readonly int[] SLAttackPets = { 254859, 225900, 254859, 225900, 225898, 225896, 225894 };
+            public static readonly int[] Crystalizer = { 206752 , 204828 };
             public static readonly int[] MPCompositeNano = { 220343, 220341, 220339, 220337, 220335, 220333, 220331 };
             public static readonly int[] PetDefensive = { 267601, 267600, 267599 };
             public static readonly int[] PetCleanse = { 269870, 269869 };

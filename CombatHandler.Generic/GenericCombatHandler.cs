@@ -588,7 +588,7 @@ namespace CombatHandler.Generic
 
         protected bool ToggledDamagePerk(PerkAction perkAction, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (_settings["DamagePerk"].AsBool()) { return false; }
+            if (!_settings["DamagePerk"].AsBool()) { return false; }
 
             return TargetedDamagePerk(perkAction, fightingTarget, ref actionTarget);
         }

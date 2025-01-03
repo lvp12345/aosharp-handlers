@@ -6,7 +6,6 @@ using AOSharp.Core.UI;
 using CombatHandler.Generic;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -161,7 +160,7 @@ namespace CombatHandler.Metaphysicist
                 _settings.AddVariable("PistolTeam", false);
                 _settings.AddVariable("SLMap", false);
 
-                _settings.AddVariable("DamagePerk", false);
+                _settings.AddVariable("CrushBone", false);
 
                 //LE Proc
                 _settings.AddVariable("ProcType1Selection", (int)ProcType1Selection.AnticipatedEvasion);

@@ -32,19 +32,16 @@ namespace SocialPetManager
 
         protected double _timer = 0f;
 
-        [Obsolete]
-        public override void Run(string pluginDir)
+        public override void Run()
         {
             try
             {
-
+                base.Run();
                 if (Game.IsNewEngine)
                 {
                     Chat.WriteLine("Does not work on this engine!");
                     return;
                 }
-
-                PluginDir = pluginDir;
 
                 Chat.WriteLine("Social Pet Manager Loaded!");
                 Chat.WriteLine("/SocialPetManager for settings");

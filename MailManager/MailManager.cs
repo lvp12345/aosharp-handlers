@@ -32,14 +32,12 @@ namespace MailManager
 
         public static View _infoView;
 
-        public static string PluginDir;
         private static int _currentMailAmount = 0;
 
-        [Obsolete]
-        public override void Run(string pluginDir)
+        public override void Run()
         {
+            base.Run();
             _settings = new Settings("MailManager");
-            PluginDir = pluginDir;
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\MailManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
@@ -80,7 +78,7 @@ namespace MailManager
 
         private void HandleInfoViewClick(object s, ButtonBase button)
         {
-            _infoWindow = Window.CreateFromXml("Info", PluginDir + "\\UI\\MailManagerInfoView.xml",
+            _infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\MailManagerInfoView.xml",
                 windowSize: new Rect(0, 0, 440, 510),
                 windowStyle: WindowStyle.Default,
                 windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
@@ -108,7 +106,7 @@ namespace MailManager
         }
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
-            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDirectory + "\\UI\\" + xmlName, _settings);
         }
 
 

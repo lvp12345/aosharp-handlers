@@ -2,18 +2,14 @@
 using AOSharp.Common.Unmanaged.Interfaces;
 using AOSharp.Core;
 using AOSharp.Core.UI;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace ResearchManager
 {
     public class ResearchManager : AOPluginEntry
     {
         protected Settings _settings;
-        public static string PluginDir;
 
         double lastUpdateTime;
         bool enabled => _settings["Toggle"].AsBool();
@@ -23,11 +19,10 @@ namespace ResearchManager
 
         static List<int> apotheosis = Enumerable.Range(10002, 10).ToList();
 
-        [Obsolete]
-        public override void Run(string pluginDir)
+        public override void Run()
         {
+            base.Run();
             _settings = new Settings("Research");
-            PluginDir = pluginDir;
 
             _settings.AddVariable("Toggle", false);
             _settings.AddVariable("IncludeApotheosis", false);
@@ -55,7 +50,7 @@ namespace ResearchManager
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
-            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDirectory + "\\UI\\" + xmlName, _settings);
         }
 
         private void OnUpdate(object s, float deltaTime)

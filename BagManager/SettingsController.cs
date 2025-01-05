@@ -76,9 +76,9 @@ namespace BagManager
             }
         }
 
-        public static void AppendSettingsTab(String settingsName, Window testWindow)
+        public static void AppendSettingsTab(string settingsName, Window testWindow)
         {
-            String settingsWindowXmlPath = settingsWindows[settingsName];
+            var settingsWindowXmlPath = settingsWindows[settingsName];
             View settingsView = View.CreateFromXml(settingsWindowXmlPath);
 
             if (settingsView != null)

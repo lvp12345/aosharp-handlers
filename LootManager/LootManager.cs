@@ -37,14 +37,14 @@ namespace LootManager
         double openDelay;
         double moveDelay;
 
-        [Obsolete]
-        public override void Run(string pluginDir)
+        public override void Run()
         {
             try
             {
+                base.Run();
                 _settings = new Settings("LootManager");
 
-                PluginDir = pluginDir;
+                PluginDir = PluginDirectory;
 
                 Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\LootManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
@@ -380,7 +380,7 @@ namespace LootManager
 
         private void InfoView(object s, ButtonBase button)
         {
-            _infoWindow = Window.CreateFromXml("Info", PluginDir + "\\UI\\LootManagerInfoView.xml",
+            _infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\LootManagerInfoView.xml",
                 windowSize: new Rect(0, 0, 440, 510),
                 windowStyle: WindowStyle.Default,
                 windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
@@ -553,7 +553,7 @@ namespace LootManager
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
-            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDirectory + "\\UI\\" + xmlName, _settings);
         }
 
         private void LoadRules()

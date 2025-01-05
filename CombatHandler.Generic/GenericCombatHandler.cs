@@ -1601,7 +1601,8 @@ namespace CombatHandler.Generic
 
             if (ExistingBuff != null)
             {
-                if (spell.StackingOrder < ExistingBuff.StackingOrder || localPlayer.RemainingNCU < Math.Abs(spell.NCU - ExistingBuff.NCU)) { return false; }
+                if (ExistingBuff.Nanoline == NanoLine.DoctorHPBuffs) { return false; }
+                if (spell.StackingOrder <= ExistingBuff.StackingOrder || localPlayer.RemainingNCU < Math.Abs(spell.NCU - ExistingBuff.NCU)) { return false; }
                 if (spell.StackingOrder == ExistingBuff.StackingOrder && ExistingBuff.RemainingTime > 20f) { return false; }
             }
 

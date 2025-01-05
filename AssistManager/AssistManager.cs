@@ -22,13 +22,10 @@ namespace AssistManager
 
         public static View _infoView;
 
-        public static string PluginDir;
-
-        [Obsolete]
-        public override void Run(string pluginDir)
+        
+        public override void Run()
         {
             _settings = new Settings("AssistManager");
-            PluginDir = pluginDir;
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\AssistManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
@@ -57,6 +54,8 @@ namespace AssistManager
             }
 
             AssistPlayer = Config.CharSettings[DynelManager.LocalPlayer.Name].AssistPlayer;
+
+            base.Run();
         }
 
         public override void Teardown()
@@ -74,7 +73,7 @@ namespace AssistManager
 
         private void HandleInfoViewClick(object s, ButtonBase button)
         {
-            _infoWindow = Window.CreateFromXml("Info", PluginDir + "\\UI\\AssistManagerInfoView.xml",
+            _infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\AssistManagerInfoView.xml",
                 windowSize: new Rect(0, 0, 440, 510),
                 windowStyle: WindowStyle.Default,
                 windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
@@ -84,7 +83,7 @@ namespace AssistManager
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
-            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDirectory + "\\UI\\" + xmlName, _settings);
         }
 
 

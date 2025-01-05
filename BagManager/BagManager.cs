@@ -28,11 +28,11 @@ namespace BagManager
         private CancellationTokenSource _cancellationToken1 = new CancellationTokenSource();
         private CancellationTokenSource _cancellationToken2 = new CancellationTokenSource();
 
-        [System.Obsolete]
-        public override void Run(string pluginDir)
+        
+        public override void Run()
         {
             _settings = new Settings("BagManager");
-            PluginDir = pluginDir;
+            base.Run();
 
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;

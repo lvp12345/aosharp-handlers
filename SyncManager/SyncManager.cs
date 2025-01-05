@@ -37,8 +37,6 @@ namespace SyncManager
 
         static Window _infoWindow;
 
-        string PluginDir;
-
         Dictionary<RingName, string> _ringNameToItemNameMap;
         Dictionary<string, RingName> _itemNameToRingNameMap;
         Dictionary<int, int> invSlots = new Dictionary<int, int>();
@@ -49,11 +47,10 @@ namespace SyncManager
 
         List<int> NPCReceivedItem = new List<int>();
 
-        [Obsolete]
-        public override void Run(string pluginDir)
+        public override void Run()
         {
+            base.Run();
             _settings = new Settings("SyncManager");
-            PluginDir = pluginDir;
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\SyncManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
@@ -893,12 +890,12 @@ namespace SyncManager
         }
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
-            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDirectory + "\\UI\\" + xmlName, _settings);
         }
 
         void HandleInfoViewClick(object s, ButtonBase button)
         {
-            _infoWindow = Window.CreateFromXml("Info", PluginDir + "\\UI\\SyncManagerInfoView.xml",
+            _infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\SyncManagerInfoView.xml",
                 windowSize: new Rect(0, 0, 310, 510),
                 windowStyle: WindowStyle.Default,
                 windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);

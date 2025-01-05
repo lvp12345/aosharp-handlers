@@ -62,7 +62,6 @@ namespace AssistManager
         public event EventHandler<string> AssistPlayerChangedEvent;
         private string _assistPlayer = string.Empty;
 
-        //Breaking out auto-property
         public string AssistPlayer
         {
             get

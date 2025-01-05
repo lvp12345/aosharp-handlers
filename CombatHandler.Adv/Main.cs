@@ -6,11 +6,12 @@ namespace CombatHandler.Adventurer
 {
     public class Main : AOPluginEntry
     {
-        [Obsolete]
-        public override void Run(string pluginDir)
+        
+        public override void Run()
         {
             try
             {
+                base.Run();
                 if (Game.IsNewEngine)
                 {
                     Chat.WriteLine("Does not work on this engine!");
@@ -19,9 +20,8 @@ namespace CombatHandler.Adventurer
                 {
                     Chat.WriteLine("Adv Combat Handler Loaded!");
                     Chat.WriteLine("/handler for settings.");
-                    AOSharp.Core.Combat.CombatHandler.Set(new AdvCombatHandler(pluginDir));
+                    AOSharp.Core.Combat.CombatHandler.Set(new AdvCombatHandler(PluginDirectory));
                 }
-                
             }
             catch (Exception e)
             {

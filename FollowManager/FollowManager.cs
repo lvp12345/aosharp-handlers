@@ -36,15 +36,13 @@ namespace FollowManager
 
         protected Settings _settings;
 
-        public static string PluginDir;
-
-        [Obsolete]
-        public override void Run(string pluginDir)
+        
+        public override void Run()
         {
             try
             {
+                base.Run();
                 _settings = new Settings("FollowManager");
-                PluginDir = pluginDir;
 
                 Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\FollowManager\\{Game.ClientInst}\\Config.json");
                 IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[Game.ClientInst].IPCChannel));
@@ -129,7 +127,7 @@ namespace FollowManager
 
         private void HandleInfoViewClick(object s, ButtonBase button)
         {
-            _infoWindow = Window.CreateFromXml("Info", PluginDir + "\\UI\\FollowManagerInfoView.xml",
+            _infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\FollowManagerInfoView.xml",
                 windowSize: new Rect(0, 0, 440, 510),
                 windowStyle: WindowStyle.Default,
                 windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
@@ -139,7 +137,7 @@ namespace FollowManager
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
-            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDirectory + "\\UI\\" + xmlName, _settings);
         }
 
 

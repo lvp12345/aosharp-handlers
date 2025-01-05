@@ -62,8 +62,6 @@ namespace HelpManager
 
         public static Settings _settings;
 
-        public static string PluginDir;
-
         List<Vector3> MorphBird = new List<Vector3>
         {
             new Vector3(75.5, 29.0, 58.6),
@@ -102,14 +100,13 @@ namespace HelpManager
 
         private bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
-        [Obsolete]
-        public override void Run(string pluginDir)
+        public override void Run()
         {
             try
             {
                 _settings = new Settings("HelpManager");
 
-                PluginDir = pluginDir;
+                base.Run();
 
                 Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\HelpManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
@@ -132,7 +129,7 @@ namespace HelpManager
                 };
 
                 SMovementController.Set(mSettings);
-                SMovementController.AutoLoadNavmeshes($"{PluginDir}\\Meshes");
+                SMovementController.AutoLoadNavmeshes($"{PluginDirectory}\\Meshes");
 
                 IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));
                 KitHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].KitHealthPercentage;
@@ -280,7 +277,7 @@ namespace HelpManager
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
-            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDirectory + "\\UI\\" + xmlName, _settings);
         }
 
         private void BroadcastSettingsReceived(int arg1, IPCMessage message)

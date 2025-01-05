@@ -46,7 +46,6 @@ namespace GMIManager
 
         public static View _infoView;
 
-        public static string PluginDir;
         private static ulong _queuedCash = 0;
 
         private static ulong _maxCredits = 999999999;
@@ -62,13 +61,13 @@ namespace GMIManager
 
         public static string previousErrorMessage = string.Empty;
 
-        [Obsolete]
-        public override void Run(string pluginDir)
+
+        public override void Run()
         {
             try
             {
+                base.Run();
                 _settings = new Settings("GMIManager");
-                PluginDir = pluginDir;
 
                 Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\GMIManager\\{Game.ClientInst}\\Config.json");
 
@@ -152,7 +151,7 @@ namespace GMIManager
 
         private void HandleInfoViewClick(object s, ButtonBase button)
         {
-            _infoWindow = Window.CreateFromXml("Info", PluginDir + "\\UI\\GMIManagerInfoView.xml",
+            _infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\GMIManagerInfoView.xml",
                 windowSize: new Rect(0, 0, 440, 510),
                 windowStyle: WindowStyle.Default,
                 windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
@@ -193,7 +192,7 @@ namespace GMIManager
         }
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
-            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDirectory + "\\UI\\" + xmlName, _settings);
         }
 
         public static void ReadMail(int msgId)

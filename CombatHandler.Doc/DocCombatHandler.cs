@@ -226,8 +226,7 @@ namespace CombatHandler.Doctor
                 RegisterItemProcessor(intelligenceItem, intelligenceItem, IntelligenceItem);
 
                 //Buffs
-                RegisterSpellProcessor(RelevantNanos.HPBuffs, (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                        => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
+                RegisterSpellProcessor(RelevantNanos.HPBuffs, HPBuff);
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.PistolBuff).OrderByStackingOrder(), PistolTeam);
 
@@ -1267,6 +1266,16 @@ namespace CombatHandler.Doctor
         #endregion
 
         #region Buffs
+
+        private bool HPBuff(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.DoctorHPBuffs)) { return false; }
+
+            actionTarget.ShouldSetTarget = true ;
+            actionTarget.Target = DynelManager.LocalPlayer;
+            return true;
+            
+        }
 
         private bool TeamImprovedLifeChanneler(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {

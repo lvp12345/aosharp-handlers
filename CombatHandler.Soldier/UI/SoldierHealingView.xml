@@ -8,6 +8,9 @@
 		<TextView value="Fountain Of Life %" layout_borders="Rect(5,5,5,5)"/>
 		<TextInputView name="FountainOfLifeHealPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(10,5,5,5)"/>
 
+		<TextView value="Soldier Self Heal %" layout_borders="Rect(5,5,5,5)"/>
+		<TextInputView name="SelfSoldierHealPercentageBox" min_size="Point(30,14)" max_size="Point(30,14)" layout_borders="Rect(10,5,5,5)"/>
+
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>
 		<TextView value=" 0 = off" layout_borders="Rect(10,5,5,5)"/>
 		<TextView value="" layout_borders="Rect(5,5,5,5)"/>

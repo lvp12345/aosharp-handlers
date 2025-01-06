@@ -399,6 +399,24 @@ namespace CombatHandler.Generic
             }
         }
 
+        public event EventHandler<int> SelfSoldierHealPercentageChangedEvent;
+
+        private int _selfSoldierHealPercentage = 30;
+        public int SelfSoldierHealPercentage
+        {
+            get
+            {
+                return _selfSoldierHealPercentage;
+            }
+            set
+            {
+                if (_selfSoldierHealPercentage != value)
+                {
+                    _selfSoldierHealPercentage = value;
+                    SelfSoldierHealPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
         public event EventHandler<int> FountainOfLifeHealPercentageChangedEvent;
 
         private int _fountainOfLifeHealPercentage = 30;

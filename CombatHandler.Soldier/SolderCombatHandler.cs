@@ -37,6 +37,8 @@ namespace CombatHandler.Soldier
 
         private static double _ncuUpdateTime;
 
+        public static int SelfSoldierHealPercentage;
+
         public SoldCombathandler(string pluginDir) : base(pluginDir)
         {
             try
@@ -48,6 +50,7 @@ namespace CombatHandler.Soldier
                 IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
                 IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
 
+                Config.CharSettings[DynelManager.LocalPlayer.Name].SelfSoldierHealPercentageChangedEvent += SelfSoldierHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentageChangedEvent += FountainOfLifeHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelayChangedEvent += SingleTauntDelay_Changed;
@@ -124,8 +127,8 @@ namespace CombatHandler.Soldier
                 RegisterSpellProcessor(RelevantNanos.DeTaunt, DeTaunt);
 
                 //Heals
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), LEDrainHeal);
-
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DrainHeal).OrderByStackingOrder(), SelfSoldierHeal, CombatActionPriority.High);
+                
                 //Taunts
                 RegisterSpellProcessor(RelevantNanos.TimedTauntBuffs, TimedTargetTaunt, CombatActionPriority.High);
                 RegisterSpellProcessor(RelevantNanos.SingleTauntBuffs, SingleTargetTaunt, CombatActionPriority.High);
@@ -206,6 +209,7 @@ namespace CombatHandler.Soldier
 
                 PluginDirectory = pluginDir;
 
+                SelfSoldierHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfSoldierHealPercentage;
                 Healing.FountainOfLifeHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage;
                 BioCocoonPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BioCocoonPercentage;
                 SingleTauntDelay = Config.CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelay;
@@ -321,11 +325,16 @@ namespace CombatHandler.Soldier
                 _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\SoldierHealingView.xml");
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "SoldierHealingView" }, _healingView);
 
+                window.FindView("SelfSoldierHealPercentageBox", out TextInputView SelfSoldierHealInput);
                 window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
 
                 if (FountainOfLifeInput != null)
                 {
                     FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+                if (SelfSoldierHealInput != null)
+                {
+                    SelfSoldierHealInput.Text = $"{SelfSoldierHealPercentage}";
                 }
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
@@ -333,11 +342,16 @@ namespace CombatHandler.Soldier
                 SettingsController.CreateSettingsTab(_healingWindow, PluginDir, new WindowOptions() { Name = "Healing", XmlViewName = "SoldierHealingView" }, _healingView, out var container);
                 _healingWindow = container;
 
+                container.FindView("SelfSoldierHealPercentageBox", out TextInputView SelfSoldierHealInput);
                 container.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
 
                 if (FountainOfLifeInput != null)
                 {
                     FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+                if (SelfSoldierHealInput != null)
+                {
+                    SelfSoldierHealInput.Text = $"{SelfSoldierHealPercentage}";
                 }
             }
         }
@@ -604,6 +618,7 @@ namespace CombatHandler.Soldier
 
             if (window != null && window.IsValid)
             {
+                window.FindView("SelfSoldierHealPercentageBox", out TextInputView SelfSoldierHealInput);
                 window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
                 window.FindView("SingleTauntDelayBox", out TextInputView singleInput);
                 window.FindView("TimedTauntDelayBox", out TextInputView timedInput);
@@ -669,6 +684,16 @@ namespace CombatHandler.Soldier
                     }
                 }
 
+                if (SelfSoldierHealInput != null && !string.IsNullOrEmpty(SelfSoldierHealInput.Text))
+                {
+                    if (int.TryParse(SelfSoldierHealInput.Text, out int selfSoldierHealValue))
+                    {
+                        if (Config.CharSettings[DynelManager.LocalPlayer.Name].SelfSoldierHealPercentage != selfSoldierHealValue)
+                        {
+                            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfSoldierHealPercentage = selfSoldierHealValue;
+                        }
+                    }
+                }
                 if (timedInput != null && !string.IsNullOrEmpty(timedInput.Text))
                 {
                     if (int.TryParse(timedInput.Text, out int timedValue))
@@ -1064,15 +1089,13 @@ namespace CombatHandler.Soldier
 
         #region Heals
 
-        private bool LEDrainHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool SelfSoldierHeal(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_settings["Buffing"].AsBool()) { return false; }
-
-            if (DynelManager.LocalPlayer.FightingTarget == null || !CanCast(spell)) { return false; }
-
-            if (DynelManager.LocalPlayer.HealthPercent <= 30) { return true; }
-
-            return false;
+            if (SelfSoldierHealPercentage == 0) {  return false; }
+            var localPlayer = DynelManager.LocalPlayer;
+            if (localPlayer.FightingTarget == null) { return false; }
+            if (!CanCast(spell)) { return false; }
+            return SelfSoldierHealPercentage >= localPlayer.HealthPercent;
         }
 
         #endregion
@@ -1227,7 +1250,7 @@ namespace CombatHandler.Soldier
             public static int[] AssaultRifleBuffs = { 275027, 269482, 203119, 29220, 203121 };
             public static int[] RangedEnergyBuffs = { 275905, 269482, 29230, 203135 };
             public static int[] HeavyWeaponsBuffs = { 223227, 269482, 223225, 223223 };
-
+            public static int[] SoldierHeal = { 301897, 29241 };
             public const int Phalanx = 29245;
             public const int Precognition = 29247;
         }
@@ -1236,6 +1259,13 @@ namespace CombatHandler.Soldier
         {
             public const int DreadlochEnduranceBooster = 267168;
             public const int DreadlochEnduranceBoosterNanomageEdition = 267167;
+        }
+
+        public static void SelfSoldierHealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].SelfSoldierHealPercentage = e;
+            SelfSoldierHealPercentage = e;
+            Config.Save();
         }
 
         #endregion

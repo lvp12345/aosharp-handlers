@@ -1304,16 +1304,20 @@ namespace CombatHandler.NanoTechnician
 
         private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
+            if (!CanCast(spell)) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent > NanoAegisPercentage) { return false; }
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NullitySphereNano)) { return false; }
 
-            return DynelManager.LocalPlayer.HealthPercent <= NanoAegisPercentage && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NullitySphereNano);
+            return true;
         }
 
         private bool NullitySphere(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
-            if (!_settings["Buffing"].AsBool() || !CanCast(spell)) { return false; }
+            if (!CanCast(spell)) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent <= NullitySpherePercentage) { return false; }
+            if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.NanobotAegis)) { return false; }
 
-            return DynelManager.LocalPlayer.HealthPercent <= NullitySpherePercentage && !DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.NanobotAegis);
+            return true;
         }
 
         private bool CycleAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)

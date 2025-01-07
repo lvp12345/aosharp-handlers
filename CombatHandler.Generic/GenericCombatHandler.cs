@@ -489,7 +489,7 @@ namespace CombatHandler.Generic
                     case Form.Team:
                         if (Team.IsInTeam)
                         {
-                            if (IsRaidEnabled(parm))
+                            if (parm != null && IsRaidEnabled(parm))
                             {
                                 Team.ConvertToRaid();
                                 CurrentTeamState = Form.Raid;

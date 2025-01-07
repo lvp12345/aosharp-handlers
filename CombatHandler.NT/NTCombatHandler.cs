@@ -1304,6 +1304,7 @@ namespace CombatHandler.NanoTechnician
 
         private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget == null) { return false; }
             if (!CanCast(spell)) { return false; }
             if (DynelManager.LocalPlayer.HealthPercent > NanoAegisPercentage) { return false; }
             if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NullitySphereNano)) { return false; }
@@ -1311,8 +1312,9 @@ namespace CombatHandler.NanoTechnician
             return true;
         }
 
-        private bool NullitySphere(Spell spell, SimpleChar fightingtarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool NullitySphere(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (fightingTarget == null) { return false; }
             if (!CanCast(spell)) { return false; }
             if (DynelManager.LocalPlayer.HealthPercent <= NullitySpherePercentage) { return false; }
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.NanobotAegis)) { return false; }

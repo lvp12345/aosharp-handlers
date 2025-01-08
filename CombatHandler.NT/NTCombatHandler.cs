@@ -37,8 +37,6 @@ namespace CombatHandler.NanoTechnician
         private static View _perkView;
         private static View _healingView;
 
-        //private static SimpleChar _drainTarget;
-
         private static double _ncuUpdateTime;
 
         public NTCombatHandler(string pluginDir) : base(pluginDir)
@@ -126,6 +124,13 @@ namespace CombatHandler.NanoTechnician
 
                 RegisterSettingsWindow("Nano-Technician Handler", "NTSettingsView.xml");
 
+                //Perks
+                RegisterPerkProcessor(PerkHash.FlimFocus, FlimFocus, CombatActionPriority.High);
+
+                RegisterSpellProcessor(RelevantNanos.IzgimmersWealth, IzgimmersWealth, CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.NanobotAegis, NanobotAegis, CombatActionPriority.High);
+
                 //DeTaunt
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DeTaunt).OrderByStackingOrder(), DeTaunt, CombatActionPriority.High);
 
@@ -137,27 +142,27 @@ namespace CombatHandler.NanoTechnician
                 RegisterSpellProcessor(RelevantNanos.Calm, Calm, CombatActionPriority.High);
 
                 //Debuffs
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind, CombatActionPriority.High);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AAODebuffs).OrderByStackingOrder(), SingleBlind, CombatActionPriority.Medium);
 
-                RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.AOEBlinds, AOEBlind, CombatActionPriority.Medium);
 
-                RegisterSpellProcessor(RelevantNanos.HaloNanoDebuff, HaloNanoDebuff, CombatActionPriority.High);
+                RegisterSpellProcessor(RelevantNanos.HaloNanoDebuff, HaloNanoDebuff, CombatActionPriority.Medium);
 
                 RegisterSpellProcessor(RelevantNanos.LickofthePest,
                    (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "LickOfThePestSelection"), CombatActionPriority.High);
+                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "LickOfThePestSelection"), CombatActionPriority.Medium);
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoResistanceDebuff_LineA).OrderByStackingOrder(),
                    (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "NanoResistSelection"), CombatActionPriority.High);
+                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "NanoResistSelection"), CombatActionPriority.Medium);
 
                 RegisterSpellProcessor(RelevantNanos.HackedBlind,
                    (Spell debuffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "HackedBlindSelection"), CombatActionPriority.High);
+                   => EnumDebuff(debuffSpell, fightingTarget, ref actionTarget, "HackedBlindSelection"), CombatActionPriority.Medium);
 
                 //Dots
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), DOTADebuffTarget, CombatActionPriority.High);
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainB).OrderByStackingOrder(), PierceNuke, CombatActionPriority.Medium);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainA).OrderByStackingOrder(), DOTADebuffTarget, CombatActionPriority.Medium);
+                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.DOTNanotechnicianStrainB).OrderByStackingOrder(), PierceNuke, CombatActionPriority.Low);
 
                 //Nukes
                 RegisterSpellProcessor(RelevantNanos.Garuk, SingleTargetNuke);
@@ -175,13 +180,8 @@ namespace CombatHandler.NanoTechnician
                      (Spell aoeNuke, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                    => AOENuke(aoeNuke, fightingTarget, ref actionTarget, 3));
 
-                //Perks
-                RegisterPerkProcessor(PerkHash.FlimFocus, FlimFocus, CombatActionPriority.High);
 
                 //Buffs
-                RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NullitySphereNano).OrderByStackingOrder(), NullitySphere, CombatActionPriority.Medium);
-                RegisterSpellProcessor(RelevantNanos.NanobotAegis, NanobotAegis, CombatActionPriority.High);
-                RegisterSpellProcessor(RelevantNanos.IzgimmersWealth, IzgimmersWealth, CombatActionPriority.High);
                 RegisterSpellProcessor(RelevantNanos.SelfDarkMovement, SelfEvade);
 
                 RegisterSpellProcessor(RelevantNanos.NanobotShelter,
@@ -196,16 +196,12 @@ namespace CombatHandler.NanoTechnician
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NFRangeBuff).OrderByStackingOrder(), NFRangeBuff);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.MatCreaBuff).OrderByStackingOrder(), MatCreaBuff);
 
-                
-
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.Fortify).OrderByStackingOrder(),
                     (Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
                                 => NonCombatBuff(spell, ref actionTarget, fightingTarget, null));
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NanoOverTime_LineA).OrderByStackingOrder(), NanoHOT);
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.NPCostBuff).OrderByStackingOrder(), Cost);
-
-                
 
                 //Team Buffs
                 RegisterSpellProcessor(RelevantNanos.AbsorbACBuff, TeamAbsorbs);
@@ -1302,24 +1298,30 @@ namespace CombatHandler.NanoTechnician
             return NonCombatBuff(spell, ref actionTarget, fightingTarget);
         }
 
-        private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        private bool IzgimmersWealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (IsPlayerFlyingOrFalling()) { return false; }
             if (fightingTarget == null) { return false; }
-            if (!CanCast(spell)) { return false; }
-            if (DynelManager.LocalPlayer.HealthPercent > NanoAegisPercentage) { return false; }
-            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NullitySphereNano)) { return false; }
-
+            if (DynelManager.LocalPlayer.NanoPercent > IzgimmersWealthPercentage) { return false; }
             return true;
         }
 
         private bool NullitySphere(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (fightingTarget == null) { return false; }
-            if (!CanCast(spell)) { return false; }
-            if (DynelManager.LocalPlayer.HealthPercent <= NullitySpherePercentage) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent > NullitySpherePercentage) { return false; }
             if (DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.NanobotAegis)) { return false; }
+            if (IsPlayerFlyingOrFalling()) { return false; }
+            return spell.Cost < DynelManager.LocalPlayer.Nano;
+        }
 
-            return true;
+        private bool NanobotAegis(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (fightingTarget == null) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent > NanoAegisPercentage) { return false; }
+            if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.NullitySphereNano)) { return false; }
+            if (IsPlayerFlyingOrFalling()) { return false; }
+            return spell.Cost < DynelManager.LocalPlayer.Nano;
         }
 
         private bool CycleAbsorbs(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1338,13 +1340,6 @@ namespace CombatHandler.NanoTechnician
             actionTarget.ShouldSetTarget = false;
             _absorbs = Time.NormalTime;
             return true;
-        }
-
-        private bool IzgimmersWealth(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!_settings["Buffing"].AsBool() || fightingTarget == null || !CanCast(spell)) { return false; }
-
-            return DynelManager.LocalPlayer.NanoPercent <= IzgimmersWealthPercentage;
         }
 
         #endregion

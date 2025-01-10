@@ -4,7 +4,6 @@ using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
-using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1263,30 +1262,6 @@ namespace CombatHandler.Metaphysicist
 
         #region Pets
 
-        private bool AttackPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!_settings["AttackPet"].AsBool()) { return false; }
-            if (DynelManager.LocalPlayer.Pets.Any(c => c.Type == PetType.Attack)) { return false; }
-            if (!CanLookupPetsAfterZone()) { return false; }
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
-            if (!CanCast(spell)) { return false; }
-
-            actionTarget.ShouldSetTarget = false;
-            return true;
-        }
-
-        private bool HealPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!_settings["HealPet"].AsBool()) { return false; }
-            if (DynelManager.LocalPlayer.Pets.Any(c => c.Type == PetType.Heal)) { return false; }
-            if (!CanLookupPetsAfterZone()) { return false; }
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
-            if (!CanCast(spell)) { return false; }
-
-            actionTarget.ShouldSetTarget = false;
-            return true;
-        }
-
         private bool SupportPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!_settings["SupportPet"].AsBool()) { return false; }
@@ -1679,108 +1654,6 @@ namespace CombatHandler.Metaphysicist
             }
             return null;
         }
-
-        private void AssignTargetToHealPet()
-        {
-            if (_settings["PetHealingSelection"].AsInt32() == 0) { return; }
-
-            var healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal
-            && pet.Character.Nano >= 1).FirstOrDefault();
-
-            if (healPet == null) { return; }
-
-            switch (_settings["PetHealingSelection"].AsInt32())
-            {
-                case 1:
-                    HealTarget = DynelManager.LocalPlayer.Identity;
-                    break;
-                case 2:
-                    if (!Team.IsInTeam) { return; }
-                    var leader = Team.Members.FirstOrDefault(t => t.IsLeader);
-                    if (leader == null) { return; }
-                    HealTarget = leader.Identity;
-                    break;
-                case 3:
-                    var dyingTarget = GetTargetToHeal();
-                    if (dyingTarget == null) { return; }
-                    HealTarget = dyingTarget.Identity;
-                    break;
-            }
-
-            if (HealTarget == null) { return; }
-            if (HealTarget == CurrentHealTarget) { return; }
-            healPet.Heal(HealTarget);
-            CurrentHealTarget = HealTarget;
-        }
-        private SimpleChar GetTargetToHeal()
-        {
-            if (DynelManager.LocalPlayer.HealthPercent < 90)
-            {
-                return DynelManager.LocalPlayer;
-            }
-            else if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                var dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.IsAlive)
-                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance))
-                    .Where(c => c.HealthPercent < 85)
-                    .Where(c => DynelManager.LocalPlayer.DistanceFrom(c) < 30f)
-                    .OrderBy(c => c.HealthPercent)
-                    .FirstOrDefault();
-
-                if (dyingTeamMember != null)
-                {
-                    return dyingTeamMember;
-                }
-            }
-            else
-            {
-                var dyingPet = DynelManager.LocalPlayer.Pets
-                     .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social || pet.Type == PetType.Support)
-                     .Where(pet => pet.Character.HealthPercent < 80)
-                     .Where(pet => pet.Character.DistanceFrom(DynelManager.LocalPlayer) < 60f)
-                     .OrderBy(pet => pet.Character.HealthPercent)
-                     .FirstOrDefault();
-
-                if (dyingPet != null)
-                {
-                    return dyingPet.Character;
-                }
-            }
-
-            return null;
-        }
-
-        private void HandleMezzPet()
-        {
-            if (_settings["PetMezzingSelection"].AsInt32() != 2) { return; }
-            var mezzPet = DynelManager.LocalPlayer.Pets.Where(pet => pet?.Type == PetType.Support && pet?.Character.Nano >= 1).FirstOrDefault();
-            if (mezzPet == null) { return; }
-            if (!CurrentPetCommand.ContainsKey(mezzPet.Identity.Instance))
-            {
-                CurrentPetCommand.Add(mezzPet.Identity.Instance, PetCommand.Follow);
-            }
-
-            var target = DynelManager.Characters.FirstOrDefault(c => !c.IsPlayer && !c.IsPet && c.IsAttacking && !c.Buffs.Contains(NanoLine.Mezz) &&
-            (c.FightingTarget?.Identity == DynelManager.LocalPlayer.Identity || Team.Members.Any(t => t?.Identity == c.FightingTarget?.Identity)));
-
-            switch (CurrentPetCommand[mezzPet.Identity.Instance])
-            {
-                case PetCommand.Follow:
-                    if (target == null) { return; }
-                    mezzPet?.Attack(target.Identity);
-                    MezzTarget = target.Identity;
-                    break;
-                case PetCommand.Attack:
-                    if (MezzTarget != Identity.None && target?.Identity == MezzTarget) { return; }
-                    if (mezzPet.Character.IsAttacking && mezzPet?.Character.FightingTarget != null && !mezzPet.Character.FightingTarget.Buffs.Contains(NanoLine.Mezz)) { return; }
-                    mezzPet?.Follow();
-                    MezzTarget = Identity.None;
-                    break;
-            }
-        }
-
-
 
         private static void PetWaitCommand(string command, string[] param, ChatWindow chatWindow)
         {

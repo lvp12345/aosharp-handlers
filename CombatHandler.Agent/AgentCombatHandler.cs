@@ -21,7 +21,6 @@ namespace CombatHandler.Agent
         public static int[] FPSwitchSetting;
         public static int[] MorhpSpellArray;
         public static bool _syncPets;
-        private double _lastHealPetHealTime = 0.0;
 
         private static Window _buffWindow;
         private static Window _debuffWindow;
@@ -121,6 +120,8 @@ namespace CombatHandler.Agent
                 _settings.AddVariable("GlobalComposites", true);
                 _settings.AddVariable("GlobalRez", true);
 
+                _settings.AddVariable("SyncPets", true);
+
                 _settings.AddVariable("EncaseInStone", false);
 
                 _settings.AddVariable("SharpObjects", true);
@@ -165,13 +166,19 @@ namespace CombatHandler.Agent
 
                 //mp
                 _settings.AddVariable("CostBuffSelection", 1);
-                _settings.AddVariable("SpawnPets", true);
+
+                _settings.AddVariable("AttackPet", true);
+                _settings.AddVariable("HealPet", true);
+
+                _settings.AddVariable("PetHealingSelection", 3);
+                _settings.AddVariable("PetMezzingSelection", 2);
+
                 _settings.AddVariable("BuffPets", true);
                 _settings.AddVariable("WarpPets", false);
+
                 _settings.AddVariable("Nukes", false);
                 _settings.AddVariable("NormalNuke", false);
                 _settings.AddVariable("DebuffNuke", false);
-                _settings.AddVariable("SyncPets", true);
 
                 //doc
                 _settings.AddVariable("LockCH", false);
@@ -1067,6 +1074,20 @@ namespace CombatHandler.Agent
                     AssignTargetToHealPet();
                 }
 
+                if (!_settings["SyncPets"].AsBool() && _syncPets)
+                {
+                    IPCChannel.Broadcast(new PetSyncOffMessage());
+                    Chat.WriteLine("SyncPets disabled");
+                    syncPetsOffDisabled();
+                }
+
+                if (_settings["SyncPets"].AsBool() && !_syncPets)
+                {
+                    IPCChannel.Broadcast(new PetSyncOnMessag());
+                    Chat.WriteLine("SyncPets enabled.");
+                    syncPetsOnEnabled();
+                }
+
                 if ((_settings["RansackSelection"].AsInt32() == 3 || _settings["DepriveSelection"].AsInt32() == 3 || _settings["ACDrainSelection"].AsInt32() == 3)
                    && Time.NormalTime > _drainTick + 1)
                 {
@@ -1096,8 +1117,8 @@ namespace CombatHandler.Agent
                             //buffs
                             RegisterSpellProcessor(RelevantNanos.CostBuffs, Cost);
                             //Pets
-                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AttackPets).OrderByStackingOrder(), AttackPetSpawner);
-                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealPets).OrderByStackingOrder(), HealPetSpawner);
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.AttackPets).OrderByStackingOrder(), AttackPetSpawner);//
+                            RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.HealPets).OrderByStackingOrder(), HealPetSpawner);//
                             //petbuffs
                             RegisterSpellProcessor(RelevantNanos.InstillDamageBuffs, InstillDamage);
                             RegisterSpellProcessor(RelevantNanos.ChantBuffs, Chant);
@@ -1420,13 +1441,35 @@ namespace CombatHandler.Agent
                         break;
                 }
 
-                if (_settings["ProcSelection"].AsInt32() == 1)
+                switch (_settings["ProcSelection"].AsInt32())
                 {
-                    CancelBuffs(RelevantNanos.DetauntProcs);
+                    case 1:
+                        CancelBuffs(RelevantNanos.DetauntProcs);
+                        break;
+                    case 2:
+                        CancelBuffs(RelevantNanos.DOTProcs);
+                        break;
                 }
-                if (_settings["ProcSelection"].AsInt32() == 2)
+
+                if (_settings["MorphSelection"].AsInt32() != 1)
                 {
-                    CancelBuffs(RelevantNanos.DOTProcs);
+                    CancelBuffs(RelevantNanos.DragonMorph);
+                }
+                if (_settings["MorphSelection"].AsInt32() != 4)
+                {
+                    CancelBuffs(RelevantNanos.LeetMorph);
+                }
+                if (_settings["MorphSelection"].AsInt32() != 2)
+                {
+                    CancelBuffs(RelevantNanos.SaberMorph);
+                }
+                if (_settings["MorphSelection"].AsInt32() != 3)
+                {
+                    CancelBuffs(RelevantNanos.WolfMorph);
+                }
+                if (_settings["MorphSelection"].AsInt32() != 5)
+                {
+                    CancelBuffs(RelevantNanos.TreeMorph);
                 }
 
                 #region UI
@@ -1710,19 +1753,6 @@ namespace CombatHandler.Agent
                         }
                     }
 
-                    if (!_settings["SyncPets"].AsBool() && _syncPets)
-                    {
-                        IPCChannel.Broadcast(new PetSyncOffMessage());
-                        Chat.WriteLine("SyncPets disabled");
-                        syncPetsOffDisabled();
-                    }
-
-                    if (_settings["SyncPets"].AsBool() && !_syncPets)
-                    {
-                        IPCChannel.Broadcast(new PetSyncOnMessag());
-                        Chat.WriteLine("SyncPets enabled.");
-                        syncPetsOnEnabled();
-                    }
                     if (window.FindView("MPView", out Button mpView))
                     {
                         mpView.Tag = SettingsController.settingsWindow;
@@ -1829,27 +1859,6 @@ namespace CombatHandler.Agent
                         morphView.Tag = SettingsController.settingsWindow;
                         morphView.Clicked = HandleMorphViewClick;
                     }
-
-                    if (_settings["MorphSelection"].AsInt32() != 1)
-                    {
-                        CancelBuffs(RelevantNanos.DragonMorph);
-                    }
-                    if (_settings["MorphSelection"].AsInt32() != 4)
-                    {
-                        CancelBuffs(RelevantNanos.LeetMorph);
-                    }
-                    if (_settings["MorphSelection"].AsInt32() != 2)
-                    {
-                        CancelBuffs(RelevantNanos.SaberMorph);
-                    }
-                    if (_settings["MorphSelection"].AsInt32() != 3)
-                    {
-                        CancelBuffs(RelevantNanos.WolfMorph);
-                    }
-                    if (_settings["MorphSelection"].AsInt32() != 5)
-                    {
-                        CancelBuffs(RelevantNanos.TreeMorph);
-                    }
                 }
 
                 #endregion
@@ -1879,7 +1888,6 @@ namespace CombatHandler.Agent
                     _settings["Buffing"] = true;
                     _settings["GlobalBuffing"] = true;
                 }
-
                 #endregion
 
                 #region Global Composites
@@ -1906,7 +1914,7 @@ namespace CombatHandler.Agent
                     _settings["Composites"] = true;
                     _settings["GlobalComposites"] = true;
                 }
-
+                
                 #endregion
 
                 #region Global Resurrection
@@ -2572,23 +2580,6 @@ namespace CombatHandler.Agent
             return DynelManager.LocalPlayer.Pets.Any(c => c.Character == null);
         }
 
-        private bool AttackPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfMp)) { return false; }
-
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
-
-            return NoShellPetSpawner(PetType.Attack, spell, fightingTarget, ref actionTarget);
-        }
-
-        private bool HealPetSpawner(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
-        {
-            if (!DynelManager.LocalPlayer.Buffs.Contains(RelevantNanos.FalseProfMp)) { return false; }
-
-            if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 0) { return false; }
-
-            return NoShellPetSpawner(PetType.Heal, spell, fightingTarget, ref actionTarget);
-        }
         private bool WarmUpNuke(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
             if (!_settings["Nukes"].AsBool()) { return false; }
@@ -3206,58 +3197,6 @@ namespace CombatHandler.Agent
             }
         }
 
-        private void AssignTargetToHealPet()
-        {
-            var dyingTarget = GetTargetToHeal();
-
-            var healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal
-            && pet.Character.Nano >= 1).FirstOrDefault();
-
-            if (healPet != null)
-            {
-                if (dyingTarget != null)
-                {
-                    if (Time.AONormalTime > _lastHealPetHealTime)
-                    {
-                        healPet.Heal(dyingTarget.Identity);
-                        _lastHealPetHealTime = Time.AONormalTime + 3;
-                    }
-                }
-            }
-        }
-
-        private SimpleChar GetTargetToHeal()
-        {
-            if (DynelManager.LocalPlayer.HealthPercent < 90)
-            {
-                var dyingTeamMember = DynelManager.Players
-                    .Where(c => c.IsAlive && Team.Members.Select(t => t.Identity.Instance).Contains(c.Identity.Instance)
-                        && c.HealthPercent < 90)
-                    .OrderBy(c => c.HealthPercent)
-                    .FirstOrDefault();
-
-                if (dyingTeamMember != null)
-                {
-                    return dyingTeamMember;
-                }
-            }
-            else
-            {
-                Pet dyingPet = DynelManager.LocalPlayer.Pets
-                     .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social || pet.Type == PetType.Support)
-                     .Where(pet => pet.Character.HealthPercent < 80)
-                     .Where(pet => pet.Character.DistanceFrom(DynelManager.LocalPlayer) < 60f)
-                     .OrderBy(pet => pet.Character.HealthPercent)
-                     .FirstOrDefault();
-
-                if (dyingPet != null)
-                {
-                    return dyingPet.Character;
-                }
-            }
-
-            return null;
-        }
         private static bool IsMoving(SimpleChar target)
         {
             if (Playfield.Identity.Instance == 4021)

@@ -395,8 +395,12 @@ namespace CombatHandler.Generic
                     break;
                 case N3MessageType.Attack:
                     var attack = (AttackMessage)e;
-
+                    if (attack.Identity != localPlayer.Identity) { return; }
                     if (_settings["SyncPets"] == null || !_settings["SyncPets"].AsBool()) { return; }
+
+                    //var simp = DynelManager.Characters.FirstOrDefault(c => c.Identity == attack.Identity);
+                    //var simpt = DynelManager.Characters.FirstOrDefault(c => c.Identity == attack.Target);
+                    //Chat.WriteLine($"{simp.Name} attacking {simpt.Name}", ChatColor.Orange);
 
                     switch (localPlayer.Profession)
                     {
@@ -406,19 +410,16 @@ namespace CombatHandler.Generic
                             {
                                 case 0:
                                 case 1:
-                                    if (attack.Identity != localPlayer.Identity) { return; }
                                     attackPet?.Attack(attack.Target);
                                     supportPet?.Attack(attack.Target);
                                     break;
                                 case 2:
-                                    if (attack.Identity != localPlayer.Identity) { return; }
                                     attackPet?.Attack(attack.Target);
                                     break;
                             }
                             break;
                         case Profession.Bureaucrat:
                         case Profession.Engineer:
-                            if (attack.Identity != localPlayer.Identity) { return; }
                             attackPet?.Attack(attack.Target);
                             supportPet?.Attack(attack.Target);
                             break;

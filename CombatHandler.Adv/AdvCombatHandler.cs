@@ -111,7 +111,7 @@ namespace CombatHandler.Adventurer
                 _settings.AddVariable("PoisonousBite", false);
 
                 _settings.AddVariable("TeamArmorBuffs", false);
-                _settings.AddVariable("DamageShields", false);
+                _settings.AddVariable("DamageShields", false);//
                 _settings.AddVariable("XPBonus", false);
                 _settings.AddVariable("RunspeedBuffs", false);
                 _settings.AddVariable("SLMap", false);
@@ -1345,9 +1345,12 @@ namespace CombatHandler.Adventurer
             public static readonly int[] DragonAOE = { 161692 };
             public static readonly int[] DragonTargetTaunt = { 161690 };
 
-            public static int[] TargetArmorBuffs = { 74178, 74177, 74176, 74175, 74174, 74173 };
-            public static readonly int[] TargetedDamageShields = { 55812, 55836, 55835, 55833, 55834, 55831, 55832, 55830, 55829, 55828, 55826, 55827,
-                55825, 55824, 55823, 55821, 55822, 55819, 55820, 55816, 55818, 55817, 55814, 55815, 55813, 55837 };
+            public static int[] TargetArmorBuffs = { 74173, 74174, 74175, 74176, 74177, 74178 };
+
+
+            public static readonly int[] TargetedDamageShields = { 55837, 55813, 55815, 55814, 55817, 55818, 55816, 55820, 55819, 55822, 55821, 55823, 55824,
+                55825, 55827, 55826, 55828, 55529, 55830, 55832, 55831, 55834, 55833, 55835, 55836, 55812};
+
 
             public static readonly int[] TeamRunSpeedBuffs = { 26705, 26237 };
         }

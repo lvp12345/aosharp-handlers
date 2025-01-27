@@ -23,8 +23,6 @@ namespace BagManager
 
         private static bool _init = false;
 
-        public static string PluginDir;
-
         private CancellationTokenSource _cancellationToken1 = new CancellationTokenSource();
         private CancellationTokenSource _cancellationToken2 = new CancellationTokenSource();
 
@@ -83,7 +81,7 @@ namespace BagManager
 
         private void HandleInfoViewClick(object s, ButtonBase button)
         {
-            _infoWindow = Window.CreateFromXml("Info", PluginDir + "\\UI\\BagManagerInfoView.xml",
+            _infoWindow = Window.CreateFromXml("Info", PluginDirectory + "\\UI\\BagManagerInfoView.xml",
                 windowSize: new Rect(0, 0, 440, 510),
                 windowStyle: WindowStyle.Default,
                 windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
@@ -108,7 +106,7 @@ namespace BagManager
 
         protected void RegisterSettingsWindow(string settingsName, string xmlName)
         {
-            SettingsController.RegisterSettingsWindow(settingsName, PluginDir + "\\UI\\" + xmlName, _settings);
+            SettingsController.RegisterSettingsWindow(settingsName, PluginDirectory + "\\UI\\" + xmlName, _settings);
         }
 
         private void Network_N3MessageSent(object s, N3Message n3Msg)

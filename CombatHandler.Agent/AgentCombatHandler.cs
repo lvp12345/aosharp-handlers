@@ -1071,7 +1071,7 @@ namespace CombatHandler.Agent
 
                 if (CanLookupPetsAfterZone())
                 {
-                    AssignTargetToHealPet();
+                    AgentAssignTargetToHealPet();
                 }
 
                 if (!_settings["SyncPets"].AsBool() && _syncPets)

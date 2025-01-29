@@ -1493,7 +1493,7 @@ namespace CombatHandler.Generic
             return true;
         }
 
-        protected void AssignTargetToHealPet()
+        protected void AgentAssignTargetToHealPet()
         {
             if (_settings["PetHealingSelection"].AsInt32() == 0) { return; }
 
@@ -1564,34 +1564,34 @@ namespace CombatHandler.Generic
             return null;
         }
 
-        protected void HandleMezzPet()
-        {
-            if (_settings["PetMezzingSelection"].AsInt32() != 2) { return; }
-            var mezzPet = DynelManager.LocalPlayer.Pets.Where(pet => pet?.Type == PetType.Support && pet?.Character.Nano >= 1).FirstOrDefault();
-            if (mezzPet == null) { return; }
-            if (!CurrentPetCommand.ContainsKey(mezzPet.Identity.Instance))
-            {
-                CurrentPetCommand.Add(mezzPet.Identity.Instance, PetCommand.Follow);
-            }
+        //protected void HandleMezzPet()
+        //{
+        //    if (_settings["PetMezzingSelection"].AsInt32() != 2) { return; }
+        //    var mezzPet = DynelManager.LocalPlayer.Pets.Where(pet => pet?.Type == PetType.Support && pet?.Character.Nano >= 1).FirstOrDefault();
+        //    if (mezzPet == null) { return; }
+        //    if (!CurrentPetCommand.ContainsKey(mezzPet.Identity.Instance))
+        //    {
+        //        CurrentPetCommand.Add(mezzPet.Identity.Instance, PetCommand.Follow);
+        //    }
 
-            var target = DynelManager.Characters.FirstOrDefault(c => !c.IsPlayer && !c.IsPet && c.IsAttacking && !c.Buffs.Contains(NanoLine.Mezz) &&
-            (c.FightingTarget?.Identity == DynelManager.LocalPlayer.Identity || Team.Members.Any(t => t?.Identity == c.FightingTarget?.Identity)));
+        //    var target = DynelManager.Characters.FirstOrDefault(c => !c.IsPlayer && !c.IsPet && c.IsAttacking && !c.Buffs.Contains(NanoLine.Mezz) &&
+        //    (c.FightingTarget?.Identity == DynelManager.LocalPlayer.Identity || Team.Members.Any(t => t?.Identity == c.FightingTarget?.Identity)));
 
-            switch (CurrentPetCommand[mezzPet.Identity.Instance])
-            {
-                case PetCommand.Follow:
-                    if (target == null) { return; }
-                    mezzPet?.Attack(target.Identity);
-                    MezzTarget = target.Identity;
-                    break;
-                case PetCommand.Attack:
-                    if (MezzTarget != Identity.None && target?.Identity == MezzTarget) { return; }
-                    if (mezzPet.Character.IsAttacking && mezzPet?.Character.FightingTarget != null && !mezzPet.Character.FightingTarget.Buffs.Contains(NanoLine.Mezz)) { return; }
-                    mezzPet?.Follow();
-                    MezzTarget = Identity.None;
-                    break;
-            }
-        }
+        //    switch (CurrentPetCommand[mezzPet.Identity.Instance])
+        //    {
+        //        case PetCommand.Follow:
+        //            if (target == null) { return; }
+        //            mezzPet?.Attack(target.Identity);
+        //            MezzTarget = target.Identity;
+        //            break;
+        //        case PetCommand.Attack:
+        //            if (MezzTarget != Identity.None && target?.Identity == MezzTarget) { return; }
+        //            if (mezzPet.Character.IsAttacking && mezzPet?.Character.FightingTarget != null && !mezzPet.Character.FightingTarget.Buffs.Contains(NanoLine.Mezz)) { return; }
+        //            mezzPet?.Follow();
+        //            MezzTarget = Identity.None;
+        //            break;
+        //    }
+        //}
 
         #endregion
 

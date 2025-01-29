@@ -47,7 +47,6 @@ namespace CombatHandler.Generic
 
         [JsonIgnore]
         public int SingleTauntDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].SingleTauntDelay : 1;
-        
         [JsonIgnore]
         public int MongoDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].MongoDelay : 1;
         [JsonIgnore]
@@ -92,17 +91,23 @@ namespace CombatHandler.Generic
         public int BodyDevAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage : 55;
         [JsonIgnore]
         public int StrengthAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage : 70;
-
         [JsonIgnore]
         public int StaminaAbsorbsItemPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].StaminaAbsorbsItemPercentage : 50;
-
         [JsonIgnore]
         public int CycleBioRegrowthDelay => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].CycleBioRegrowthPerkDelay : 1;
         [JsonIgnore]
         public int BioRegrowthPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BioRegrowthPercentage : 70;
-
         [JsonIgnore]
         public int TOTWPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].TOTWPercentage : 35;
+
+        [JsonIgnore]
+        public int PetSelfHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].PetSelfHealPercentage : 90;
+
+        [JsonIgnore]
+        public int PetTeamHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].PetTeamHealPercentage : 85;
+
+        [JsonIgnore]
+        public int PetPetHealPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].PetPetHealPercentage : 80;
 
 
         #endregion
@@ -795,6 +800,57 @@ namespace CombatHandler.Generic
                 {
                     _nullitySpherePercentage = value;
                     NullitySpherePercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> PetSelfHealPercentageChangedEvent;
+        private int _petSelfHealPercentage = 90;
+        public int PetSelfHealPercentage
+        {
+            get
+            {
+                return _petSelfHealPercentage;
+            }
+            set
+            {
+                if (_petSelfHealPercentage != value)
+                {
+                    _petSelfHealPercentage = value;
+                    PetSelfHealPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> PetTeamHealPercentageChangedEvent;
+        private int _petTeamHealPercentage = 85;
+        public int PetTeamHealPercentage
+        {
+            get
+            {
+                return _petTeamHealPercentage;
+            }
+            set
+            {
+                if (_petTeamHealPercentage != value)
+                {
+                    _petTeamHealPercentage = value;
+                    PetTeamHealPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> PetPetHealPercentageChangedEvent;
+        private int _petPetHealPercentage = 80;
+        public int PetPetHealPercentage
+        {
+            get
+            {
+                return _petPetHealPercentage;
+            }
+            set
+            {
+                if (_petPetHealPercentage != value)
+                {
+                    _petPetHealPercentage = value;
+                    PetPetHealPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }

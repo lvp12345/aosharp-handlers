@@ -42,6 +42,9 @@ namespace CombatHandler.Generic
         public static int HealthDrainPercentage = 0;
         public static int NanoAegisPercentage = 0;
         public static int NullitySpherePercentage = 0;
+        public static int PetSelfHealPercentage = 0;
+        public static int PetTeamHealPercentage = 0;
+        public static int PetPetHealPercentage = 0;
         public static int AMSPercentage = 0;
         public static int IzgimmersWealthPercentage = 0;
         public static int ShadeTattooPercentage = 0;
@@ -183,10 +186,10 @@ namespace CombatHandler.Generic
 
         public Dictionary<int, PetCommand> CurrentPetCommand = new Dictionary<int, PetCommand>();
 
-        public Identity HealTarget;
-        public Identity CurrentHealTarget;
-        public Identity MezzTarget;
-        public Identity CurrentMezzTarget;
+        public Identity HealTarget = Identity.None;
+        public Identity CurrentHealTarget = Identity.None;
+        public Identity MezzTarget = Identity.None;
+        public Identity CurrentMezzTarget = Identity.None;
 
         public List<Identity> MezzTargets = new List<Identity>();
 
@@ -2473,6 +2476,24 @@ namespace CombatHandler.Generic
         {
             Config.CharSettings[DynelManager.LocalPlayer.Name].NullitySpherePercentage = e;
             NullitySpherePercentage = e;
+            Config.Save();
+        }
+        public static void PetSelfHealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].PetSelfHealPercentage = e;
+            PetSelfHealPercentage = e;
+            Config.Save();
+        }
+        public static void PetTeamHealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].PetTeamHealPercentage = e;
+            PetTeamHealPercentage = e;
+            Config.Save();
+        }
+        public static void PetPetHealPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].PetPetHealPercentage = e;
+            PetPetHealPercentage = e;
             Config.Save();
         }
         public static void AMSPercentage_Changed(object s, int e)

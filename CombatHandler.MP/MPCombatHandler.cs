@@ -72,6 +72,8 @@ namespace CombatHandler.Metaphysicist
                 "Living Shield of Evernan"
             };
 
+        HealPetAction CurrentHealPetAction = new HealPetAction();
+
         public MPCombatHandler(string pluginDir) : base(pluginDir)
         {
             try
@@ -88,6 +90,10 @@ namespace CombatHandler.Metaphysicist
                 IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
                 IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
                 IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+
+                Config.CharSettings[DynelManager.LocalPlayer.Name].PetSelfHealPercentageChangedEvent += PetSelfHealPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].PetTeamHealPercentageChangedEvent += PetTeamHealPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].PetPetHealPercentageChangedEvent += PetPetHealPercentage_Changed;
 
                 Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentageChangedEvent += FountainOfLifeHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetNameChangedEvent += StimTargetName_Changed;
@@ -282,6 +288,9 @@ namespace CombatHandler.Metaphysicist
 
                 PluginDirectory = pluginDir;
 
+                PetSelfHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].PetSelfHealPercentage;
+                PetTeamHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].PetTeamHealPercentage;
+                PetPetHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].PetPetHealPercentage;
                 Healing.FountainOfLifeHealPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentage;
                 StimTargetName = Config.CharSettings[DynelManager.LocalPlayer.Name].StimTargetName;
                 StimHealthPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StimHealthPercentage;
@@ -456,10 +465,25 @@ namespace CombatHandler.Metaphysicist
                 SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "MPHealingView" }, _healingView);
 
                 window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+                window.FindView("PetSelfHealPercentageBox", out TextInputView PetSelfHealInput);
+                window.FindView("PetTeamHealPercentageBox", out TextInputView PetTeamHealInput);
+                window.FindView("PetPetHealPercentageBox", out TextInputView PetPetHealInput);
 
                 if (FountainOfLifeInput != null)
                 {
                     FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+                if (PetSelfHealInput != null)
+                {
+                    PetSelfHealInput.Text = $"{PetSelfHealPercentage}";
+                }
+                if (PetTeamHealInput != null)
+                {
+                    PetTeamHealInput.Text = $"{PetTeamHealPercentage}";
+                }
+                if (PetPetHealInput != null)
+                {
+                    PetPetHealInput.Text = $"{PetPetHealPercentage}";
                 }
             }
             else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
@@ -468,10 +492,25 @@ namespace CombatHandler.Metaphysicist
                 _healingWindow = container;
 
                 container.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+                container.FindView("PetSelfHealPercentageBox", out TextInputView PetSelfHealInput);
+                container.FindView("PetTeamHealPercentageBox", out TextInputView PetTeamHealInput);
+                container.FindView("PetPetHealPercentageBox", out TextInputView PetPetHealInput);
 
                 if (FountainOfLifeInput != null)
                 {
                     FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+                }
+                if (PetSelfHealInput != null)
+                {
+                    PetSelfHealInput.Text = $"{PetSelfHealPercentage}";
+                }
+                if (PetTeamHealInput != null)
+                {
+                    PetTeamHealInput.Text = $"{PetTeamHealPercentage}";
+                }
+                if (PetPetHealInput != null)
+                {
+                    PetPetHealInput.Text = $"{PetPetHealPercentage}";
                 }
             }
         }
@@ -851,6 +890,9 @@ namespace CombatHandler.Metaphysicist
 
                 if (window != null && window.IsValid)
                 {
+                    window.FindView("PetSelfHealPercentageBox", out TextInputView PetSelfHealInput);
+                    window.FindView("PetTeamHealPercentageBox", out TextInputView PetTeamHealInput);
+                    window.FindView("PetPetHealPercentageBox", out TextInputView PetPetHealInput);
                     window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
                     window.FindView("StimTargetBox", out TextInputView stimTargetInput);
                     window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
@@ -867,6 +909,39 @@ namespace CombatHandler.Metaphysicist
 
                     window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                     window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+
+                    if (PetSelfHealInput != null && !string.IsNullOrEmpty(PetSelfHealInput.Text))
+                    {
+                        if (int.TryParse(PetSelfHealInput.Text, out int petSelfHealValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].PetSelfHealPercentage != petSelfHealValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].PetSelfHealPercentage = petSelfHealValue;
+                            }
+                        }
+                    }
+
+                    if (PetTeamHealInput != null && !string.IsNullOrEmpty(PetTeamHealInput.Text))
+                    {
+                        if (int.TryParse(PetTeamHealInput.Text, out int petTeamHealValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].PetTeamHealPercentage != petTeamHealValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].PetTeamHealPercentage = petTeamHealValue;
+                            }
+                        }
+                    }
+
+                    if (PetPetHealInput != null && !string.IsNullOrEmpty(PetPetHealInput.Text))
+                    {
+                        if (int.TryParse(PetPetHealInput.Text, out int petPetHealValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].PetPetHealPercentage != petPetHealValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].PetPetHealPercentage = petPetHealValue;
+                            }
+                        }
+                    }
 
                     if (FountainOfLifeInput != null && !string.IsNullOrEmpty(FountainOfLifeInput.Text))
                     {
@@ -1655,6 +1730,152 @@ namespace CombatHandler.Metaphysicist
             return null;
         }
 
+        enum HealPetAction { SendFollow, Following, SendHeal, Healing }
+
+        private void AssignTargetToHealPet()
+        {
+            if (_settings["PetHealingSelection"].AsInt32() == 0) { return; }
+
+            var healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal
+            && pet.Character.Nano >= 1).FirstOrDefault();
+
+            if (healPet == null) { return; }
+            var localPlayer = DynelManager.LocalPlayer;
+
+            switch (_settings["PetHealingSelection"].AsInt32())
+            {
+                case 1:
+                    if (localPlayer.HealthPercent <= PetSelfHealPercentage)
+                    {
+                        HealTarget = localPlayer.Identity;
+                    }
+                    else
+                    {
+                        var dyingPet = localPlayer.Pets
+                        .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social || pet.Type == PetType.Support)
+                        .Where(pet => pet.Character.HealthPercent <= PetPetHealPercentage)
+                        .Where(pet => pet.Character.DistanceFrom(localPlayer) < 60f)
+                        .OrderBy(pet => pet.Character.HealthPercent)
+                        .FirstOrDefault();
+
+                        if (dyingPet == null) { return; }
+
+                        HealTarget = dyingPet.Character.Identity;
+                    }
+                    break;
+                case 2:
+                    if (!Team.IsInTeam) { return; }
+                    var leader = Team.Members.FirstOrDefault(t => t.IsLeader);
+                    if (leader == null) { return; }
+                    HealTarget = leader.Identity;
+                    break;
+                case 3:
+                    var dyingTarget = GetTargetToHeal();
+                    if (dyingTarget != null) { HealTarget = dyingTarget.Identity; }
+                    else { HealTarget = Identity.None; CurrentHealTarget = Identity.None; }
+                    break;
+            }
+
+            if (HealTarget == Identity.None && CurrentHealPetAction != HealPetAction.Following && CurrentHealPetAction != HealPetAction.SendFollow)
+            {
+                CurrentHealTarget = Identity.None;
+                CurrentHealPetAction = HealPetAction.SendFollow;
+            }
+
+            switch (CurrentHealPetAction)
+            {
+                case HealPetAction.SendFollow:
+                    healPet.Follow();
+                    CurrentHealPetAction = HealPetAction.Following;
+                    break;
+                case HealPetAction.Following:
+                    if (HealTarget != Identity.None) { CurrentHealPetAction = HealPetAction.SendHeal; }
+                    break;
+                case HealPetAction.SendHeal:
+                    healPet.Heal(HealTarget);
+                    CurrentHealTarget = HealTarget;
+                    CurrentHealPetAction = HealPetAction.Healing;
+                    break;
+                case HealPetAction.Healing:
+                    if (HealTarget == Identity.None)
+                    {
+                        CurrentHealPetAction = HealPetAction.SendFollow;
+                    }
+                    if (HealTarget != CurrentHealTarget)
+                    {
+                        CurrentHealPetAction = HealPetAction.SendHeal;
+                    }
+                    break;
+            }
+        }
+        private SimpleChar GetTargetToHeal()
+        {
+            if (DynelManager.LocalPlayer.HealthPercent <= PetSelfHealPercentage)
+            {
+                return DynelManager.LocalPlayer;
+            }
+            else if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                var dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive)
+                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= PetTeamHealPercentage)
+                    .Where(c => DynelManager.LocalPlayer.DistanceFrom(c) < 30f)
+                    .OrderBy(c => c.HealthPercent)
+                    .FirstOrDefault();
+
+                if (dyingTeamMember != null)
+                {
+                    return dyingTeamMember;
+                }
+            }
+            else
+            {
+                var dyingPet = DynelManager.LocalPlayer.Pets
+                     .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social || pet.Type == PetType.Support)
+                     .Where(pet => pet.Character.HealthPercent <= PetPetHealPercentage)
+                     .Where(pet => pet.Character.DistanceFrom(DynelManager.LocalPlayer) < 60f)
+                     .OrderBy(pet => pet.Character.HealthPercent)
+                     .FirstOrDefault();
+
+                if (dyingPet != null)
+                {
+                    return dyingPet.Character;
+                }
+            }
+
+            return null;
+        }
+
+        private void HandleMezzPet()
+        {
+            if (_settings["PetMezzingSelection"].AsInt32() != 2) { return; }
+            var mezzPet = DynelManager.LocalPlayer.Pets.Where(pet => pet?.Type == PetType.Support && pet?.Character.Nano >= 1).FirstOrDefault();
+            if (mezzPet == null) { return; }
+            if (!CurrentPetCommand.ContainsKey(mezzPet.Identity.Instance))
+            {
+                CurrentPetCommand.Add(mezzPet.Identity.Instance, PetCommand.Follow);
+            }
+
+            var target = DynelManager.Characters.FirstOrDefault(c => !c.IsPlayer && !c.IsPet && c.IsAttacking && !c.Buffs.Contains(NanoLine.Mezz) &&
+            (c.FightingTarget?.Identity == DynelManager.LocalPlayer.Identity || Team.Members.Any(t => t?.Identity == c.FightingTarget?.Identity)));
+
+            switch (CurrentPetCommand[mezzPet.Identity.Instance])
+            {
+                case PetCommand.Follow:
+                    if (target == null) { return; }
+                    mezzPet?.Attack(target.Identity);
+                    MezzTarget = target.Identity;
+                    break;
+                case PetCommand.Attack:
+                    if (MezzTarget != Identity.None && target?.Identity == MezzTarget) { return; }
+                    if (mezzPet.Character.IsAttacking && mezzPet?.Character.FightingTarget != null && !mezzPet.Character.FightingTarget.Buffs.Contains(NanoLine.Mezz)) { return; }
+                    mezzPet?.Follow();
+                    MezzTarget = Identity.None;
+                    break;
+            }
+        }
+
         private static void PetWaitCommand(string command, string[] param, ChatWindow chatWindow)
         {
             IPCChannel.Broadcast(new PetWaitMessage());
@@ -1685,7 +1906,7 @@ namespace CombatHandler.Metaphysicist
             public static readonly int[] CostBuffs = { 95409, 29307, 95411, 95408, 95410 };
             public static readonly int[] HealPets = { 225902, 125746, 125739, 125740, 125741, 125742, 125743, 125744, 125745, 125738 }; //Belamorte has a higher stacking order than Moritficant
             public static readonly int[] SLAttackPets = { 254859, 225900, 254859, 225900, 225898, 225896, 225894 };
-            public static readonly int[] Crystalizer = { 206752 , 204828 };
+            public static readonly int[] Crystalizer = { 206752, 204828 };
             public static readonly int[] MPCompositeNano = { 220343, 220341, 220339, 220337, 220335, 220333, 220331 };
             public static readonly int[] PetDefensive = { 267601, 267600, 267599 };
             public static readonly int[] PetCleanse = { 269870, 269869 };

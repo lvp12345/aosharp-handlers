@@ -4,6 +4,7 @@ using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;

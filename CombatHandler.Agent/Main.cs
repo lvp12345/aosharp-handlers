@@ -6,12 +6,10 @@ namespace CombatHandler.Agent
 {
     public class Main : AOPluginEntry
     {
-        
         public override void Run()
         {
             try
             {
-                base.Run();
                 if (Game.IsNewEngine)
                 {
                     Chat.WriteLine("Does not work on this engine!");

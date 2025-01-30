@@ -10,7 +10,7 @@ namespace CombatHandler.Soldier
         {
             try
             {
-                base.Run();
+                
                 Chat.WriteLine("Soldier Combat Handler Loaded!");
                 Chat.WriteLine("/handler for settings.");
                 AOSharp.Core.Combat.CombatHandler.Set(new SoldCombathandler(PluginDirectory));

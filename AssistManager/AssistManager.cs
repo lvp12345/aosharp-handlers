@@ -54,8 +54,6 @@ namespace AssistManager
             }
 
             AssistPlayer = Config.CharSettings[DynelManager.LocalPlayer.Name].AssistPlayer;
-
-            base.Run();
         }
 
         public override void Teardown()

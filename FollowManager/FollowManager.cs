@@ -41,7 +41,7 @@ namespace FollowManager
         {
             try
             {
-                base.Run();
+                
                 _settings = new Settings("FollowManager");
 
                 Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\FollowManager\\{Game.ClientInst}\\Config.json");

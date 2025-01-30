@@ -10,7 +10,7 @@ namespace CombatHandler.Trader
         {
             try
             {
-                base.Run();
+                
                 if (Game.IsNewEngine)
                 {
                     Chat.WriteLine("Does not work on this engine!");

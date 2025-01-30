@@ -21,7 +21,7 @@ namespace ResearchManager
 
         public override void Run()
         {
-            base.Run();
+            
             _settings = new Settings("Research");
 
             _settings.AddVariable("Toggle", false);

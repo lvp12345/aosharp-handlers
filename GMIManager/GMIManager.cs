@@ -66,7 +66,7 @@ namespace GMIManager
         {
             try
             {
-                base.Run();
+                
                 _settings = new Settings("GMIManager");
 
                 Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\GMIManager\\{Game.ClientInst}\\Config.json");

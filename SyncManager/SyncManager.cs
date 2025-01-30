@@ -49,7 +49,7 @@ namespace SyncManager
 
         public override void Run()
         {
-            base.Run();
+            
             _settings = new Settings("SyncManager");
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\SyncManager\\{DynelManager.LocalPlayer.Name}\\Config.json");

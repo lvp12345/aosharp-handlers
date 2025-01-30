@@ -30,7 +30,7 @@ namespace BagManager
         public override void Run()
         {
             _settings = new Settings("BagManager");
-            base.Run();
+            
 
             Game.OnUpdate += OnUpdate;
             Network.N3MessageSent += Network_N3MessageSent;

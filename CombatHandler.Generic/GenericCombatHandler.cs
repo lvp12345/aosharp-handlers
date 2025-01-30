@@ -193,6 +193,8 @@ namespace CombatHandler.Generic
 
         public List<Identity> MezzTargets = new List<Identity>();
 
+        AttackState state;
+
         public GenericCombatHandler(string pluginDir)
         {
             try
@@ -317,7 +319,7 @@ namespace CombatHandler.Generic
                         RegisterSpellProcessor(RelevantGenericNanos.CompositeRangedSpecial, CompositeBuff);
                         break;
                 }
-                
+
                 Team.TeamRequest += Team_TeamRequest;
                 Network.N3MessageReceived += Network_N3MessageReceived;
                 Network.N3MessageSent += N3MessageSent;
@@ -384,6 +386,8 @@ namespace CombatHandler.Generic
             }
         }
 
+        enum AttackState { None, Attack, Stop }
+
         private void Network_N3MessageReceived(object sender, N3Message e)
         {
             var localPlayer = DynelManager.LocalPlayer;
@@ -400,11 +404,7 @@ namespace CombatHandler.Generic
                     var attack = (AttackMessage)e;
                     if (attack.Identity != localPlayer.Identity) { return; }
                     if (_settings["SyncPets"] == null || !_settings["SyncPets"].AsBool()) { return; }
-
-                    //var simp = DynelManager.Characters.FirstOrDefault(c => c.Identity == attack.Identity);
-                    //var simpt = DynelManager.Characters.FirstOrDefault(c => c.Identity == attack.Target);
-                    //Chat.WriteLine($"{simp.Name} attacking {simpt.Name}", ChatColor.Orange);
-
+                    state = AttackState.Attack;
                     switch (localPlayer.Profession)
                     {
                         case Profession.Metaphysicist:
@@ -429,14 +429,12 @@ namespace CombatHandler.Generic
                     }
                     break;
                 case N3MessageType.StopFight:
-
                     var stop = (StopFightMessage)e;
-
                     if (stop.Identity != localPlayer.Identity) { return; }
-
+                    if (state == AttackState.Stop) { return; }
                     attackPet?.Follow();
                     supportPet?.Follow();
-
+                    state = AttackState.Stop;
                     break;
             }
         }
@@ -1493,104 +1491,75 @@ namespace CombatHandler.Generic
             return true;
         }
 
-        protected void AgentAssignTargetToHealPet()
-        {
-            if (_settings["PetHealingSelection"].AsInt32() == 0) { return; }
-
-            var healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal
-            && pet.Character.Nano >= 1).FirstOrDefault();
-
-            if (healPet == null) { return; }
-
-            switch (_settings["PetHealingSelection"].AsInt32())
-            {
-                case 1:
-                    HealTarget = DynelManager.LocalPlayer.Identity;
-                    break;
-                case 2:
-                    if (!Team.IsInTeam) { return; }
-                    var leader = Team.Members.FirstOrDefault(t => t.IsLeader);
-                    if (leader == null) { return; }
-                    HealTarget = leader.Identity;
-                    break;
-                case 3:
-                    var dyingTarget = GetTargetToHeal();
-                    if (dyingTarget == null) { return; }
-                    HealTarget = dyingTarget.Identity;
-                    break;
-            }
-
-            if (HealTarget == null) { return; }
-            if (HealTarget == CurrentHealTarget) { return; }
-            healPet.Heal(HealTarget);
-            CurrentHealTarget = HealTarget;
-        }
-        private SimpleChar GetTargetToHeal()
-        {
-            if (DynelManager.LocalPlayer.HealthPercent < 90)
-            {
-                return DynelManager.LocalPlayer;
-            }
-            else if (DynelManager.LocalPlayer.IsInTeam())
-            {
-                var dyingTeamMember = DynelManager.Characters
-                    .Where(c => c.IsAlive)
-                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance))
-                    .Where(c => c.HealthPercent < 85)
-                    .Where(c => DynelManager.LocalPlayer.DistanceFrom(c) < 30f)
-                    .OrderBy(c => c.HealthPercent)
-                    .FirstOrDefault();
-
-                if (dyingTeamMember != null)
-                {
-                    return dyingTeamMember;
-                }
-            }
-            else
-            {
-                var dyingPet = DynelManager.LocalPlayer.Pets
-                     .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social || pet.Type == PetType.Support)
-                     .Where(pet => pet.Character.HealthPercent < 80)
-                     .Where(pet => pet.Character.DistanceFrom(DynelManager.LocalPlayer) < 60f)
-                     .OrderBy(pet => pet.Character.HealthPercent)
-                     .FirstOrDefault();
-
-                if (dyingPet != null)
-                {
-                    return dyingPet.Character;
-                }
-            }
-
-            return null;
-        }
-
-        //protected void HandleMezzPet()
+        //protected void AgentAssignTargetToHealPet()
         //{
-        //    if (_settings["PetMezzingSelection"].AsInt32() != 2) { return; }
-        //    var mezzPet = DynelManager.LocalPlayer.Pets.Where(pet => pet?.Type == PetType.Support && pet?.Character.Nano >= 1).FirstOrDefault();
-        //    if (mezzPet == null) { return; }
-        //    if (!CurrentPetCommand.ContainsKey(mezzPet.Identity.Instance))
+        //    if (_settings["PetHealingSelection"].AsInt32() == 0) { return; }
+
+        //    var healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal
+        //    && pet.Character.Nano >= 1).FirstOrDefault();
+
+        //    if (healPet == null) { return; }
+
+        //    switch (_settings["PetHealingSelection"].AsInt32())
         //    {
-        //        CurrentPetCommand.Add(mezzPet.Identity.Instance, PetCommand.Follow);
+        //        case 1:
+        //            HealTarget = DynelManager.LocalPlayer.Identity;
+        //            break;
+        //        case 2:
+        //            if (!Team.IsInTeam) { return; }
+        //            var leader = Team.Members.FirstOrDefault(t => t.IsLeader);
+        //            if (leader == null) { return; }
+        //            HealTarget = leader.Identity;
+        //            break;
+        //        case 3:
+        //            var dyingTarget = GetTargetToHeal();
+        //            if (dyingTarget == null) { return; }
+        //            HealTarget = dyingTarget.Identity;
+        //            break;
         //    }
 
-        //    var target = DynelManager.Characters.FirstOrDefault(c => !c.IsPlayer && !c.IsPet && c.IsAttacking && !c.Buffs.Contains(NanoLine.Mezz) &&
-        //    (c.FightingTarget?.Identity == DynelManager.LocalPlayer.Identity || Team.Members.Any(t => t?.Identity == c.FightingTarget?.Identity)));
-
-        //    switch (CurrentPetCommand[mezzPet.Identity.Instance])
+        //    if (HealTarget == null) { return; }
+        //    if (HealTarget == CurrentHealTarget) { return; }
+        //    healPet.Heal(HealTarget);
+        //    CurrentHealTarget = HealTarget;
+        //}
+        //private SimpleChar GetTargetToHeal()
+        //{
+        //    if (DynelManager.LocalPlayer.HealthPercent < 90)
         //    {
-        //        case PetCommand.Follow:
-        //            if (target == null) { return; }
-        //            mezzPet?.Attack(target.Identity);
-        //            MezzTarget = target.Identity;
-        //            break;
-        //        case PetCommand.Attack:
-        //            if (MezzTarget != Identity.None && target?.Identity == MezzTarget) { return; }
-        //            if (mezzPet.Character.IsAttacking && mezzPet?.Character.FightingTarget != null && !mezzPet.Character.FightingTarget.Buffs.Contains(NanoLine.Mezz)) { return; }
-        //            mezzPet?.Follow();
-        //            MezzTarget = Identity.None;
-        //            break;
+        //        return DynelManager.LocalPlayer;
         //    }
+        //    else if (DynelManager.LocalPlayer.IsInTeam())
+        //    {
+        //        var dyingTeamMember = DynelManager.Characters
+        //            .Where(c => c.IsAlive)
+        //            .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance))
+        //            .Where(c => c.HealthPercent < 85)
+        //            .Where(c => DynelManager.LocalPlayer.DistanceFrom(c) < 30f)
+        //            .OrderBy(c => c.HealthPercent)
+        //            .FirstOrDefault();
+
+        //        if (dyingTeamMember != null)
+        //        {
+        //            return dyingTeamMember;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        var dyingPet = DynelManager.LocalPlayer.Pets
+        //             .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social || pet.Type == PetType.Support)
+        //             .Where(pet => pet.Character.HealthPercent < 80)
+        //             .Where(pet => pet.Character.DistanceFrom(DynelManager.LocalPlayer) < 60f)
+        //             .OrderBy(pet => pet.Character.HealthPercent)
+        //             .FirstOrDefault();
+
+        //        if (dyingPet != null)
+        //        {
+        //            return dyingPet.Character;
+        //        }
+        //    }
+
+        //    return null;
         //}
 
         #endregion

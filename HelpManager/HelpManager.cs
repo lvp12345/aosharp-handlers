@@ -106,7 +106,7 @@ namespace HelpManager
             {
                 _settings = new Settings("HelpManager");
 
-                base.Run();
+                
 
                 Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\HelpManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
 

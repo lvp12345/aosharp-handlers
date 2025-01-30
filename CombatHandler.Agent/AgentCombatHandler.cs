@@ -73,6 +73,8 @@ namespace CombatHandler.Agent
 
         int petColor;
 
+        HealPetAction CurrentHealPetAction = new HealPetAction();
+
         public AgentCombatHandler(string pluginDir) : base(pluginDir)
         {
             try
@@ -1063,15 +1065,15 @@ namespace CombatHandler.Agent
                     FP();
 
                     _ncuUpdateTime = Time.NormalTime;
-
                 }
+
                 CancelBuffs();
 
                 Morphs();
 
                 if (CanLookupPetsAfterZone())
                 {
-                    AgentAssignTargetToHealPet();
+                    AssignTargetToHealPet();
                 }
 
                 if (!_settings["SyncPets"].AsBool() && _syncPets)
@@ -2604,6 +2606,123 @@ namespace CombatHandler.Agent
 
             return true;
         }
+
+        enum HealPetAction { SendFollow, Following, SendHeal, Healing }
+        private void AssignTargetToHealPet()
+        {
+            if (_settings["PetHealingSelection"].AsInt32() == 0) { return; }
+
+            var healPet = DynelManager.LocalPlayer.Pets.Where(pet => pet.Type == PetType.Heal
+            && pet.Character.Nano >= 1).FirstOrDefault();
+
+            if (healPet == null) { return; }
+            var localPlayer = DynelManager.LocalPlayer;
+
+            switch (_settings["PetHealingSelection"].AsInt32())
+            {
+                case 1:
+                    if (localPlayer.HealthPercent <= 90)
+                    {
+                        HealTarget = localPlayer.Identity;
+                    }
+                    else
+                    {
+                        var dyingPet = localPlayer.Pets
+                        .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social || pet.Type == PetType.Support)
+                        .Where(pet => pet.Character.HealthPercent <= 85)
+                        .Where(pet => pet.Character.DistanceFrom(localPlayer) < 60f)
+                        .OrderBy(pet => pet.Character.HealthPercent)
+                        .FirstOrDefault();
+
+                        if (dyingPet == null) { return; }
+
+                        HealTarget = dyingPet.Character.Identity;
+                    }
+                    break;
+                case 2:
+                    if (!Team.IsInTeam) { return; }
+                    var leader = Team.Members.FirstOrDefault(t => t.IsLeader);
+                    if (leader == null) { return; }
+                    HealTarget = leader.Identity;
+                    break;
+                case 3:
+                    var dyingTarget = GetTargetToHeal();
+                    if (dyingTarget != null) { HealTarget = dyingTarget.Identity; }
+                    else { HealTarget = Identity.None; CurrentHealTarget = Identity.None; }
+                    break;
+            }
+
+            if (HealTarget == Identity.None && CurrentHealPetAction != HealPetAction.Following && CurrentHealPetAction != HealPetAction.SendFollow)
+            {
+                CurrentHealTarget = Identity.None;
+                CurrentHealPetAction = HealPetAction.SendFollow;
+            }
+
+            switch (CurrentHealPetAction)
+            {
+                case HealPetAction.SendFollow:
+                    healPet.Follow();
+                    CurrentHealPetAction = HealPetAction.Following;
+                    break;
+                case HealPetAction.Following:
+                    if (HealTarget != Identity.None) { CurrentHealPetAction = HealPetAction.SendHeal; }
+                    break;
+                case HealPetAction.SendHeal:
+                    healPet.Heal(HealTarget);
+                    CurrentHealTarget = HealTarget;
+                    CurrentHealPetAction = HealPetAction.Healing;
+                    break;
+                case HealPetAction.Healing:
+                    if (HealTarget == Identity.None)
+                    {
+                        CurrentHealPetAction = HealPetAction.SendFollow;
+                    }
+                    if (HealTarget != CurrentHealTarget)
+                    {
+                        CurrentHealPetAction = HealPetAction.SendHeal;
+                    }
+                    break;
+            }
+        }
+        private SimpleChar GetTargetToHeal()
+        {
+            if (DynelManager.LocalPlayer.HealthPercent <= 90)
+            {
+                return DynelManager.LocalPlayer;
+            }
+            else if (DynelManager.LocalPlayer.IsInTeam())
+            {
+                var dyingTeamMember = DynelManager.Characters
+                    .Where(c => c.IsAlive)
+                    .Where(c => Team.Members.Any(t => t.Identity.Instance == c.Identity.Instance))
+                    .Where(c => c.HealthPercent <= 85)
+                    .Where(c => DynelManager.LocalPlayer.DistanceFrom(c) < 30f)
+                    .OrderBy(c => c.HealthPercent)
+                    .FirstOrDefault();
+
+                if (dyingTeamMember != null)
+                {
+                    return dyingTeamMember;
+                }
+            }
+            else
+            {
+                var dyingPet = DynelManager.LocalPlayer.Pets
+                     .Where(pet => pet.Type == PetType.Attack || pet.Type == PetType.Social || pet.Type == PetType.Support)
+                     .Where(pet => pet.Character.HealthPercent <= 80)
+                     .Where(pet => pet.Character.DistanceFrom(DynelManager.LocalPlayer) < 60f)
+                     .OrderBy(pet => pet.Character.HealthPercent)
+                     .FirstOrDefault();
+
+                if (dyingPet != null)
+                {
+                    return dyingPet.Character;
+                }
+            }
+
+            return null;
+        }
+
         #endregion
 
         #region Soldier
@@ -3134,6 +3253,7 @@ namespace CombatHandler.Agent
             }
         }
         #endregion
+
         #region Misc
 
         private void FPSwitch()

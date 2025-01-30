@@ -41,7 +41,7 @@ namespace LootManager
         {
             try
             {
-                base.Run();
+                
                 _settings = new Settings("LootManager");
 
                 PluginDir = PluginDirectory;

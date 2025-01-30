@@ -36,7 +36,7 @@ namespace MailManager
 
         public override void Run()
         {
-            base.Run();
+            
             _settings = new Settings("MailManager");
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\MailManager\\{DynelManager.LocalPlayer.Name}\\Config.json");

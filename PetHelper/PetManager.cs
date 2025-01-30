@@ -29,7 +29,7 @@ namespace PetManager
 
         public override void Run()
         {
-            base.Run();
+            
 
             Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\PetManager\\{DynelManager.LocalPlayer.Name}\\Config.json");
             IPCChannel = new IPCChannel(Convert.ToByte(Config.CharSettings[DynelManager.LocalPlayer.Name].IPCChannel));

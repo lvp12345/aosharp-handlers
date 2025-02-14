@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 using SmokeLounge.AOtomation.Messaging.Messages;
 using SmokeLounge.AOtomation.Messaging.GameData;
+using static SmokeLounge.AOtomation.Messaging.Messages.N3Messages.FullCharacterMessage;
 
 namespace CombatHandler.Generic
 {
@@ -778,27 +779,21 @@ namespace CombatHandler.Generic
             if (Team.IsInTeam)
             {
                 var teamMember = Team.Members.Where(t => t?.Character != null && t.Character.IsInLineOfSight && t.Character.IsAlive
-                 && spell.IsInRange(t?.Character) && !SpellCheckLocalTeam(spell, t.Character))
-                .FirstOrDefault();
+                 && spell.IsInRange(t?.Character) && !t.Character.Buffs.Contains(NanoLine.XPBonus)).FirstOrDefault();
 
                 if (teamMember == null) { return false; }
 
                 actionTarget.ShouldSetTarget = true;
                 actionTarget.Target = teamMember.Character;
                 return true;
-
             }
             else
             {
-                if (!SpellCheckSelf(spell))
-                {
-                    actionTarget.ShouldSetTarget = true;
-                    actionTarget.Target = DynelManager.LocalPlayer;
-                    return true;
-                }
+                if (DynelManager.LocalPlayer.Buffs.Contains(NanoLine.XPBonus)) { return false; }
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = DynelManager.LocalPlayer;
+                return true;
             }
-
-            return false;
         }
 
         protected bool AAO(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1699,7 +1694,7 @@ namespace CombatHandler.Generic
 
             if (ExistingBuff != null)
             {
-                if (spell.StackingOrder <= ExistingBuff.StackingOrder || localPlayer.RemainingNCU < Math.Abs(spell.NCU - ExistingBuff.NCU)) { return false; }
+                if (spell.StackingOrder <= ExistingBuff.StackingOrder) { return false; } // || localPlayer.RemainingNCU < Math.Abs(spell.NCU - ExistingBuff.NCU)
                 if (spell.StackingOrder == ExistingBuff.StackingOrder && ExistingBuff.RemainingTime > 20f) { return false; }
             }
 
@@ -1719,16 +1714,14 @@ namespace CombatHandler.Generic
             }
             else
             {
-                if (spell.Nanoline == NanoLine.ExperienceConstructs_XPBonus)
-                { ExistingBuff = teamMember.Buffs.FirstOrDefault(b => b.Nanoline == NanoLine.XPBonus); }
-                else { ExistingBuff = teamMember.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline); }
+                ExistingBuff = teamMember.Buffs.FirstOrDefault(b => b.Nanoline == spell.Nanoline);
             }
 
             if ((spell.Nanoline == NanoLine.HPBuff || spell.Nanoline == NanoLine.StrengthBuff) && teamMember.Buffs.Any(b => b.Nanoline == NanoLine.KeeperStr_Stam_AgiBuff)) { return false; }
 
             if (ExistingBuff != null)
             {
-                if (spell.StackingOrder < ExistingBuff.StackingOrder || !HasNCU(spell, teamMember)) { return false; }
+                if (spell.StackingOrder < ExistingBuff.StackingOrder) { return false; }// || !HasNCU(spell, teamMember)
                 if (spell.StackingOrder == ExistingBuff.StackingOrder && ExistingBuff.RemainingTime > 20f) { return false; }
             }
 

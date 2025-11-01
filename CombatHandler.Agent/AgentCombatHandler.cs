@@ -3315,10 +3315,15 @@ namespace CombatHandler.Agent
 
             if (fpBuff != null)
             {
+                // Check if we already have this exact FP buff active
+                var currentFPBuff = DynelManager.LocalPlayer.Buffs.FirstOrDefault(b => b.Nanoline == NanoLine.FalseProfession);
+                bool alreadyHasThisBuff = currentFPBuff != null && currentFPBuff.Id == fpBuff.Id;
+
                 // During post-zoning window, bypass movement state check to allow immediate FP casting
                 bool isPostZoning = Time.NormalTime < _lastZonedTime + 3.0;
-                bool canCast = !Spell.HasPendingCast && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.FalseProfession)
-                                && fpBuff.MeetsUseReqs();
+                bool hasPendingCast = Spell.HasPendingCast;
+                bool meetsReqs = fpBuff.MeetsUseReqs();
+                bool canCast = !hasPendingCast && !alreadyHasThisBuff && meetsReqs;
 
                 if (isPostZoning)
                 {

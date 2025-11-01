@@ -9,9 +9,13 @@
 
 				<OptionCheckBox label="Enabled" opt_category="AOSharp" opt_type="variant" opt_variable="LootManager__Enabled" layout_borders="Rect(5,5,5,5)"/>
 				<OptionCheckBox label="Delete leftovers" opt_category="AOSharp" opt_type="variant" opt_variable="LootManager__Delete" layout_borders="Rect(5,5,5,0)"/>
-				<OptionCheckBox label="Exact name" opt_category="AOSharp" opt_type="variant" opt_variable="LootManager__Exact" layout_borders="Rect(5,5,5,0)"/>
+				<OptionCheckBox label="Loot All" opt_category="AOSharp" opt_type="variant" opt_variable="LootManager__LootAll" layout_borders="Rect(5,5,5,0)"/>
+				<OptionCheckBox label="Leave corpse open" opt_category="AOSharp" opt_type="variant" opt_variable="LootManager__LeaveOpen" layout_borders="Rect(5,5,5,0)"/>
 				<OptionCheckBox label="Disable when full" opt_category="AOSharp" opt_type="variant" opt_variable="LootManager__Disable" layout_borders="Rect(5,5,5,0)"/>
 				<Button name="LootManagerInfoView" label="Info" layout_borders="Rect(5,5,5,5)"/>
+				<Button name="FolderOpener" label="Folder" layout_borders="Rect(5,5,5,5)"/>
+				<Button name="SaveLootList" label="Save List" layout_borders="Rect(5,5,5,5)"/>
+				<Button name="LoadLootList" label="Load List" layout_borders="Rect(5,5,5,5)"/>
 			</View>
 		</BorderView>
 
@@ -45,6 +49,12 @@
 				<!-- "Global Scope" CheckBox -->
 				<CheckBox name="chkGlobal" label="" layout_borders="Rect(5,5,5,5)"/>
 
+				<!-- Exact Matching RadioButtonGroup -->
+				<OptionRadioButtonGroup name="ExactMatchGroup" label="Match Type" layout_borders="Rect(5,5,5,5)" opt_type="variant" opt_variable="LootManager__ExactMatchSelection">
+					<RadioButton label="Exact" value="1"/>
+					<RadioButton label="Not Exact" value="0"/>
+				</OptionRadioButtonGroup>
+
 				<HLayoutSpacer/>
 				<!-- "Add" Button -->
 				<Button name="buttonAdd" label="Add" h_alignment="LEFT" layout_borders="Rect(5,5,5,5)"  />
@@ -66,11 +76,24 @@
 		</BorderView>
 
 		<!-- Settings1 BorderView -->
-		<BorderView v_alignment="TOP" h_alignment="LEFT"  name="Settings1" max_size="Point(16000,-1)" layout_borders="Rect(5,5,5,0)" >
-			<!-- Error message row -->
-			<View view_layout="horizontal"  v_alignment="TOP" h_alignment="LEFT">
-				<!-- Error message TextView -->
-				<TextView  name="tvErr" value="" layout_borders="Rect(5,5,5,5)" />
+		<BorderView v_alignment="TOP" h_alignment="LEFT"  name="Settings1" max_size="Point(600,-1)" layout_borders="Rect(5,5,5,0)" >
+			<!-- Suggestions area -->
+			<View view_layout="vertical"  v_alignment="TOP" h_alignment="LEFT" max_size="Point(580,-1)">
+				<!-- Suggestions label -->
+				<TextView name="tvSuggestionsLabel" value="Suggestions:" layout_borders="Rect(5,2,5,2)" />
+				<!-- Fixed suggestions display area -->
+				<BorderView h_alignment="LEFT" max_size="Point(580,150)" min_size="Point(580,80)" layout_borders="Rect(2,2,2,2)" background_color="0x22000000">
+					<View view_layout="vertical" h_alignment="LEFT" v_alignment="TOP" max_size="Point(570,140)" min_size="Point(570,80)">
+						<!-- Error/status line -->
+						<TextView name="tvErr" value="" layout_borders="Rect(5,2,5,2)" text_wrap="false" h_alignment="LEFT" v_alignment="TOP" max_size="Point(560,20)" />
+						<!-- Suggestion lines - each line shows 4 items -->
+						<TextView name="tvSuggestionLine1" value="" layout_borders="Rect(5,1,5,1)" text_wrap="false" h_alignment="LEFT" v_alignment="TOP" max_size="Point(560,20)" />
+						<TextView name="tvSuggestionLine2" value="" layout_borders="Rect(5,1,5,1)" text_wrap="false" h_alignment="LEFT" v_alignment="TOP" max_size="Point(560,20)" />
+						<TextView name="tvSuggestionLine3" value="" layout_borders="Rect(5,1,5,1)" text_wrap="false" h_alignment="LEFT" v_alignment="TOP" max_size="Point(560,20)" />
+						<TextView name="tvSuggestionLine4" value="" layout_borders="Rect(5,1,5,1)" text_wrap="false" h_alignment="LEFT" v_alignment="TOP" max_size="Point(560,20)" />
+						<TextView name="tvSuggestionMore" value="" layout_borders="Rect(5,1,5,1)" text_wrap="false" h_alignment="LEFT" v_alignment="TOP" max_size="Point(560,20)" />
+					</View>
+				</BorderView>
 			</View>
 		</BorderView>
 
@@ -79,7 +102,7 @@
 			<View layout_borders="Rect(0,3,0,2)">
 				<!-- Scrollable area for "Behaviour/s" -->
 				<ScrollView h_alignment="LEFT" label="#Behaviour/s" v_scrollbar_mode="auto" scroll_client="behaviour_s_scroll">
-					<ScrollViewChild name="behaviour_s_scroll"  max_size="Point(235,50)">
+					<ScrollViewChild name="behaviour_s_scroll"  max_size="Point(580,200)" min_size="Point(580,150)">
 						<!-- Root view for scrollable content -->
 						<View name="ScrollListRoot">
 							<Haxxor/>

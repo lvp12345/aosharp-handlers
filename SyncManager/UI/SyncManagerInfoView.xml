@@ -18,6 +18,8 @@
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="NPC trade - sync trade items or credits to NPCs." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="Stealth (H/O keys) - sync H and O key presses (not during chat)." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="Commands;" layout_borders="Rect(0,0,0,2)"/>
@@ -27,6 +29,7 @@
 		<TextView value="/syncbags - Enables sync bags." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="/syncuse - Enables sync use." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="/synctrade - Enables sync trading." layout_borders="Rect(0,0,0,2)"/>
+		<TextView value="/syncstealth - Enables stealth key sync." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="/syncchat - Enables sync chat." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value="/spreadem - Same as the Spread Out button." layout_borders="Rect(0,0,0,2)"/>
 		<TextView value=" " layout_borders="Rect(0,0,0,2)"/>

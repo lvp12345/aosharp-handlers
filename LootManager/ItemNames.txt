@@ -1,0 +1,473 @@
+A History of Rubi-Ka
+Chocolate Exultation Gift Box
+Green Lava Floor Lamp
+Green Lava Table-Lamp
+Notum Floor Lamp
+Notum Table-Lamp
+The Monster In The Sea
+Volcano Floor Lamp
+Volcano Table-Lamp
+% Add All Def. Jobe Cluster - Bright (Right-Arm)
+% Add All Def. Jobe Cluster - Faded (Feet)
+% Add All Def. Jobe Cluster - Shiny (Left-Arm)
+% Add All Def. Refined Jobe Cluster - Bright (Right-Arm)
+% Add All Def. Refined Jobe Cluster - Faded (Feet)
+% Add All Def. Refined Jobe Cluster - Shiny (Left-Arm)
+% Add All Off Jobe Cluster - Bright (Right-Arm)
+% Add All Off Jobe Cluster - Faded (Feet)
+% Add All Off Jobe Cluster - Shiny (Left-Arm)
+% Add All Off Refined Jobe Cluster - Bright (Right-Arm)
+% Add All Off Refined Jobe Cluster - Faded (Feet)
+% Add All Off Refined Jobe Cluster - Shiny (Left-Arm)
+100 NCU Memory
+10th level Ninja Katana
+1244 Co - Mathis Multi-Energy Rifle
+1244 Co - Mathis Multi-Energy Rifle Construction Manual
+1244 Co - Senior Mathis Multi-Energy Rifle
+1244 Co - Senior Mathis Multi-Energy Rifle Construction Manual
+16 - 31  NCU Memory
+1h Blunt Cluster - Bright (Right-Wrist)
+1h Blunt Cluster - Faded (Right-Hand)
+1h Blunt Cluster - Shiny (Right-Arm)
+1h Blunt Refined Cluster - Bright (Right-Wrist)
+1h Blunt Refined Cluster - Faded (Right-Hand)
+1h Blunt Refined Cluster - Shiny (Right-Arm)
+1h Blunt Weapon Base
+1h Edged Weapon Cluster - Bright (Right-Wrist)
+1h Edged Weapon Cluster - Faded (Right-Hand)
+1h Edged Weapon Cluster - Shiny (Right-Arm)
+1h Edged Weapon Refined Cluster - Bright (Right-Wrist)
+1h Edged Weapon Refined Cluster - Faded (Right-Hand)
+1h Edged Weapon Refined Cluster - Shiny (Right-Arm)
+1-Hand Blunt Memory Cell
+1-Hand Blunt Skill NCU (1/6)
+1-Hand Blunt Skill NCU (2/6)
+1-Hand Blunt Skill NCU (3/6)
+1-Hand Blunt Skill NCU (4/6)
+1-Hand Blunt Skill NCU (5/6)
+1-Hand Blunt Skill NCU (6/6)
+1-Hand Edge Skill NCU (1/6)
+1-Hand Edge Skill NCU (2/6)
+1-Hand Edge Skill NCU (3/6)
+1-Hand Edge Skill NCU (4/6)
+1-Hand Edge Skill NCU (5/6)
+1-Hand Edge Skill NCU (6/6)
+1-Hand Edged Memory Cell
+1st edition Pistola Di Macchina Mini Automatico 2
+1st Improvement Omni-Internops Armor Boots
+1st Improvement Omni-Internops Armor Gloves
+1st Improvement Omni-Internops Armor Helmet
+1st Improvement Omni-Internops Armor Pants
+1st Improvement Omni-Internops Armor Sleeves
+1st Improvement Omni-Internops Body Armor
+1st Improvement Omni-Internops Elite Armor Boots
+1st Improvement Omni-Internops Elite Armor Gloves
+1st Improvement Omni-Internops Elite Armor Helmet
+1st Improvement Omni-Internops Elite Armor Pants
+1st Improvement Omni-Internops Elite Armor Sleeves
+1st Improvement Omni-Internops Elite Body Armor
+1st level Ninja Katana
+1st level Ninja Tanto
+1st level Ninja Wakisashi
+1st Rate Bau Cyber Armor Helmet
+2 - 3 NCU Memory
+25 NCU Memory
+2560-Bit Encryption Compiler
+29485 Glasses
+2h Blunt Cluster - Bright (Left-Arm)
+2h Blunt Cluster - Faded (Chest)
+2h Blunt Cluster - Shiny (Right-Arm)
+2h Blunt Refined Cluster - Bright (Left-Arm)
+2h Blunt Refined Cluster - Faded (Chest)
+2h Blunt Refined Cluster - Shiny (Right-Arm)
+2H Blunt Weapon Base
+2h Edged Cluster - Bright (Left-Arm)
+2h Edged Cluster - Faded (Waist)
+2h Edged Cluster - Shiny (Right-Arm)
+2h Edged Refined Cluster - Bright (Left-Arm)
+2h Edged Refined Cluster - Faded (Waist)
+2h Edged Refined Cluster - Shiny (Right-Arm)
+2H Edged Weapon Base
+2-Hand Blunt Memory Cell
+2-Hand Blunt Skill NCU (1/6)
+2-Hand Blunt Skill NCU (2/6)
+2-Hand Blunt Skill NCU (3/6)
+2-Hand Blunt Skill NCU (4/6)
+2-Hand Blunt Skill NCU (5/6)
+2-Hand Blunt Skill NCU (6/6)
+2-Hand Edge Skill NCU (1/6)
+2-Hand Edge Skill NCU (2/6)
+2-Hand Edge Skill NCU (3/6)
+2-Hand Edge Skill NCU (4/6)
+2-Hand Edge Skill NCU (5/6)
+2-Hand Edge Skill NCU (6/6)
+2-Hand Edged Memory Cell
+2handed Edged Weapons Field Primer
+2nd edition Pistola Di Macchina Mini Automatico 21
+2nd edition Tuned Pistola Di Macchina Mini Automatico 21
+2nd improvement Omni-Internops Armor Boots
+2nd improvement Omni-Internops Armor Gloves
+2nd improvement Omni-Internops Armor Helmet
+2nd improvement Omni-Internops Armor Pants
+2nd improvement Omni-Internops Armor Sleeves
+2nd improvement Omni-Internops Body Armor
+2nd improvement Omni-Internops Elite Armor Boots
+2nd improvement Omni-Internops Elite Armor Gloves
+2nd improvement Omni-Internops Elite Armor Helmet
+2nd improvement Omni-Internops Elite Armor Pants
+2nd improvement Omni-Internops Elite Armor Sleeves
+2nd improvement Omni-Internops Elite Body Armor
+2nd level Ninja Katana
+2nd level Ninja Tanto
+2nd level Ninja Wakisashi
+2x Layer Carbon-Notum Alloy Blade
+2x Layer Carbon-Notum Alloy Rod
+3 NCU Memory
+32 - 63 NCU Memory
+32-V Docker Chassis
+35 NCU Memory
+3rd edition Pistola Di Macchina Mini Automatico 21
+3rd Improvement Omni-Internops Armor Boots
+3rd Improvement Omni-Internops Armor Gloves
+3rd Improvement Omni-Internops Armor Helmet
+3rd Improvement Omni-Internops Armor Pants
+3rd Improvement Omni-Internops Armor Sleeves
+3rd Improvement Omni-Internops Body Armor
+3rd Improvement Omni-Internops Elite Armor Boots
+3rd Improvement Omni-Internops Elite Armor Gloves
+3rd Improvement Omni-Internops Elite Armor Helmet
+3rd Improvement Omni-Internops Elite Armor Pants
+3rd Improvement Omni-Internops Elite Armor Sleeves
+3rd Improvement Omni-Internops Elite Body Armor
+3rd level Ninja Katana
+3rd level Ninja Tanto
+3rd level Ninja Wakisashi
+4 - 7 NCU Memory
+45 NCU Memory
+4th Improvement Omni-Internops Armor Boots
+4th Improvement Omni-Internops Armor Gloves
+4th Improvement Omni-Internops Armor Helmet
+4th Improvement Omni-Internops Armor Pants
+4th Improvement Omni-Internops Armor Sleeves
+4th Improvement Omni-Internops Body Armor
+4th Improvement Omni-Internops Elite Armor Boots
+4th Improvement Omni-Internops Elite Armor Gloves
+4th Improvement Omni-Internops Elite Armor Helmet
+4th Improvement Omni-Internops Elite Armor Pants
+4th Improvement Omni-Internops Elite Armor Sleeves
+4th Improvement Omni-Internops Elite Body Armor
+4th level Ninja Katana
+4th level Ninja Wakisashi
+4x Layer Carbon-Notum Alloy Blade
+4x Layer Carbon-Notum Alloy Rod
+55 NCU Memory
+5-Star Nadir Homage Armor Boots
+5-Star Nadir Homage Armor Gloves
+5-Star Nadir Homage Armor Helmet
+5-Star Nadir Homage Armor Pants
+5-Star Nadir Homage Armor Sleeves
+5-Star Nadir Homage Body Armor
+5th Improvement Omni-Internops Armor Boots
+5th Improvement Omni-Internops Armor Gloves
+5th Improvement Omni-Internops Armor Helmet
+5th Improvement Omni-Internops Armor Pants
+5th Improvement Omni-Internops Armor Sleeves
+5th Improvement Omni-Internops Body Armor
+5th Improvement Omni-Internops Elite Armor Boots
+5th Improvement Omni-Internops Elite Armor Gloves
+5th Improvement Omni-Internops Elite Armor Helmet
+5th Improvement Omni-Internops Elite Armor Pants
+5th Improvement Omni-Internops Elite Armor Sleeves
+5th Improvement Omni-Internops Elite Body Armor
+5th level Ninja Katana
+5th level Ninja Wakisashi
+64 NCU Memory
+6th Improvement Omni-Internops Armor Boots
+6th Improvement Omni-Internops Armor Gloves
+6th Improvement Omni-Internops Armor Helmet
+6th Improvement Omni-Internops Armor Pants
+6th Improvement Omni-Internops Armor Sleeves
+6th Improvement Omni-Internops Body Armor
+6th Improvement Omni-Internops Elite Armor Boots
+6th Improvement Omni-Internops Elite Armor Gloves
+6th Improvement Omni-Internops Elite Armor Helmet
+6th Improvement Omni-Internops Elite Armor Pants
+6th Improvement Omni-Internops Elite Armor Sleeves
+6th Improvement Omni-Internops Elite Body Armor
+6th level Ninja Katana
+7th level Ninja Katana
+8 - 15 NCU Memory
+8 NCU Memory
+8th level Ninja Katana
+8x Layer Carbon-Notum Alloy Blade
+8x Layer Carbon-Notum Alloy Rod
+9th level Ninja Katana
+A bag
+A Beer Jug
+A blasted Skeleton
+A Bright NanoCluster of Nano Regeneration
+A Broken Android
+A Broken Immortal Katana
+A Burnt Out Memory Chip
+A cache of Fleas...
+A cache of Fleas... Shadowlands
+A canister of notum constricted uranium
+A Christmas Gift
+A Crashed Android
+A cup.
+A DCSD containing 1 BBI Minami-90 Sticky Love Rain
+A DCSD containing 1 Fine-Tuned Westinghouse
+A DCSD containing 1 M150 N.A. Booster Edition
+A DCSD containing 10 BBI Minami-90 Sticky Love Rains
+A DCSD containing 10 Fine-Tuned Westinghouses
+A DCSD containing 10 M150 N.A. Booster Editions
+A DCSD containing 11 BBI Minami-90 Sticky Love Rains
+A DCSD containing 11 Fine-Tuned Westinghouses
+A DCSD containing 11 M150 N.A. Booster Editions
+A DCSD containing 12 BBI Minami-90 Sticky Love Rains
+A DCSD containing 12 Fine-Tuned Westinghouses
+A DCSD containing 12 M150 N.A. Booster Editions
+A DCSD containing 2 BBI Minami-90 Sticky Love Rains
+A DCSD containing 2 Fine-Tuned Westinghouses
+A DCSD containing 2 M150 N.A. Booster Editions
+A DCSD containing 3 BBI Minami-90 Sticky Love Rains
+A DCSD containing 3 Fine-Tuned Westinghouses
+A DCSD containing 3 M150 N.A. Booster Editions
+A DCSD containing 4 BBI Minami-90 Sticky Love Rains
+A DCSD containing 4 Fine-Tuned Westinghouses
+A DCSD containing 4 M150 N.A. Booster Editions
+A DCSD containing 5 BBI Minami-90 Sticky Love Rains
+A DCSD containing 5 Fine-Tuned Westinghouses
+A DCSD containing 5 M150 N.A. Booster Editions
+A DCSD containing 6 BBI Minami-90 Sticky Love Rains
+A DCSD containing 6 Fine-Tuned Westinghouses
+A DCSD containing 6 M150 N.A. Booster Editions
+A DCSD containing 7 BBI Minami-90 Sticky Love Rains
+A DCSD containing 7 Fine-Tuned Westinghouses
+A DCSD containing 7 M150 N.A. Booster Editions
+A DCSD containing 8 BBI Minami-90 Sticky Love Rains
+A DCSD containing 8 Fine-Tuned Westinghouses
+A DCSD containing 8 M150 N.A. Booster Editions
+A DCSD containing 9 BBI Minami-90 Sticky Love Rains
+A DCSD containing 9 Fine-Tuned Westinghouses
+A DCSD containing 9 M150 N.A. Booster Editions
+A Dimension Crushing Storage Device
+A Faded Immortal Katana
+A Fine Quality Jar
+A fisherman
+A Friendly Whisperer
+A frozen rat
+A frozen rat Shadowlands
+A Guide to Creating Useful Medical Libraries
+A handful of enigma fibers
+A Heart Breaker
+A Highly Sustainable Device
+A Immortal Katana
+A Jar
+A lair of lizards
+A lair of lizards Shadowlands
+A Leet Doll
+A little brown book
+A message to Finding Serenity
+A Minor Booze
+A Never-ending Being of Light
+A nice Glass
+A Note to Supply Master Eel
+A Note to Supply Master Smug
+A note to The One Who Endlessly Tries from The Milliner
+A note you got from Leading Blossom
+A note you got from The Long One Making Sounds
+A Page From The Yomi Grimoire
+A Parcel for Palmiero
+A piece of cloth
+A Quick Guide for Making Emergency Treatment Labs
+A Recipe for the Creation of Common Stimulant Injectors
+A Rotting Skeleton
+A Scepter
+A serious bunch of enigma fibers
+A Shadowleet Doll
+A Shining NanoCluster of Nano Regeneration
+A shoppinglist you made while talking to the Ergo Adonis terminal.
+A Silver Platter
+A Simple Latex Mask
+A Single Charged Liquid Bomb
+A Single Strand of Glowing Dark Energy
+A Single Strand of Glowing Dark Energy yaaaaa
+A Ski
+A Skull
+A slightly dented molar from the great ice golem
+A Small Sample of Alien Tissue
+A Smoke Bomb
+A Smoke Bomb Shadowlands
+A Snowman Body and Head
+A Special Snowlfake
+A Strong String
+A Very Nice Glass
+A Well Shaped Tool of Torturing
+A Yuletide Visage
+A.F.D. Twohander
+A-9000 Guardbot Controller
+Abaddon Upgrade: Defense
+Abaddon Upgrade: Essence
+Abaddon Upgrade: Life
+Abaddon Upgrade: Nano
+Abaddon Upgrade: Offense
+Abaddon Upgrade: Skill
+Aban Blueprint Pattern of the Projection of Cama
+Aban Blueprint Pattern of the Projection of Dalja
+Aban Blueprint Pattern of the Projection of Gilthar
+Aban Blueprint Pattern of the Projection of Lord Galahad
+Aban Blueprint Pattern of the Projection of Lord Mordeth
+Aban Blueprint Pattern of the Projection of Vanya
+Aban Fala's Bracer of Apprehension
+Aban Fala's Bracer of Brute Force
+Aban Fala's Bracer of Dexterity
+Aban Fala's Bracer of Endurance
+Aban Fala's Bracer of Logic
+Aban Fala's Bracer of Mental Strength
+Aban Pattern 'Wistful Apparition'
+Aban-Bhotaar Blueprint Pattern of the Projection of Cama
+Aban-Bhotaar Blueprint Pattern of the Projection of Dalja
+Aban-Bhotaar Blueprint Pattern of the Projection of Gilthar
+Aban-Bhotaar Blueprint Pattern of the Projection of Lord Galahad
+Aban-Bhotaar Blueprint Pattern of the Projection of Lord Mordeth
+Aban-Bhotaar Blueprint Pattern of the Projection of Vanya
+Abandonment of the Xan
+Abeadan's T-shirt
+Abeadan's T-shirt Spawner
+Abereeji Nippon-Tech Armor
+Abereeji Nippon-Tech Armor Boots
+Abereeji Nippon-Tech Armor Gloves
+Abereeji Nippon-Tech Armor Helmet
+Abereeji Nippon-Tech Armor Pants
+Abereeji Nippon-Tech Armor Sleeves
+Abereeji Nippon-Tech Body Armor
+Abhorrent Hammer
+Abigail
+Abigail Construction Manual
+Monster Parts
+Monster Parts with Ivory
+Pelted Monster Parts
+Pelted Monster Parts with Ivory
+Acolyte Robe (monster wear)
+Archdeacon Robe (monster wear)
+Charred and torn pieces of an old diary
+Charred parts and pieces of an old diary
+Charred pieces of a diary
+Dominus Robe (monster wear)
+Exarch Robe (monster wear)
+Failed Repaired Crystal (Rebuild Casing)
+Failed Repaired Crystal (Recondition Parts)
+Failed Repaired Crystal (Retaliatory Barrier)
+Faithful Robe (monster wear)
+High Exarch Robe (monster wear)
+Instruction Disc (Recompiling Memory Analyzer)
+Instruction Disc (Recondition Parts)
+Instruction Disc (Recuperative Respite)
+Kamikaze Drone Monster Item
+Large Zigball Banners - Milky Way Monsters
+Map Reader Upgrade - Machines
+Map Reader Upgrade - Monsters
+Map Reader Upgrade - People
+Monster Egg Containment Field
+Monster Invulnerability Item
+Monster Sunglasses
+MonsterItem Soul Hungry Demon
+MonsterItem Soul Hungry Demon 2
+MonsterItem Soul Hungry Demon 3
+MonsterItem Soul Hungry Demon 4
+Nano Crystal (AI monsternano hover 1)
+Nano Crystal (AI monsternano hover 110)
+Nano Crystal (AI monsternano hover 140)
+Nano Crystal (AI monsternano hover 170)
+Nano Crystal (AI monsternano hover 200)
+Nano Crystal (AI monsternano hover 250)
+Nano Crystal (AI monsternano hover 30)
+Nano Crystal (AI monsternano hover 300)
+Nano Crystal (AI monsternano hover 60)
+Nano Crystal (AI monsternano hover 90)
+Nano Crystal (Monster Mez Attack)
+Nano Crystal (Recondition Parts)
+NanoCrystal (Monster Mezz Attack)
+OT M500 SWAT Monster
+Preceptor Robe (monster wear)
+Reverend Robe (monster wear)
+Shank of Maze - Left Monster Version
+Skull Smasher - Left Monster Version
+SOL K-91 Gold Monster
+SOL K-91 Mini Monster
+SOL K-91 Monster
+SOL K-91 Yellow Monster
+SOL K-94 Baby Monster
+SOL K-94 Crimson Monster
+SOL K-94 Monster
+SOL K-94 Pink Monster
+Solid Skull Smasher - Left Monster Version
+Suspicious Looking Parts of Biotechnology
+Torn parts and pieces of an old diary
+Torn pieces of a diary
+Uriel Blade - Monster
+Uriel Short Sword - Monster
+Uriel Staff - Monster
+Uriel Sword Staff - Monster
+Viper Staff - monster only - LH
+VP Gift - Monster Spawn Item
+Windcaller Robe (monster wear)
+Zigball Banners - Milky Way Monsters
+Zigball Pennant - Milky Way Monsters
+Basic Armor
+Basic Boots
+Basic Gloves
+Basic Helmet
+Basic Pants
+Basic Sleeves
+Basic Weapon
+Biomaterial
+Bioplastic
+Carbon Fiber
+Ceramic Armor Plate
+Cloth
+Concrete Cushion
+Crystalline Carbon
+Curved Blade
+Curved Handle
+Curved Hilt
+Curved Shaft
+Curved Stock
+Curved Trigger
+Curved Tube
+Elastomer
+Exoskeleton
+Fiberplastic
+Flexsteel
+Hardened Aluminum
+Iron
+Kevlar
+Liquid Metal
+Metaplast
+Nano Crystal
+Nano Formula
+Nano Programming Interface
+Notum
+Organic Goo
+Plasteel
+Polymer
+Quantum Processor
+Reinforced Kevlar
+Rubber
+Silicon
+Steel
+Superconductor
+Titanium
+Tungsten
+Viral Serum
+Weapon Upgrade
+Weapon Upgrade Device
+Weapon Upgrade Kit
+Weapon Upgrade Module
+Weapon Upgrade Package
+Weapon Upgrade Platform
+Weapon Upgrade System
+Weapon Upgrade Tool
+Weapon Upgrade Unit
+Weapon Upgrade Utility

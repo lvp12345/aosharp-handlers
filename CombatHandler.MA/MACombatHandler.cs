@@ -34,6 +34,7 @@ namespace CombatHandler.MartialArtist
         private static View _perkView;
 
         private static double _ncuUpdateTime;
+        private static double _lastSettingsSaveTime;
 
         public MACombatHandler(string pluginDir) : base(pluginDir)
         {
@@ -60,6 +61,7 @@ namespace CombatHandler.MartialArtist
                 Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentageChangedEvent += SelfNanoPerkPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentageChangedEvent += TeamHealPerkPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentageChangedEvent += TeamNanoPerkPercentage_Changed;
+                Config.CharSettings[DynelManager.LocalPlayer.Name].RedDawnPercentageChangedEvent += RedDawnPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentageChangedEvent += BodyDevAbsorbsItemPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentageChangedEvent += StrengthAbsorbsItemPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].StaminaAbsorbsItemPercentageChangedEvent += StaminaAbsorbsItemPercentage_Changed;
@@ -67,8 +69,13 @@ namespace CombatHandler.MartialArtist
                 _settings.AddVariable("AllPlayers", false);
                 _settings["AllPlayers"] = false;
 
-                _settings.AddVariable("Buffing", true);
-                _settings.AddVariable("Composites", true);
+                // Note: Buffing and Composites are controlled by OptionCheckBox in the UI
+                // They are saved to the AOSharp options system (CombatHandler__Buffing, CombatHandler__Composites)
+                // Add them with false default, then load the actual saved value from options
+                _settings.AddVariable("Buffing", false);
+                _settings.AddVariable("Composites", false);
+                // Force load from options system to get the saved state
+                _settings.Load();
 
                 _settings.AddVariable("GlobalBuffing", true);
                 _settings.AddVariable("GlobalComposites", true);
@@ -115,6 +122,7 @@ namespace CombatHandler.MartialArtist
                 //Perks
                 RegisterPerkProcessor(PerkHash.Moonmist, Moonmist, CombatActionPriority.High);
                 RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
+                RegisterPerkProcessor(PerkHash.RedDawn, RedDawn, CombatActionPriority.High);
 
                 //Heals
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SingleTargetHealing).OrderByStackingOrder(),
@@ -253,6 +261,7 @@ namespace CombatHandler.MartialArtist
                 SelfNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].SelfNanoPerkPercentage;
                 TeamHealPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamHealPerkPercentage;
                 TeamNanoPerkPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage;
+                RedDawnPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].RedDawnPercentage;
                 BodyDevAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].BodyDevAbsorbsItemPercentage;
                 StrengthAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StrengthAbsorbsItemPercentage;
                 StaminaAbsorbsItemPercentage = Config.CharSettings[DynelManager.LocalPlayer.Name].StaminaAbsorbsItemPercentage;
@@ -429,6 +438,7 @@ namespace CombatHandler.MartialArtist
                 window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
                 window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
                 window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+                window.FindView("RedDawnPercentageBox", out TextInputView redDawnInput);
 
                 if (sphereInput != null)
                 {
@@ -453,6 +463,10 @@ namespace CombatHandler.MartialArtist
                 if (teamNanoInput != null)
                 {
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                }
+                if (redDawnInput != null)
+                {
+                    redDawnInput.Text = $"{RedDawnPercentage}";
                 }
             }
             else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
@@ -467,6 +481,7 @@ namespace CombatHandler.MartialArtist
                 container.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
                 container.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
                 container.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+                container.FindView("RedDawnPercentageBox", out TextInputView redDawnInput);
 
                 if (sphereInput != null)
                 {
@@ -491,6 +506,10 @@ namespace CombatHandler.MartialArtist
                 if (teamNanoInput != null)
                 {
                     teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+                }
+                if (redDawnInput != null)
+                {
+                    redDawnInput.Text = $"{RedDawnPercentage}";
                 }
             }
         }
@@ -628,6 +647,13 @@ namespace CombatHandler.MartialArtist
                     _ncuUpdateTime = Time.NormalTime;
                 }
 
+                // Save settings periodically (every 5 seconds)
+                if (Time.NormalTime > _lastSettingsSaveTime + 5.0f)
+                {
+                    SettingsController.CleanUp();
+                    _lastSettingsSaveTime = Time.NormalTime;
+                }
+
                 CancelBuffs();
                 #region UI
 
@@ -650,6 +676,7 @@ namespace CombatHandler.MartialArtist
                     window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
                     window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
                     window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+                    window.FindView("RedDawnPercentageBox", out TextInputView redDawnInput);
 
                     window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
                     window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
@@ -801,6 +828,17 @@ namespace CombatHandler.MartialArtist
                             if (Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage != teamNanoValue)
                             {
                                 Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = teamNanoValue;
+                            }
+                        }
+                    }
+
+                    if (redDawnInput != null && !string.IsNullOrEmpty(redDawnInput.Text))
+                    {
+                        if (int.TryParse(redDawnInput.Text, out int redDawnValue))
+                        {
+                            if (Config.CharSettings[DynelManager.LocalPlayer.Name].RedDawnPercentage != redDawnValue)
+                            {
+                                Config.CharSettings[DynelManager.LocalPlayer.Name].RedDawnPercentage = redDawnValue;
                             }
                         }
                     }
@@ -995,6 +1033,17 @@ namespace CombatHandler.MartialArtist
             if (fightingTarget.HealthPercent < 90 && DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) < 2) { return false; }
 
             return PerkCondtionProcessors.CombatBuffPerk(perk, fightingTarget, ref actionTarget);
+        }
+
+        protected bool RedDawn(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (RedDawnPercentage == 0) { return false; }
+            if (!perk.IsAvailable) { return false; }
+
+            if (DynelManager.LocalPlayer.HealthPercent > RedDawnPercentage) { return false; }
+
+            actionTarget.ShouldSetTarget = false;
+            return true;
         }
 
         #endregion
@@ -1209,7 +1258,8 @@ namespace CombatHandler.MartialArtist
 
         protected override bool ShouldUseSpecialAttack(SpecialAttack specialAttack)
         {
-            if (specialAttack == SpecialAttack.Dimach && _settings["DimachSelection"].AsInt32() != 0) { return false; }
+            // Never use the Dimach skill - only use Dimach books via DimachItem processor
+            if (specialAttack == SpecialAttack.Dimach) { return false; }
 
             return true;
         }

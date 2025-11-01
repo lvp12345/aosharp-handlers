@@ -78,6 +78,8 @@ namespace CombatHandler.Generic
         [JsonIgnore]
         public int TeamNanoPerkPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage :20;
         [JsonIgnore]
+        public int RedDawnPercentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].RedDawnPercentage : 30;
+        [JsonIgnore]
         public int BattleGroupHeal1Percentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal1Percentage : 60;
         [JsonIgnore]
         public int BattleGroupHeal2Percentage => CharSettings != null && CharSettings.ContainsKey(DynelManager.LocalPlayer.Name) ? CharSettings[DynelManager.LocalPlayer.Name].BattleGroupHeal2Percentage : 50;
@@ -326,6 +328,23 @@ namespace CombatHandler.Generic
                 {
                     _teamNanoPerkPercentage = value;
                     TeamNanoPerkPercentageChangedEvent?.Invoke(this, value);
+                }
+            }
+        }
+        public event EventHandler<int> RedDawnPercentageChangedEvent;
+        private int _redDawnPercentage = 30;
+        public int RedDawnPercentage
+        {
+            get
+            {
+                return _redDawnPercentage;
+            }
+            set
+            {
+                if (_redDawnPercentage != value)
+                {
+                    _redDawnPercentage = value;
+                    RedDawnPercentageChangedEvent?.Invoke(this, value);
                 }
             }
         }

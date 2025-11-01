@@ -28,5 +28,14 @@ namespace SyncManager.IPCMessages
 
         [AoMember(6)]
         public bool Attack { get; set; }
+
+        [AoMember(7)]
+        public bool Stealth { get; set; }
+
+        [AoMember(8)]
+        public bool Target { get; set; }
+
+        [AoMember(9)]
+        public bool Nanos { get; set; }
     }
 }

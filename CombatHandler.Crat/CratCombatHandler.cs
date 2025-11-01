@@ -240,7 +240,7 @@ namespace CombatHandler.Bureaucrat
                 RegisterPerkProcessor(PerkHash.Leadership, Leadership);
                 RegisterPerkProcessor(PerkHash.Governance, Governance);
                 RegisterPerkProcessor(PerkHash.TheDirector, TheDirector);
-                RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
+                //RegisterPerkProcessor(PerkHash.EvasiveStance, EvasiveStance, CombatActionPriority.High);
 
                 //Pet Spawners
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.SupportPets).OrderByStackingOrder(), CarloSpawner);

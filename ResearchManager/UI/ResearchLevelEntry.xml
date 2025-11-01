@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="yes"?>
+<root>
+  <View view_layout="horizontal" name="researchEntry" layout_borders="Rect(2,1,2,1)" max_size="Point(400,-1)">
+    <!-- Research Name -->
+    <TextView name="researchName" value="Research Name" layout_borders="Rect(5,2,5,2)" max_size="Point(120,-1)" color="0xFFFFFFFF"/>
+
+    <!-- Level Display -->
+    <TextView name="researchLevel" value="Level 0" layout_borders="Rect(5,2,5,2)" max_size="Point(50,-1)" color="0xFF00FF00"/>
+
+    <!-- Progress Bar -->
+    <TextView name="progressBarFill" value="░░░░░░░░░░░░░░░░░░░░" layout_borders="Rect(5,2,5,2)" max_size="Point(120,-1)" color="0xFF00AA00"/>
+
+    <!-- Progress Percentage -->
+    <TextView name="researchProgress" value="0%" layout_borders="Rect(5,2,5,2)" max_size="Point(40,-1)" color="0xFFFFFF00"/>
+
+    <!-- Status Indicator -->
+    <TextView name="researchStatus" value="○" layout_borders="Rect(5,2,5,2)" max_size="Point(20,-1)" color="0xFF888888"/>
+  </View>
+</root>

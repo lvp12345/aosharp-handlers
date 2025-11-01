@@ -65,6 +65,7 @@ namespace CombatHandler.Agent
         private static double _mongo;
         private static double _challenger;
         private static double _singleTaunt;
+        private static double _lastFPCastAttemptTime;
 
         int check;
 
@@ -1049,9 +1050,15 @@ namespace CombatHandler.Agent
         {
             try
             {
-                if (Game.IsZoning || Time.NormalTime < _lastZonedTime + 0.6)
+                if (Game.IsZoning)
                 {
                     return;
+                }
+
+                // Attempt FP casting immediately after zoning for up to 3 seconds
+                if (Time.NormalTime < _lastZonedTime + 3.0)
+                {
+                    FP();
                 }
 
                 if (Time.NormalTime > _ncuUpdateTime + 1.0f)

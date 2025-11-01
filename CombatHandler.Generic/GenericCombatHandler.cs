@@ -2,6 +2,7 @@
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
+using AOSharp.Core.Movement;
 using AOSharp.Core.UI;
 using CombatHandler.Generic.IPCMessages;
 using System;
@@ -53,6 +54,7 @@ namespace CombatHandler.Generic
         public static int SelfNanoPerkPercentage = 0;
         public static int TeamHealPerkPercentage = 0;
         public static int TeamNanoPerkPercentage = 0;
+        public static int RedDawnPercentage = 0;
 
         public static int BioRegrowthPercentage = 0;
 
@@ -255,7 +257,7 @@ namespace CombatHandler.Generic
                 //Taunt Tools
                 RegisterItemProcessor(RelevantGenericItems.TauntTools, TauntTool, CombatActionPriority.Medium);
 
-                RegisterItemProcessor(new int[] { RelevantGenericItems.StrengthOfTheImmortal, RelevantGenericItems.MightOfTheRevenant, RelevantGenericItems.BarrowStrength }, TotwDmgShoulder);
+                //RegisterItemProcessor(new int[] { RelevantGenericItems.StrengthOfTheImmortal, RelevantGenericItems.MightOfTheRevenant, RelevantGenericItems.BarrowStrength }, TotwDmgShoulder);
 
                 RegisterItemProcessor(RelevantGenericItems.GnuffsEternalRiftCrystal, RelevantGenericItems.GnuffsEternalRiftCrystal, DamageItem);
                 RegisterItemProcessor(RelevantGenericItems.Drone, RelevantGenericItems.Drone, DamageItem);
@@ -269,7 +271,7 @@ namespace CombatHandler.Generic
                 RegisterItemProcessor(RelevantGenericItems.RingofTatteredFlame, RelevantGenericItems.RingofTatteredFlame, DamageItem);
                 RegisterItemProcessor(RelevantGenericItems.RingofWeepingFlesh, RelevantGenericItems.RingofWeepingFlesh, DamageItem);
 
-                RegisterItemProcessor(new int[] { RelevantGenericItems.DesecratedFlesh, RelevantGenericItems.CorruptedFlesh, RelevantGenericItems.WitheredFlesh }, TotwShieldShoulder);
+                //RegisterItemProcessor(new int[] { RelevantGenericItems.DesecratedFlesh, RelevantGenericItems.CorruptedFlesh, RelevantGenericItems.WitheredFlesh }, TotwShieldShoulder);
 
                 RegisterItemProcessor(RelevantGenericItems.AssaultClassTank, RelevantGenericItems.AssaultClassTank, AssaultClass, CombatActionPriority.High);
 
@@ -531,13 +533,7 @@ namespace CombatHandler.Generic
                     }
                 }
 
-                if (DynelManager.LocalPlayer.IsAttacking == true)
-                {
-                    if (DynelManager.Players.Any(p => p.Identity == DynelManager.LocalPlayer.FightingTarget?.Identity))
-                    {
-                        DynelManager.LocalPlayer.StopAttack();
-                    }
-                }
+
 
                 if (DynelManager.LocalPlayer.IsAttacking || DynelManager.LocalPlayer.GetStat(Stat.NumFightingOpponents) > 0)
                 {
@@ -669,7 +665,7 @@ namespace CombatHandler.Generic
         {
             if (!perk.IsAvailable) { return false; }
 
-            if (DynelManager.LocalPlayer.HealthPercent >= 75) { return false; }
+            if (DynelManager.LocalPlayer.HealthPercent == 1) { return false; }
 
             return CombatBuffPerk(perk, fightingTarget, ref actionTarget);
         }
@@ -1776,23 +1772,89 @@ namespace CombatHandler.Generic
             return true;
         }
 
+        private static double _lastCanCastDebugTime = 0;
+        private static double _pendingCastStartTime = 0;
+        private static bool _wasPendingCast = false;
+
         public static bool CanCast(Spell spell)
         {
-            if (Playfield.ModelIdentity.Instance == 152) { return false; }
+            if (Playfield.ModelIdentity.Instance == 152)
+            {
+                LogCanCastDebug("CanCast failed: Playfield 152 (no casting zone)");
+                return false;
+            }
 
-            if (IsPlayerFlyingOrFalling()) { return false; }
+            if (IsPlayerFlyingOrFalling())
+            {
+                LogCanCastDebug("CanCast failed: Player is flying/falling/on hoverboard");
+                return false;
+            }
 
-            if (Spell.HasPendingCast) { return false; }
+            // Track pending cast state and detect stuck casts
+            if (Spell.HasPendingCast)
+            {
+                if (!_wasPendingCast)
+                {
+                    // Just started pending cast
+                    _pendingCastStartTime = Time.NormalTime;
+                    _wasPendingCast = true;
+                }
+                else if (Time.NormalTime > _pendingCastStartTime + 10.0) // 10 second timeout
+                {
+                    // Pending cast has been stuck for too long, try to clear it
+                    LogCanCastDebug("CanCast failed: Spell.HasPendingCast stuck for >10 seconds - attempting to clear");
+
+                    // Try to clear the stuck state by canceling any pending actions
+                    try
+                    {
+                        // Try to interrupt any stuck casting state
+                        MovementController.Instance.Halt();
+                        // Reset our tracking
+                        _wasPendingCast = false;
+                        _pendingCastStartTime = 0;
+                    }
+                    catch
+                    {
+                        // Ignore any errors from attempting to clear
+                    }
+                }
+
+                LogCanCastDebug("CanCast failed: Spell.HasPendingCast is true");
+                return false;
+            }
+            else
+            {
+                // No longer pending cast
+                _wasPendingCast = false;
+                _pendingCastStartTime = 0;
+            }
 
             if (_settings["GlobalRez"].AsBool())
             {
                 if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 1)
                 {
+                    LogCanCastDebug($"CanCast failed: Skill reduction active ({DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction)})");
                     return false;
                 }
             }
 
-            return spell.Cost < DynelManager.LocalPlayer.Nano;
+            if (spell.Cost >= DynelManager.LocalPlayer.Nano)
+            {
+                LogCanCastDebug($"CanCast failed: Insufficient nano ({DynelManager.LocalPlayer.Nano}/{spell.Cost})");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static void LogCanCastDebug(string message)
+        {
+            // Only log debug messages every 10 seconds to avoid spam
+            if (Time.NormalTime > _lastCanCastDebugTime + 10.0)
+            {
+                Chat.WriteLine($"[Doctor Debug] {message}");
+                _lastCanCastDebugTime = Time.NormalTime;
+            }
         }
 
         public static bool IsPlayerFlyingOrFalling()
@@ -2517,6 +2579,12 @@ namespace CombatHandler.Generic
         {
             Config.CharSettings[DynelManager.LocalPlayer.Name].TeamNanoPerkPercentage = e;
             TeamNanoPerkPercentage = e;
+            Config.Save();
+        }
+        public static void RedDawnPercentage_Changed(object s, int e)
+        {
+            Config.CharSettings[DynelManager.LocalPlayer.Name].RedDawnPercentage = e;
+            RedDawnPercentage = e;
             Config.Save();
         }
         public static void BattleGroupHeal1Percentage_Changed(object s, int e)

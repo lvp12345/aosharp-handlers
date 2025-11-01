@@ -85,8 +85,9 @@ namespace LootManager
                                     entry.FindChild("ItemName", out TextView tx);
 
                                     string scope = r.Global ? "Global" : "Local";
+                                    string exactMatch = r.ExactMatch ? "Exact" : "NotExact";
                                     // tx.Text = (iEntry + 1).ToString() + " - " + scope + " - [" + r.Lql.PadLeft(3, ' ') + "-" + r.Hql.PadLeft(3, ' ') + "  ] - " + r.Name;
-                                    tx.Text = $"{(iEntry + 1).ToString()} - {scope} - [ {r.Lql.PadLeft(3, ' ')} - {r.Hql.PadLeft(3, ' ')} ] - {r.Name} - {r.Quantity} - {r.BagName}";
+                                    tx.Text = $"{(iEntry + 1).ToString()} - {scope} - {exactMatch} - [ {r.Lql.PadLeft(3, ' ')} - {r.Hql.PadLeft(3, ' ')} ] - {r.Name} - {r.Quantity} - {r.BagName}";
 
                                     _multiListView.AddChild(entry, false);
                                     iEntry++;

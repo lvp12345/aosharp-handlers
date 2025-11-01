@@ -82,7 +82,7 @@ namespace CombatHandler.Generic
                     {
                         Config = Config.Load($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\AOSharp\\Generic\\{DynelManager.LocalPlayer.Name}\\Config.json");
 
-                        settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "CombatHandler", "Settings", WindowStyle.Default, WindowFlags.AutoScale);
+                        settingsWindow = Window.Create(new Rect(50, 50, 300, 300), "CombatHandler", "Settings", WindowStyle.Default, WindowFlags.AutoScale | WindowFlags.NoFade);
 
                         if (settingsWindow != null && !settingsWindow.IsVisible)
                         {

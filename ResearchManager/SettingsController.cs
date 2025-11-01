@@ -41,27 +41,9 @@ namespace ResearchManager
 
         private static void RegisterChatCommandIfNotRegistered()
         {
-            if (!IsCommandRegistered)
-            {
-                Chat.RegisterCommand("researchmanager", (string command, string[] param, ChatWindow chatWindow) =>
-                {
-                    try
-                    {
-                        settingsWindow = Window.Create(new Rect(50, 50, 280, 280), "Research Manager", "Settings", WindowStyle.Default, WindowFlags.None);
-
-                        if (settingsWindow != null && !settingsWindow.IsVisible)
-                        {
-                            AppendSettingsTab("Research Manager", settingsWindow);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Chat.WriteLine(e);
-                    }
-                });
-
-                IsCommandRegistered = true;
-            }
+            // Command registration is now handled in the main ResearchManager class
+            // This method is kept for compatibility but doesn't register the command
+            IsCommandRegistered = true;
         }
 
         public static void AppendSettingsTab(String settingsName, Window testWindow)

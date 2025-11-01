@@ -13,5 +13,8 @@
         NPCStartTrade = 208,
         NPCTrade = 209,
         NPCFinishTrade = 210,
+        StealthKey = 211,
+        Cast = 212,
+        Remove = 213,
     }
 }

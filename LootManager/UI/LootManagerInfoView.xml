@@ -1,14 +1,88 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <root>
-  <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="Settings" layout_borders="Rect(0,0,0,2)" max_size="Point(16000,-1)">
-    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
-	  <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-	  <TextView value="Rename bags to anything containing 'loot' (without '', case sensitive); " layout_borders="Rect(0,0,0,2)"/>
-	  <TextView value="Items will move to any bag with 'loot' in the name eg 'loot1', 'loot2', etc. You may notice bags opening and closing, this is expected." layout_borders="Rect(0,0,0,2)"/>
-	  <TextView value="Quantity = 999 equals infinite items." layout_borders="Rect(0,0,0,2)"/>
-	  <TextView value="Default BagName = 'loot' (For future use)." layout_borders="Rect(0,0,0,2)"/>
-	  <TextView value="" layout_borders="Rect(0,0,0,2)"/>
-    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,5,5,5)"/>
-    <TextView value=" " layout_borders="Rect(0,0,0,2)"/>
+  <BorderView v_alignment="TOP" h_alignment="CENTER" view_layout="vertical" name="Settings" layout_borders="Rect(5,5,5,5)" max_size="Point(16000,-1)">
+
+    <!-- Header -->
+    <TextView value="LootManager - Feature Guide" layout_borders="Rect(5,5,5,5)" text_color="0xFFFFFF00"/>
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,2,5,5)"/>
+
+    <!-- Basic Setup -->
+    <TextView value="BASIC SETUP:" layout_borders="Rect(5,5,5,2)" text_color="0xFFFFFF00"/>
+    <TextView value="• Rename bags to contain 'loot' (case sensitive)" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Items will move to any bag with 'loot' in name (loot1, loot2, etc.)" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• You may notice bags opening/closing - this is normal" layout_borders="Rect(10,2,5,5)"/>
+
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,2,5,5)"/>
+
+    <!-- Main Options -->
+    <TextView value="MAIN OPTIONS:" layout_borders="Rect(5,5,5,2)" text_color="0xFFFFFF00"/>
+    <TextView value="• Enabled: Turn LootManager on/off" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Delete Leftovers: Delete items NOT in your loot rules" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Loot All: Loot ALL items and move them to loot bags" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="  (ignores your loot list completely)" layout_borders="Rect(15,2,5,2)"/>
+    <TextView value="• Leave corpse open: Keep corpses open after processing" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Disable when full: Stop looting when bags are full" layout_borders="Rect(10,2,5,5)"/>
+
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,2,5,5)"/>
+
+    <!-- Mutual Exclusivity -->
+    <TextView value="IMPORTANT - MUTUAL EXCLUSIVITY:" layout_borders="Rect(5,5,5,2)" text_color="0xFFFF0000"/>
+    <TextView value="• 'Delete Leftovers' and 'Loot All' cannot both be enabled" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Enabling one will automatically disable the other" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• This prevents accidentally deleting everything!" layout_borders="Rect(10,2,5,5)"/>
+
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,2,5,5)"/>
+
+    <!-- Match Types -->
+    <TextView value="MATCH TYPES (Per Item):" layout_borders="Rect(5,5,5,2)" text_color="0xFFFFFF00"/>
+    <TextView value="• Exact: Item name must match EXACTLY" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="  Example: 'Monster Parts' only matches 'Monster Parts'" layout_borders="Rect(15,2,5,2)"/>
+    <TextView value="• Not Exact: Partial matching allowed" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="  Example: 'Monster' matches 'Monster Parts', 'Monster Claw', etc." layout_borders="Rect(15,2,5,5)"/>
+
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,2,5,5)"/>
+
+    <!-- Item Settings -->
+    <TextView value="ITEM SETTINGS:" layout_borders="Rect(5,5,5,2)" text_color="0xFFFFFF00"/>
+    <TextView value="• Min/Max QL: Quality level range (1-500)" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Quantity: How many to loot (999 = infinite)" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Global Scope: Rule applies to all characters" layout_borders="Rect(10,2,5,5)"/>
+
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,2,5,5)"/>
+
+    <!-- Dynamic Updates -->
+    <TextView value="DYNAMIC LIST UPDATES:" layout_borders="Rect(5,5,5,2)" text_color="0xFFFFFF00"/>
+    <TextView value="• Adding items to your loot list while corpses are open" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="  will immediately check and loot those items" layout_borders="Rect(15,2,5,2)"/>
+    <TextView value="• No need to close and reopen corpses!" layout_borders="Rect(10,2,5,5)"/>
+
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,2,5,5)"/>
+
+    <!-- Name Search & Autocomplete -->
+    <TextView value="NAME SEARCH &amp; AUTOCOMPLETE:" layout_borders="Rect(5,5,5,2)" text_color="0xFFFFFF00"/>
+    <TextView value="• Type in the Name field to search for items" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Suggestions appear below the Name field as you type" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Database contains thousands of AO items" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Suggestions display 4-5 items per line" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Multiple lines show when many matches found" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Click on any suggestion to auto-fill the Name field" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Suggestions update in real-time as you type" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Search is case-insensitive (Monster = monster)" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Partial matches work (typing 'part' finds 'Monster Parts')" layout_borders="Rect(10,2,5,5)"/>
+
+    <BitmapView bitmap_id="GFX_GUI_FRIENDLIST_SPLITTER" layout_borders="Rect(5,2,5,5)"/>
+
+    <!-- Save/Load Lists -->
+    <TextView value="SAVE &amp; LOAD CONFIGURATIONS:" layout_borders="Rect(5,5,5,2)" text_color="0xFFFFFF00"/>
+    <TextView value="• /lmsave &lt;name&gt; - Save current rules with custom name" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• /lmload &lt;name&gt; - Load named configuration" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• /lmlist - Show all available configurations" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Files saved to SavedLootLists folder for organization" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Examples: /lmsave Monster Parts, /lmload Monster Parts" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Save List button shows command examples" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Load List button shows available configurations" layout_borders="Rect(10,2,5,2)"/>
+    <TextView value="• Perfect for switching between loot sets for different instances or tasks" layout_borders="Rect(10,2,5,5)"/>
+
+    <TextView value=" " layout_borders="Rect(0,0,0,5)"/>
   </BorderView>
 </root>

@@ -1,9 +1,12 @@
 ﻿using AOSharp.Common.GameData;
+using AOSharp.Common.GameData.UI;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.IPC;
 using AOSharp.Core.UI;
 using CombatHandler.Generic;
+using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
+using SmokeLounge.AOtomation.Messaging.Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +22,7 @@ namespace CombatHandler.Engineer
         private static bool ToggleRez = false;
 
         public static bool _syncPets;
+        private static Identity _lastAttackTarget;
 
         private static Window _petWindow;
         private static Window _petCommandWindow;
@@ -31,7 +35,6 @@ namespace CombatHandler.Engineer
         private static Window _specialAttacksWindow;
 
         private static View _buffView;
-        private static View _petView;
         private static View _petCommandView;
         private static View _procView;
         private static View _itemView;
@@ -60,6 +63,8 @@ namespace CombatHandler.Engineer
                 IPCChannel.RegisterCallback((int)IPCOpcode.PetSyncOff, SyncPetsOffMessage);
                 IPCChannel.RegisterCallback((int)IPCOpcode.ClearBuffs, OnClearBuffs);
                 IPCChannel.RegisterCallback((int)IPCOpcode.Disband, OnDisband);
+
+                Network.N3MessageReceived += Network_N3MessageReceived;
 
                 Config.CharSettings[DynelManager.LocalPlayer.Name].FountainOfLifeHealPercentageChangedEvent += FountainOfLifeHealPercentage_Changed;
                 Config.CharSettings[DynelManager.LocalPlayer.Name].BioCocoonPercentageChangedEvent += BioCocoonPercentage_Changed;
@@ -396,7 +401,7 @@ namespace CombatHandler.Engineer
             }
         }
 
-        public Window[] _windows => new Window[] { _petWindow, _petCommandWindow, _buffWindow, _healingWindow, _procWindow, _itemWindow, _perkWindow, _trimmersWindow };
+        public Window[] _windows => new Window[] { _petWindow, _petCommandWindow, _buffWindow, _healingWindow, _procWindow, _itemWindow, _perkWindow, _trimmersWindow, _specialAttacksWindow };
 
         #region Callbacks
 
@@ -496,6 +501,127 @@ namespace CombatHandler.Engineer
             }
         }
 
+        private void Network_N3MessageReceived(object sender, N3Message e)
+        {
+            if (!_settings["SyncPets"].AsBool()) { return; }
+
+            var localPlayer = DynelManager.LocalPlayer;
+
+            switch (e.N3MessageType)
+            {
+                case N3MessageType.Attack:
+                    var attack = (AttackMessage)e;
+                    if (attack.Identity != localPlayer.Identity) { return; }
+
+                    // Only send attack command if target changed (new target)
+                    if (_lastAttackTarget != attack.Target)
+                    {
+                        _lastAttackTarget = attack.Target;
+
+                        foreach (Pet pet in localPlayer.Pets.Where(p => p.Type == PetType.Attack || p.Type == PetType.Support))
+                        {
+                            pet?.Attack(attack.Target);
+                        }
+                    }
+                    break;
+
+                case N3MessageType.StopFight:
+                    var stop = (StopFightMessage)e;
+                    if (stop.Identity != localPlayer.Identity) { return; }
+
+                    _lastAttackTarget = Identity.None;
+                    // Don't send follow commands anymore - let pets continue fighting
+                    break;
+            }
+        }
+
+        #endregion
+
+        #region Window Management
+
+        private Window CreateWindowWithAllTabs()
+        {
+            // Create the main window using the Pets view as the base (this becomes the first tab content)
+            Window window = Window.CreateFromXml("Pets", $@"{PluginDirectory}\UI\EngineerPetsView.xml",
+                windowSize: new Rect(0, 0, 320, 345),
+                windowStyle: WindowStyle.Default,
+                windowFlags: WindowFlags.AutoScale | WindowFlags.NoFade);
+
+            // Load all other views (skip _petView since the base window already contains pets content)
+            _petCommandView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerPetCommandView.xml");
+            _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerItemsView.xml");
+            _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerPerksView.xml");
+            _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerBuffsView.xml");
+            _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerHealingView.xml");
+            _procView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerProcsView.xml");
+            _trimmersView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerTrimmersView.xml");
+            _specialAttacksView = View.CreateFromXml(PluginDirectory + "\\UI\\EngSpecialAttacksView.xml");
+
+            // Add all tabs to the window (skip "Pets" since it's already the base window content)
+            window.AppendTab("Commands", _petCommandView);
+            window.AppendTab("Items", _itemView);
+            window.AppendTab("Perks", _perkView);
+            window.AppendTab("Buffs", _buffView);
+            window.AppendTab("Healing", _healingView);
+            window.AppendTab("Procs", _procView);
+            window.AppendTab("Trimmers", _trimmersView);
+            window.AppendTab("SpecialAttacks", _specialAttacksView);
+
+            // Set up input field values for tabs that need them
+            SetupInputFields(window);
+
+            window.Show(true);
+            return window;
+        }
+
+        private void SetupInputFields(Window window)
+        {
+            // Setup Healing tab inputs
+            window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
+            if (FountainOfLifeInput != null)
+            {
+                FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
+            }
+
+            // Setup Perks tab inputs
+            window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
+            window.FindView("SphereDelayBox", out TextInputView sphereInput);
+            window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
+            window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
+            window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
+            window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
+            window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
+            window.FindView("BioRegrowthPercentageBox", out TextInputView bioRegrowthPercentageInput);
+            window.FindView("BioRegrowthDelayBox", out TextInputView bioRegrowthDelayInput);
+
+            if (bioCocoonInput != null) bioCocoonInput.Text = $"{BioCocoonPercentage}";
+            if (sphereInput != null) sphereInput.Text = $"{CycleSpherePerkDelay}";
+            if (witOfTheAtroxInput != null) witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
+            if (selfHealInput != null) selfHealInput.Text = $"{SelfHealPerkPercentage}";
+            if (selfNanoInput != null) selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
+            if (teamHealInput != null) teamHealInput.Text = $"{TeamHealPerkPercentage}";
+            if (teamNanoInput != null) teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
+            if (bioRegrowthPercentageInput != null) bioRegrowthPercentageInput.Text = $"{BioRegrowthPercentage}";
+            if (bioRegrowthDelayInput != null) bioRegrowthDelayInput.Text = $"{CycleBioRegrowthPerkDelay}";
+
+            // Setup Items tab inputs
+            window.FindView("StimTargetBox", out TextInputView stimTargetInput);
+            window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
+            window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
+            window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
+            window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
+            window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
+            window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
+
+            if (stimTargetInput != null) stimTargetInput.Text = $"{StimTargetName}";
+            if (stimHealthInput != null) stimHealthInput.Text = $"{StimHealthPercentage}";
+            if (stimNanoInput != null) stimNanoInput.Text = $"{StimNanoPercentage}";
+            if (kitHealthInput != null) kitHealthInput.Text = $"{KitHealthPercentage}";
+            if (kitNanoInput != null) kitNanoInput.Text = $"{KitNanoPercentage}";
+            if (bodyDevInput != null) bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
+            if (strengthInput != null) strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
+        }
+
         #endregion
 
         #region Handles
@@ -529,335 +655,190 @@ namespace CombatHandler.Engineer
         private void HandlePetViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
+            if (window != null && window.IsValid)
             {
-                if (window.Views.Contains(_petView)) { return; }
+                return; // Window already exists with all tabs
+            }
 
-                _petView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerPetsView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Pets", XmlViewName = "EngineerPetsView" }, _petView);
-            }
-            else if (_petWindow == null || (_petWindow != null && !_petWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_petWindow, PluginDir, new WindowOptions() { Name = "Pets", XmlViewName = "EngineerPetsView" }, _petView, out var container);
-                _petWindow = container;
-            }
+            Window newWindow = CreateWindowWithAllTabs();
+            // Assign the same window to all window variables so they all reference the same window
+            _petWindow = newWindow;
+            _petCommandWindow = newWindow;
+            _perkWindow = newWindow;
+            _buffWindow = newWindow;
+            _healingWindow = newWindow;
+            _itemWindow = newWindow;
+            _trimmersWindow = newWindow;
+            _procWindow = newWindow;
+            _specialAttacksWindow = newWindow;
         }
+
         private void HandlePetCommandViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
+            if (window != null && window.IsValid)
             {
-                if (window.Views.Contains(_petCommandView)) { return; }
+                return; // Window already exists with all tabs
+            }
 
-                _petCommandView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerPetCommandView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Commands", XmlViewName = "EngineerPetCommandView" }, _petCommandView);
-            }
-            else if (_petCommandWindow == null || (_petCommandWindow != null && !_petCommandWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_petCommandWindow, PluginDir, new WindowOptions() { Name = "Commands", XmlViewName = "EngineerPetCommandView" }, _petCommandView, out var container);
-                _petCommandWindow = container;
-            }
+            Window newWindow = CreateWindowWithAllTabs();
+            // Assign the same window to all window variables so they all reference the same window
+            _petWindow = newWindow;
+            _petCommandWindow = newWindow;
+            _perkWindow = newWindow;
+            _buffWindow = newWindow;
+            _healingWindow = newWindow;
+            _itemWindow = newWindow;
+            _trimmersWindow = newWindow;
+            _procWindow = newWindow;
+            _specialAttacksWindow = newWindow;
         }
+
         private void HandlePerkViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
+            if (window != null && window.IsValid)
             {
-                if (window.Views.Contains(_perkView)) { return; }
-
-                _perkView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerPerksView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Perks", XmlViewName = "EngineerPerksView" }, _perkView);
-
-                window.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
-                window.FindView("SphereDelayBox", out TextInputView sphereInput);
-                window.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-
-                window.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
-                window.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
-                window.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
-                window.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
-
-                window.FindView("BioRegrowthPercentageBox", out TextInputView bioRegrowthPercentageInput);
-                window.FindView("BioRegrowthDelayBox", out TextInputView bioRegrowthDelayInput);
-
-                if (bioCocoonInput != null)
-                {
-                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
-                }
-                if (sphereInput != null)
-                {
-                    sphereInput.Text = $"{CycleSpherePerkDelay}";
-                }
-                if (witOfTheAtroxInput != null)
-                {
-                    witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
-                }
-                if (selfHealInput != null)
-                {
-                    selfHealInput.Text = $"{SelfHealPerkPercentage}";
-                }
-                if (selfNanoInput != null)
-                {
-                    selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
-                }
-                if (teamHealInput != null)
-                {
-                    teamHealInput.Text = $"{TeamHealPerkPercentage}";
-                }
-                if (teamNanoInput != null)
-                {
-                    teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
-                }
-                if (bioRegrowthPercentageInput != null)
-                {
-                    bioRegrowthPercentageInput.Text = $"{BioRegrowthPercentage}";
-                }
-                if (bioRegrowthDelayInput != null)
-                {
-                    bioRegrowthDelayInput.Text = $"{CycleBioRegrowthPerkDelay}";
-                }
+                return; // Window already exists with all tabs
             }
-            else if (_perkWindow == null || (_perkWindow != null && !_perkWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_perkWindow, PluginDir, new WindowOptions() { Name = "Perks", XmlViewName = "EngineerPerksView" }, _perkView, out var container);
-                _perkWindow = container;
 
-                container.FindView("BioCocoonPercentageBox", out TextInputView bioCocoonInput);
-                container.FindView("SphereDelayBox", out TextInputView sphereInput);
-                container.FindView("WitDelayBox", out TextInputView witOfTheAtroxInput);
-
-                container.FindView("SelfHealPerkPercentageBox", out TextInputView selfHealInput);
-                container.FindView("SelfNanoPerkPercentageBox", out TextInputView selfNanoInput);
-                container.FindView("TeamHealPerkPercentageBox", out TextInputView teamHealInput);
-                container.FindView("TeamNanoPerkPercentageBox", out TextInputView teamNanoInput);
-
-                container.FindView("BioRegrowthPercentageBox", out TextInputView bioRegrowthPercentageInput);
-                container.FindView("BioRegrowthDelayBox", out TextInputView bioRegrowthDelayInput);
-
-                if (bioCocoonInput != null)
-                {
-                    bioCocoonInput.Text = $"{BioCocoonPercentage}";
-                }
-                if (sphereInput != null)
-                {
-                    sphereInput.Text = $"{CycleSpherePerkDelay}";
-                }
-                if (witOfTheAtroxInput != null)
-                {
-                    witOfTheAtroxInput.Text = $"{CycleWitOfTheAtroxPerkDelay}";
-                }
-                if (selfHealInput != null)
-                {
-                    selfHealInput.Text = $"{SelfHealPerkPercentage}";
-                }
-                if (selfNanoInput != null)
-                {
-                    selfNanoInput.Text = $"{SelfNanoPerkPercentage}";
-                }
-                if (teamHealInput != null)
-                {
-                    teamHealInput.Text = $"{TeamHealPerkPercentage}";
-                }
-                if (teamNanoInput != null)
-                {
-                    teamNanoInput.Text = $"{TeamNanoPerkPercentage}";
-                }
-                if (bioRegrowthPercentageInput != null)
-                {
-                    bioRegrowthPercentageInput.Text = $"{BioRegrowthPercentage}";
-                }
-                if (bioRegrowthDelayInput != null)
-                {
-                    bioRegrowthDelayInput.Text = $"{CycleBioRegrowthPerkDelay}";
-                }
-            }
+            Window newWindow = CreateWindowWithAllTabs();
+            // Assign the same window to all window variables so they all reference the same window
+            _petWindow = newWindow;
+            _petCommandWindow = newWindow;
+            _perkWindow = newWindow;
+            _buffWindow = newWindow;
+            _healingWindow = newWindow;
+            _itemWindow = newWindow;
+            _trimmersWindow = newWindow;
+            _procWindow = newWindow;
+            _specialAttacksWindow = newWindow;
         }
+
         private void HandleBuffViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
+            if (window != null && window.IsValid)
             {
-                if (window.Views.Contains(_buffView)) { return; }
+                return; // Window already exists with all tabs
+            }
 
-                _buffView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerBuffsView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Buffs", XmlViewName = "EngineerBuffsView" }, _buffView);
-            }
-            else if (_buffWindow == null || (_buffWindow != null && !_buffWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_buffWindow, PluginDir, new WindowOptions() { Name = "Buffs", XmlViewName = "EngineerBuffsView" }, _buffView, out var container);
-                _buffWindow = container;
-            }
+            Window newWindow = CreateWindowWithAllTabs();
+            // Assign the same window to all window variables so they all reference the same window
+            _petWindow = newWindow;
+            _petCommandWindow = newWindow;
+            _perkWindow = newWindow;
+            _buffWindow = newWindow;
+            _healingWindow = newWindow;
+            _itemWindow = newWindow;
+            _trimmersWindow = newWindow;
+            _procWindow = newWindow;
+            _specialAttacksWindow = newWindow;
         }
+
         private void HandleHealingViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-
-            if (window != null)
+            if (window != null && window.IsValid)
             {
-                if (window.Views.Contains(_healingView)) { return; }
-
-                _healingView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerHealingView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Healing", XmlViewName = "EngineerHealingView" }, _healingView);
-
-                window.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
-
-                if (FountainOfLifeInput != null)
-                {
-                    FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
-                }
+                return; // Window already exists with all tabs
             }
-            else if (_healingWindow == null || (_healingWindow != null && !_healingWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_healingWindow, PluginDir, new WindowOptions() { Name = "Healing", XmlViewName = "EngineerHealingView" }, _healingView, out var container);
-                _healingWindow = container;
 
-                container.FindView("FountainOfLifeHealPercentageBox", out TextInputView FountainOfLifeInput);
-
-                if (FountainOfLifeInput != null)
-                {
-                    FountainOfLifeInput.Text = $"{Healing.FountainOfLifeHealPercentage}";
-                }
-            }
+            Window newWindow = CreateWindowWithAllTabs();
+            // Assign the same window to all window variables so they all reference the same window
+            _petWindow = newWindow;
+            _petCommandWindow = newWindow;
+            _perkWindow = newWindow;
+            _buffWindow = newWindow;
+            _healingWindow = newWindow;
+            _itemWindow = newWindow;
+            _trimmersWindow = newWindow;
+            _procWindow = newWindow;
+            _specialAttacksWindow = newWindow;
         }
 
         private void HandleItemViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
+            if (window != null && window.IsValid)
             {
-                //Cannot re-use the view, as crashes client. I don't know why.
-                if (window.Views.Contains(_itemView)) { return; }
-
-                _itemView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerItemsView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Items", XmlViewName = "EngineerItemsView" }, _itemView);
-
-                window.FindView("StimTargetBox", out TextInputView stimTargetInput);
-                window.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
-                window.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
-                window.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
-                window.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
-                window.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
-                window.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
-
-                if (stimTargetInput != null)
-                {
-                    stimTargetInput.Text = $"{StimTargetName}";
-                }
-                if (stimHealthInput != null)
-                {
-                    stimHealthInput.Text = $"{StimHealthPercentage}";
-                }
-                if (stimNanoInput != null)
-                {
-                    stimNanoInput.Text = $"{StimNanoPercentage}";
-                }
-                if (kitHealthInput != null)
-                {
-                    kitHealthInput.Text = $"{KitHealthPercentage}";
-                }
-                if (kitNanoInput != null)
-                {
-                    kitNanoInput.Text = $"{KitNanoPercentage}";
-                }
-                if (bodyDevInput != null)
-                {
-                    bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
-                }
-                if (strengthInput != null)
-                {
-                    strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
-                }
+                return; // Window already exists with all tabs
             }
-            else if (_itemWindow == null || (_itemWindow != null && !_itemWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_itemWindow, PluginDir, new WindowOptions() { Name = "Items", XmlViewName = "EngineerItemsView" }, _itemView, out var container);
-                _itemWindow = container;
 
-                container.FindView("StimTargetBox", out TextInputView stimTargetInput);
-                container.FindView("StimHealthPercentageBox", out TextInputView stimHealthInput);
-                container.FindView("StimNanoPercentageBox", out TextInputView stimNanoInput);
-                container.FindView("KitHealthPercentageBox", out TextInputView kitHealthInput);
-                container.FindView("KitNanoPercentageBox", out TextInputView kitNanoInput);
-                container.FindView("BodyDevAbsorbsItemPercentageBox", out TextInputView bodyDevInput);
-                container.FindView("StrengthAbsorbsItemPercentageBox", out TextInputView strengthInput);
-
-                if (stimTargetInput != null)
-                {
-                    stimTargetInput.Text = $"{StimTargetName}";
-                }
-                if (stimHealthInput != null)
-                {
-                    stimHealthInput.Text = $"{StimHealthPercentage}";
-                }
-                if (stimNanoInput != null)
-                {
-                    stimNanoInput.Text = $"{StimNanoPercentage}";
-                }
-                if (kitHealthInput != null)
-                {
-                    kitHealthInput.Text = $"{KitHealthPercentage}";
-                }
-                if (kitNanoInput != null)
-                {
-                    kitNanoInput.Text = $"{KitNanoPercentage}";
-                }
-                if (bodyDevInput != null)
-                {
-                    bodyDevInput.Text = $"{BodyDevAbsorbsItemPercentage}";
-                }
-                if (strengthInput != null)
-                {
-                    strengthInput.Text = $"{StrengthAbsorbsItemPercentage}";
-                }
-            }
+            Window newWindow = CreateWindowWithAllTabs();
+            // Assign the same window to all window variables so they all reference the same window
+            _petWindow = newWindow;
+            _petCommandWindow = newWindow;
+            _perkWindow = newWindow;
+            _buffWindow = newWindow;
+            _healingWindow = newWindow;
+            _itemWindow = newWindow;
+            _trimmersWindow = newWindow;
+            _procWindow = newWindow;
+            _specialAttacksWindow = newWindow;
         }
+
         private void HandleTrimmersViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
+            if (window != null && window.IsValid)
             {
-                if (window.Views.Contains(_trimmersView)) { return; }
+                return; // Window already exists with all tabs
+            }
 
-                _trimmersView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerTrimmersView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Trimmers", XmlViewName = "EngineerTrimmersView" }, _trimmersView);
-            }
-            else if (_trimmersWindow == null || (_trimmersWindow != null && !_trimmersWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_trimmersWindow, PluginDir, new WindowOptions() { Name = "Trimmers", XmlViewName = "EngineerTrimmersView" }, _trimmersView, out var container);
-                _trimmersWindow = container;
-            }
+            Window newWindow = CreateWindowWithAllTabs();
+            // Assign the same window to all window variables so they all reference the same window
+            _petWindow = newWindow;
+            _petCommandWindow = newWindow;
+            _perkWindow = newWindow;
+            _buffWindow = newWindow;
+            _healingWindow = newWindow;
+            _itemWindow = newWindow;
+            _trimmersWindow = newWindow;
+            _procWindow = newWindow;
+            _specialAttacksWindow = newWindow;
         }
+
         private void HandleProcViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
+            if (window != null && window.IsValid)
             {
-                if (window.Views.Contains(_procView)) { return; }
+                return; // Window already exists with all tabs
+            }
 
-                _procView = View.CreateFromXml(PluginDirectory + "\\UI\\EngineerProcsView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "Procs", XmlViewName = "EngineerProcsView" }, _procView);
-            }
-            else if (_procWindow == null || (_procWindow != null && !_procWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_procWindow, PluginDir, new WindowOptions() { Name = "Procs", XmlViewName = "EngineerProcsView" }, _procView, out var container);
-                _procWindow = container;
-            }
+            Window newWindow = CreateWindowWithAllTabs();
+            // Assign the same window to all window variables so they all reference the same window
+            _petWindow = newWindow;
+            _petCommandWindow = newWindow;
+            _perkWindow = newWindow;
+            _buffWindow = newWindow;
+            _healingWindow = newWindow;
+            _itemWindow = newWindow;
+            _trimmersWindow = newWindow;
+            _procWindow = newWindow;
+            _specialAttacksWindow = newWindow;
         }
+
         private void HandleSpecialAttacksViewClick(object s, ButtonBase button)
         {
             Window window = _windows.Where(c => c != null && c.IsValid).FirstOrDefault();
-            if (window != null)
+            if (window != null && window.IsValid)
             {
-                if (window.Views.Contains(_specialAttacksView)) { return; }
+                return; // Window already exists with all tabs
+            }
 
-                _specialAttacksView = View.CreateFromXml(PluginDirectory + "\\UI\\EngSpecialAttacksView.xml");
-                SettingsController.AppendSettingsTab(window, new WindowOptions() { Name = "SpecialAttacks", XmlViewName = "EngSpecialAttacksView" }, _specialAttacksView);
-            }
-            else if (_specialAttacksWindow == null || (_specialAttacksWindow != null && !_specialAttacksWindow.IsValid))
-            {
-                SettingsController.CreateSettingsTab(_specialAttacksWindow, PluginDir, new WindowOptions() { Name = "SpecialAttacks", XmlViewName = "EngSpecialAttacksView" }, _specialAttacksView, out var container);
-                _specialAttacksWindow = container;
-            }
+            Window newWindow = CreateWindowWithAllTabs();
+            // Assign the same window to all window variables so they all reference the same window
+            _petWindow = newWindow;
+            _petCommandWindow = newWindow;
+            _perkWindow = newWindow;
+            _buffWindow = newWindow;
+            _healingWindow = newWindow;
+            _itemWindow = newWindow;
+            _trimmersWindow = newWindow;
+            _procWindow = newWindow;
+            _specialAttacksWindow = newWindow;
         }
         #endregion
 
@@ -1374,7 +1355,7 @@ namespace CombatHandler.Engineer
             {
                 if (Item.HasPendingUse) { return false; }
                 if (!CanSpawnPets(petData[spell.Id].PetType)) { return false; }
-                
+
                 shell?.Use();
             }
             else

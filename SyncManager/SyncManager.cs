@@ -45,6 +45,24 @@ namespace SyncManager
         static extern IntPtr GetForegroundWindow();
         bool IsActiveWindow => GetForegroundWindow() == Process.GetCurrentProcess().MainWindowHandle;
 
+        [DllImport("user32.dll")]
+        static extern bool GetAsyncKeyState(int vKey);
+
+        [DllImport("user32.dll")]
+        static extern IntPtr GetActiveWindow();
+
+        private bool _hKeyPressed = false;
+        private bool _oKeyPressed = false;
+        private bool _lKeyPressed = false;
+        private bool _commaKeyPressed = false;
+        private bool _periodKeyPressed = false;
+        private const int VK_H = 0x48;
+        private const int VK_O = 0x4F;
+        private const int VK_L = 0x4C;
+        private const int VK_COMMA = 0xBC;
+        private const int VK_PERIOD = 0xBE;
+        private double _lastSneakToggleTime = 0;
+
         List<int> NPCReceivedItem = new List<int>();
 
         public override void Run()
@@ -72,6 +90,9 @@ namespace SyncManager
             _settings.AddVariable("SyncChat", false);
             _settings.AddVariable("NPCTrade", false);
             _settings.AddVariable("SyncTrade", false);
+            _settings.AddVariable("SyncStealth", false);
+            _settings.AddVariable("SyncTarget", false);
+            _settings.AddVariable("SyncNanos", false);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.StartStop, OnStartStopMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.Attack, OnAttackMessage);
@@ -80,6 +101,9 @@ namespace SyncManager
             IPCChannel.RegisterCallback((int)IPCOpcode.Target, OnLookAt);
             IPCChannel.RegisterCallback((int)IPCOpcode.UISettings, BroadcastSettingsReceived);
             IPCChannel.RegisterCallback((int)IPCOpcode.Spread, ReceivedSpreadOutCommand);
+            IPCChannel.RegisterCallback((int)IPCOpcode.StealthKey, OnStealthKeyMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Cast, OnCastMessage);
+            IPCChannel.RegisterCallback((int)IPCOpcode.Remove, OnRemoveMessage);
 
             IPCChannel.RegisterCallback((int)IPCOpcode.NpcChat, OnNpcChatMessage);
             IPCChannel.RegisterCallback((int)IPCOpcode.NPCStartTrade, OnNPCStartTrade);
@@ -96,6 +120,9 @@ namespace SyncManager
             Chat.RegisterCommand("synctrade", SyncTradeSwitch);
             Chat.RegisterCommand("syncchat", SyncChatSwitch);
             Chat.RegisterCommand("syncnpctrade", SyncNpcTradeSwitch);
+            Chat.RegisterCommand("syncstealth", SyncStealthSwitch);
+            Chat.RegisterCommand("synctarget", SyncTargetSwitch);
+            Chat.RegisterCommand("syncnanos", SyncNanosSwitch);
             Chat.RegisterCommand("spreadem", (string command, string[] param, ChatWindow chatWindow) =>
             {
                 IPCChannel.Broadcast(new SpreadCommand
@@ -151,6 +178,9 @@ namespace SyncManager
                 _settings["SyncChat"] = uISettings.Chat;
                 _settings["SyncTrade"] = uISettings.Trade;
                 _settings["NPCTrade"] = uISettings.NpcTrade;
+                _settings["SyncStealth"] = uISettings.Stealth;
+                _settings["SyncTarget"] = uISettings.Target;
+                _settings["SyncNanos"] = uISettings.Nanos;
             }
         }
 
@@ -219,6 +249,11 @@ namespace SyncManager
                 if (_settings["SyncUse"].AsBool())
                 {
                     HandleSyncUseTick();
+                }
+
+                if (_settings["SyncStealth"].AsBool())
+                {
+                    HandleStealthKeyTick();
                 }
             }
         }
@@ -323,6 +358,182 @@ namespace SyncManager
             }
         }
 
+        void HandleStealthKeyTick()
+        {
+            if (!IsActiveWindow) { return; }
+            if (IsChatWindowOpen()) { return; }
+
+            // Check H key for sneak toggle - only handle ENTERING sneak
+            // Exiting sneak is handled by the movement sync system automatically
+            bool hKeyCurrentlyPressed = GetAsyncKeyState(VK_H);
+            if (hKeyCurrentlyPressed && !_hKeyPressed)
+            {
+                _hKeyPressed = true;
+
+                // Add cooldown to prevent rapid toggling after movement sync actions
+                double currentTime = Time.NormalTime;
+                if (currentTime - _lastSneakToggleTime < 0.5) // 500ms cooldown
+                {
+                    return;
+                }
+
+                // Only broadcast if we're entering sneak (not already sneaking)
+                // If already sneaking, let the automatic movement sync handle the exit
+                if (DynelManager.LocalPlayer.MovementState != MovementState.Sneak)
+                {
+                    // Broadcast sneak entry using the correct MovementAction value
+                    // From AOSharp source: SwitchToSneak = 0x1c (28 decimal)
+                    IPCChannel.Broadcast(new MoveMessage()
+                    {
+                        MoveType = MovementAction.SwitchToSneak, // Use the correct enum value
+                        PlayfieldId = Playfield.Identity.Instance,
+                        Position = DynelManager.LocalPlayer.Position,
+                        Rotation = DynelManager.LocalPlayer.Rotation
+                    });
+                    _lastSneakToggleTime = currentTime;
+                }
+            }
+            else if (!hKeyCurrentlyPressed && _hKeyPressed)
+            {
+                _hKeyPressed = false;
+            }
+
+            // Check O key for aimed shot
+            bool oKeyCurrentlyPressed = GetAsyncKeyState(VK_O);
+            if (oKeyCurrentlyPressed && !_oKeyPressed)
+            {
+                _oKeyPressed = true;
+
+                // Check if we have aimed shot
+                var aimedShot = DynelManager.LocalPlayer.SpecialAttacks?.FirstOrDefault(special => special == SpecialAttack.AimedShot);
+                var target = DynelManager.LocalPlayer.FightingTarget ?? Targeting.Target;
+
+                if (aimedShot != null)
+                {
+                    // Always broadcast the aimed shot attempt, regardless of local conditions
+                    IPCChannel.Broadcast(new StealthActionMessage()
+                    {
+                        ActionType = StealthActionType.AimedShot,
+                        Activate = true
+                    });
+
+                    // Try to execute locally if conditions are met
+                    if (target != null && aimedShot.IsAvailable() && DynelManager.LocalPlayer.MovementState == MovementState.Sneak)
+                    {
+                        aimedShot.UseOn(target);
+                    }
+                }
+            }
+            else if (!oKeyCurrentlyPressed && _oKeyPressed)
+            {
+                _oKeyPressed = false;
+            }
+
+            // Check L key for fling shot
+            bool lKeyCurrentlyPressed = GetAsyncKeyState(VK_L);
+            if (lKeyCurrentlyPressed && !_lKeyPressed)
+            {
+                _lKeyPressed = true;
+
+                var flingShot = DynelManager.LocalPlayer.SpecialAttacks?.FirstOrDefault(special => special == SpecialAttack.FlingShot);
+                var target = DynelManager.LocalPlayer.FightingTarget ?? Targeting.Target;
+
+                if (flingShot != null)
+                {
+                    IPCChannel.Broadcast(new StealthActionMessage()
+                    {
+                        ActionType = StealthActionType.FlingShot,
+                        Activate = true
+                    });
+
+                    if (target != null && flingShot.IsAvailable())
+                    {
+                        flingShot.UseOn(target);
+                    }
+                }
+            }
+            else if (!lKeyCurrentlyPressed && _lKeyPressed)
+            {
+                _lKeyPressed = false;
+            }
+
+            // Check comma key for burst
+            bool commaKeyCurrentlyPressed = GetAsyncKeyState(VK_COMMA);
+            if (commaKeyCurrentlyPressed && !_commaKeyPressed)
+            {
+                _commaKeyPressed = true;
+
+                var burst = DynelManager.LocalPlayer.SpecialAttacks?.FirstOrDefault(special => special == SpecialAttack.Burst);
+                var target = DynelManager.LocalPlayer.FightingTarget ?? Targeting.Target;
+
+                if (burst != null)
+                {
+                    IPCChannel.Broadcast(new StealthActionMessage()
+                    {
+                        ActionType = StealthActionType.Burst,
+                        Activate = true
+                    });
+
+                    if (target != null && burst.IsAvailable())
+                    {
+                        burst.UseOn(target);
+                    }
+                }
+            }
+            else if (!commaKeyCurrentlyPressed && _commaKeyPressed)
+            {
+                _commaKeyPressed = false;
+            }
+
+            // Check period key for full auto
+            bool periodKeyCurrentlyPressed = GetAsyncKeyState(VK_PERIOD);
+            if (periodKeyCurrentlyPressed && !_periodKeyPressed)
+            {
+                _periodKeyPressed = true;
+
+                var fullAuto = DynelManager.LocalPlayer.SpecialAttacks?.FirstOrDefault(special => special == SpecialAttack.FullAuto);
+                var target = DynelManager.LocalPlayer.FightingTarget ?? Targeting.Target;
+
+                if (fullAuto != null)
+                {
+                    IPCChannel.Broadcast(new StealthActionMessage()
+                    {
+                        ActionType = StealthActionType.FullAuto,
+                        Activate = true
+                    });
+
+                    if (target != null && fullAuto.IsAvailable())
+                    {
+                        fullAuto.UseOn(target);
+                    }
+                }
+            }
+            else if (!periodKeyCurrentlyPressed && _periodKeyPressed)
+            {
+                _periodKeyPressed = false;
+            }
+        }
+
+
+
+        bool IsChatWindowOpen()
+        {
+            // Simple check for chat activity - conservative approach
+            try
+            {
+                // Check if Enter key is being held (common for chat activation)
+                if (GetAsyncKeyState(0x0D)) // VK_RETURN
+                    return true;
+
+                return false;
+            }
+            catch
+            {
+                // If we can't determine, err on the side of caution
+                return true;
+            }
+        }
+
         void HandleSpreadButtonClicked(object sender, ButtonBase e)
         {
             IPCChannel.Broadcast(new SpreadCommand
@@ -390,6 +601,7 @@ namespace SyncManager
 
             DynelManager.LocalPlayer.Position = moveMsg.Position;
             DynelManager.LocalPlayer.Rotation = moveMsg.Rotation;
+
             MovementController.Instance.SetMovement(moveMsg.MoveType);
         }
 
@@ -601,6 +813,103 @@ namespace SyncManager
             }
         }
 
+        void OnStealthKeyMessage(int sender, IPCMessage msg)
+        {
+            if (IsActiveWindow) { return; }
+            if (!_settings["Enable"].AsBool()) { return; }
+            if (!_settings["SyncStealth"].AsBool()) { return; }
+            if (IsChatWindowOpen()) { return; }
+
+            var stealthMsg = (StealthActionMessage)msg;
+
+            try
+            {
+                var target = DynelManager.LocalPlayer.FightingTarget ?? Targeting.Target;
+
+                switch (stealthMsg.ActionType)
+                {
+                    case StealthActionType.AimedShot:
+                        var aimedShot = DynelManager.LocalPlayer.SpecialAttacks?.FirstOrDefault(special => special == SpecialAttack.AimedShot);
+                        if (aimedShot != null && target != null && aimedShot.IsAvailable() && DynelManager.LocalPlayer.MovementState == MovementState.Sneak)
+                        {
+                            aimedShot.UseOn(target);
+                        }
+                        break;
+
+                    case StealthActionType.FlingShot:
+                        var flingShot = DynelManager.LocalPlayer.SpecialAttacks?.FirstOrDefault(special => special == SpecialAttack.FlingShot);
+                        if (flingShot != null && target != null && flingShot.IsAvailable())
+                        {
+                            flingShot.UseOn(target);
+                        }
+                        break;
+
+                    case StealthActionType.Burst:
+                        var burst = DynelManager.LocalPlayer.SpecialAttacks?.FirstOrDefault(special => special == SpecialAttack.Burst);
+                        if (burst != null && target != null && burst.IsAvailable())
+                        {
+                            burst.UseOn(target);
+                        }
+                        break;
+
+                    case StealthActionType.FullAuto:
+                        var fullAuto = DynelManager.LocalPlayer.SpecialAttacks?.FirstOrDefault(special => special == SpecialAttack.FullAuto);
+                        if (fullAuto != null && target != null && fullAuto.IsAvailable())
+                        {
+                            fullAuto.UseOn(target);
+                        }
+                        break;
+                }
+                // Note: Sneak entry/exit is now handled by MoveMessage system
+            }
+            catch (Exception ex)
+            {
+                // Silently handle any errors to prevent crashes
+                Chat.WriteLine($"Stealth sync error: {ex.Message}");
+            }
+        }
+
+        void OnCastMessage(int sender, IPCMessage msg)
+        {
+            if (IsActiveWindow) { return; }
+            if (!_settings["Enable"].AsBool()) { return; }
+            if (!_settings["SyncNanos"].AsBool()) { return; }
+
+            var castMsg = (CastMessage)msg;
+
+            if (Spell.Find(castMsg.NanoId, out Spell spell))
+            {
+                if (castMsg.Target != Identity.None)
+                {
+                    var target = DynelManager.Characters.FirstOrDefault(c => c.Identity == castMsg.Target);
+                    if (target != null)
+                    {
+                        spell.Cast(target, true);
+                    }
+                }
+                else
+                {
+                    spell.Cast(true);
+                }
+            }
+        }
+
+        void OnRemoveMessage(int sender, IPCMessage msg)
+        {
+            if (IsActiveWindow) { return; }
+            if (!_settings["Enable"].AsBool()) { return; }
+            if (!_settings["SyncNanos"].AsBool()) { return; }
+
+            var removeMsg = (RemoveMessage)msg;
+
+            // Find and remove the buff by ID
+            var buff = DynelManager.LocalPlayer.Buffs.FirstOrDefault(b => b.Id == removeMsg.NanoId);
+            if (buff != null)
+            {
+                buff.Remove();
+            }
+        }
+
         #endregion
 
         #region OutgoingCommunication
@@ -611,7 +920,7 @@ namespace SyncManager
 
             if (!_settings["Enable"].AsBool()) { return; }
 
-            if (n3Msg.N3MessageType == N3MessageType.LookAt)
+            if (n3Msg.N3MessageType == N3MessageType.LookAt && _settings["SyncTarget"].AsBool())
             {
                 var lookAtMsg = (LookAtMessage)n3Msg;
 
@@ -627,6 +936,28 @@ namespace SyncManager
                 {
                     case N3MessageType.CharDCMove:
                         var charDCMoveMsg = (CharDCMoveMessage)n3Msg;
+
+                        // Handle sneak-related movement sync
+                        if (_settings["SyncStealth"].AsBool())
+                        {
+                            // If this is a sneak-related movement, broadcast it to sync
+                            if (charDCMoveMsg.MoveType.ToString().Contains("Sneak"))
+                            {
+                                // Reset cooldown when we detect sneak movement to prevent conflicts
+                                if (charDCMoveMsg.MoveType == MovementAction.LeaveSneak)
+                                {
+                                    _lastSneakToggleTime = Time.NormalTime;
+                                }
+
+                                IPCChannel.Broadcast(new MoveMessage()
+                                {
+                                    MoveType = charDCMoveMsg.MoveType,
+                                    PlayfieldId = Playfield.Identity.Instance,
+                                    Position = charDCMoveMsg.Position,
+                                    Rotation = charDCMoveMsg.Heading
+                                });
+                            }
+                        }
 
                         IPCChannel.Broadcast(new MoveMessage()
                         {
@@ -648,6 +979,49 @@ namespace SyncManager
                                 Position = DynelManager.LocalPlayer.Position,
                                 Rotation = DynelManager.LocalPlayer.Rotation
                             });
+                        }
+
+                        // Aimed shot sync is handled by direct key detection in HandleStealthKeyTick
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (_settings["SyncNanos"].AsBool())
+            {
+                switch (n3Msg.N3MessageType)
+                {
+                    case N3MessageType.CharacterAction:
+                        var charActionMsg = (CharacterActionMessage)n3Msg;
+
+                        // Filter out Fountain of Life (ID 302907) first, before any other logic
+                        if ((charActionMsg.Action == CharacterActionType.CastNano || charActionMsg.Action == CharacterActionType.RemoveFriendlyNano)
+                            && charActionMsg.Parameter2 == 302907)
+                        {
+                            break; // Skip fountain of life entirely
+                        }
+
+                        if (charActionMsg.Action == CharacterActionType.CastNano)
+                        {
+                            if (Spell.Find(charActionMsg.Parameter2, out Spell spell))
+                            {
+                                IPCChannel.Broadcast(new CastMessage()
+                                {
+                                    NanoId = charActionMsg.Parameter2,
+                                    Target = charActionMsg.Target
+                                });
+                            }
+                        }
+                        else if (charActionMsg.Action == CharacterActionType.RemoveFriendlyNano)
+                        {
+                            if (Spell.Find(charActionMsg.Parameter2, out Spell spell))
+                            {
+                                IPCChannel.Broadcast(new RemoveMessage()
+                                {
+                                    NanoId = charActionMsg.Parameter2
+                                });
+                            }
                         }
                         break;
                     default:
@@ -913,6 +1287,9 @@ namespace SyncManager
                 Chat = _settings["SyncChat"].AsBool(),
                 Trade = _settings["SyncTrade"].AsBool(),
                 NpcTrade = _settings["NPCTrade"].AsBool(),
+                Stealth = _settings["SyncStealth"].AsBool(),
+                Target = _settings["SyncTarget"].AsBool(),
+                Nanos = _settings["SyncNanos"].AsBool(),
             });
         }
 
@@ -1051,6 +1428,32 @@ namespace SyncManager
             }
         }
 
+        void SyncStealthSwitch(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0)
+            {
+                _settings["SyncStealth"] = !_settings["SyncStealth"].AsBool();
+                Chat.WriteLine($"Sync stealth : {_settings["SyncStealth"].AsBool()}");
+            }
+        }
+
+        void SyncTargetSwitch(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0)
+            {
+                _settings["SyncTarget"] = !_settings["SyncTarget"].AsBool();
+                Chat.WriteLine($"Sync target : {_settings["SyncTarget"].AsBool()}");
+            }
+        }
+
+        void SyncNanosSwitch(string command, string[] param, ChatWindow chatWindow)
+        {
+            if (param.Length == 0)
+            {
+                _settings["SyncNanos"] = !_settings["SyncNanos"].AsBool();
+                Chat.WriteLine($"Sync nanos : {_settings["SyncNanos"].AsBool()}");
+            }
+        }
 
         static bool IsOther(Item item)
         {

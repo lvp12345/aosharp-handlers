@@ -65,7 +65,6 @@ namespace CombatHandler.Agent
         private static double _mongo;
         private static double _challenger;
         private static double _singleTaunt;
-        private static double _lastFPCastAttemptTime;
 
         int check;
 
@@ -3316,10 +3315,26 @@ namespace CombatHandler.Agent
 
             if (fpBuff != null)
             {
-                if (!Spell.HasPendingCast && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.FalseProfession)
-                                && fpBuff.MeetsUseReqs() && DynelManager.LocalPlayer.MovementStatePermitsCasting)
+                // During post-zoning window, bypass movement state check to allow immediate FP casting
+                bool isPostZoning = Time.NormalTime < _lastZonedTime + 3.0;
+                bool canCast = !Spell.HasPendingCast && !DynelManager.LocalPlayer.Buffs.Contains(NanoLine.FalseProfession)
+                                && fpBuff.MeetsUseReqs();
+
+                if (isPostZoning)
                 {
-                    fpBuff.Cast(DynelManager.LocalPlayer, true);
+                    // Post-zoning: bypass movement state check
+                    if (canCast)
+                    {
+                        fpBuff.Cast(DynelManager.LocalPlayer, true);
+                    }
+                }
+                else
+                {
+                    // Normal operation: require movement state permits casting
+                    if (canCast && DynelManager.LocalPlayer.MovementStatePermitsCasting)
+                    {
+                        fpBuff.Cast(DynelManager.LocalPlayer, true);
+                    }
                 }
             }
         }

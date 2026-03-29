@@ -1772,59 +1772,42 @@ namespace CombatHandler.Generic
             return true;
         }
 
-        private static double _lastCanCastDebugTime = 0;
         private static double _pendingCastStartTime = 0;
         private static bool _wasPendingCast = false;
 
         public static bool CanCast(Spell spell)
         {
             if (Playfield.ModelIdentity.Instance == 152)
-            {
-                LogCanCastDebug("CanCast failed: Playfield 152 (no casting zone)");
                 return false;
-            }
 
             if (IsPlayerFlyingOrFalling())
-            {
-                LogCanCastDebug("CanCast failed: Player is flying/falling/on hoverboard");
                 return false;
-            }
 
             // Track pending cast state and detect stuck casts
             if (Spell.HasPendingCast)
             {
                 if (!_wasPendingCast)
                 {
-                    // Just started pending cast
                     _pendingCastStartTime = Time.NormalTime;
                     _wasPendingCast = true;
                 }
-                else if (Time.NormalTime > _pendingCastStartTime + 10.0) // 10 second timeout
+                else if (Time.NormalTime > _pendingCastStartTime + 10.0)
                 {
-                    // Pending cast has been stuck for too long, try to clear it
-                    LogCanCastDebug("CanCast failed: Spell.HasPendingCast stuck for >10 seconds - attempting to clear");
-
-                    // Try to clear the stuck state by canceling any pending actions
                     try
                     {
-                        // Try to interrupt any stuck casting state
                         MovementController.Instance.Halt();
-                        // Reset our tracking
                         _wasPendingCast = false;
                         _pendingCastStartTime = 0;
                     }
                     catch
                     {
-                        // Ignore any errors from attempting to clear
                     }
                 }
 
-                LogCanCastDebug("CanCast failed: Spell.HasPendingCast is true");
                 return false;
             }
             else
             {
-                // No longer pending cast
                 _wasPendingCast = false;
                 _pendingCastStartTime = 0;
             }
@@ -1832,29 +1815,13 @@ namespace CombatHandler.Generic
             if (_settings["GlobalRez"].AsBool())
             {
                 if (DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction) > 1)
-                {
-                    LogCanCastDebug($"CanCast failed: Skill reduction active ({DynelManager.LocalPlayer.GetStat(Stat.TemporarySkillReduction)})");
                     return false;
-                }
             }
 
             if (spell.Cost >= DynelManager.LocalPlayer.Nano)
-            {
-                LogCanCastDebug($"CanCast failed: Insufficient nano ({DynelManager.LocalPlayer.Nano}/{spell.Cost})");
                 return false;
-            }
 
             return true;
-        }
-
-        private static void LogCanCastDebug(string message)
-        {
-            // Only log debug messages every 10 seconds to avoid spam
-            if (Time.NormalTime > _lastCanCastDebugTime + 10.0)
-            {
-                Chat.WriteLine($"[Doctor Debug] {message}");
-                _lastCanCastDebugTime = Time.NormalTime;
-            }
         }
 
         public static bool IsPlayerFlyingOrFalling()

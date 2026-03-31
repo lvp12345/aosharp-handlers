@@ -32,6 +32,7 @@ namespace LootManager
         public static string previousErrorMessage = string.Empty;
         bool isBackpackInfoInitialized = false;
         double moveDelay;
+        double processCorpsesDelay;
 
         // Item database for autocomplete
         private static List<string> ItemDatabase = new List<string>();
@@ -57,6 +58,13 @@ namespace LootManager
         private static Dictionary<uint, bool> _corpseHasItems = new Dictionary<uint, bool>();
         private static Dictionary<uint, bool> _corpseNeedsReprocessing = new Dictionary<uint, bool>();
         private static Dictionary<uint, double> _corpseLastInventoryFullTime = new Dictionary<uint, double>();
+
+        // Track which corpses already have a CheckAndCloseCorpse chain running
+        private static HashSet<uint> _corpseCloseChainActive = new HashSet<uint>();
+
+        // Max retries for CheckAndCloseCorpse to prevent infinite loops
+        private static Dictionary<uint, int> _corpseCloseRetries = new Dictionary<uint, int>();
+        private const int MaxCloseRetries = 15;
 
         public override void Run()
         {
@@ -408,6 +416,10 @@ namespace LootManager
                 _corpseCleanupTimer = Time.AONormalTime + 3.0;
             }
 
+            // Throttle corpse processing to avoid running expensive queries every frame
+            if (Time.AONormalTime < processCorpsesDelay) { return; }
+            processCorpsesDelay = Time.AONormalTime + 0.5;
+
             // Get all corpses within range that haven't been fully processed
             var corpses = DynelManager.Corpses.Where(c =>
                 DynelManager.LocalPlayer.Position.DistanceFrom(c.Position) < 5 &&
@@ -544,6 +556,13 @@ namespace LootManager
             {
                 uint corpseId = (uint)container.Identity.Instance;
 
+                // Prevent multiple chains for the same corpse
+                if (_corpseCloseChainActive.Contains(corpseId))
+                    return;
+
+                _corpseCloseChainActive.Add(corpseId);
+                _corpseCloseRetries[corpseId] = 0;
+
                 // Schedule a check to see if the corpse should be closed
                 // This runs repeatedly until all item processing is complete
                 Task.Delay(1000).ContinueWith(_ =>
@@ -561,6 +580,20 @@ namespace LootManager
         {
             try
             {
+                // Enforce retry limit to prevent infinite loops
+                if (!_corpseCloseRetries.ContainsKey(corpseId))
+                    _corpseCloseRetries[corpseId] = 0;
+
+                _corpseCloseRetries[corpseId]++;
+                if (_corpseCloseRetries[corpseId] > MaxCloseRetries)
+                {
+                    _fullyProcessedCorpses.Add(corpseId);
+                    CleanupCorpseTracking(corpseId);
+                    _corpseCloseChainActive.Remove(corpseId);
+                    _corpseCloseRetries.Remove(corpseId);
+                    return;
+                }
+
                 // Find the corpse
                 var corpse = DynelManager.Corpses.FirstOrDefault(c =>
                     (uint)c.Identity.Instance == corpseId);
@@ -569,6 +602,8 @@ namespace LootManager
                 {
                     // Corpse no longer exists, clean up tracking
                     CleanupCorpseTracking(corpseId);
+                    _corpseCloseChainActive.Remove(corpseId);
+                    _corpseCloseRetries.Remove(corpseId);
                     return;
                 }
 
@@ -637,24 +672,25 @@ namespace LootManager
                 }
 
                 // Check if there are still items that could be processed
+                var remainingItems = openContainer.Items.ToList();
                 bool stillHasRelevantItems = false;
 
-                foreach (var item in openContainer.Items.ToList())
+                if (remainingItems.Count > 0)
                 {
-                    if (_settings["LootAll"].AsBool())
+                    if (_settings["LootAll"].AsBool() || _settings["Delete"].AsBool())
                     {
                         stillHasRelevantItems = true;
-                        break;
                     }
-                    else if (CheckRules(item, false))
+                    else
                     {
-                        stillHasRelevantItems = true;
-                        break;
-                    }
-                    else if (_settings["Delete"].AsBool() && !CheckRules(item, false))
-                    {
-                        stillHasRelevantItems = true;
-                        break;
+                        foreach (var item in remainingItems)
+                        {
+                            if (CheckRules(item, false))
+                            {
+                                stillHasRelevantItems = true;
+                                break;
+                            }
+                        }
                     }
                 }
 
@@ -663,8 +699,24 @@ namespace LootManager
                     // Check if we can process items now
                     if (Inventory.NumFreeSlots >= 1 || _settings["Delete"].AsBool())
                     {
+                        int countBefore = remainingItems.Count;
                         // We have space or can delete, reprocess the corpse
                         ReprocessCorpseItems(openContainer);
+
+                        int countAfter = openContainer.Items.ToList().Count;
+
+                        // If no items were actually processed, stop retrying to prevent infinite loop
+                        if (countAfter >= countBefore)
+                        {
+                            _fullyProcessedCorpses.Add(corpseId);
+                            CleanupCorpseTracking(corpseId);
+                            _corpseCloseChainActive.Remove(corpseId);
+                            _corpseCloseRetries.Remove(corpseId);
+
+                            if (ShouldCloseCorpse())
+                                corpse.Open();
+                            return;
+                        }
 
                         // Schedule another check after reprocessing
                         Task.Delay(1000).ContinueWith(_ =>
@@ -700,6 +752,8 @@ namespace LootManager
 
                 // Clean up tracking
                 CleanupCorpseTracking(corpseId);
+                _corpseCloseChainActive.Remove(corpseId);
+                _corpseCloseRetries.Remove(corpseId);
             }
             catch (Exception ex)
             {

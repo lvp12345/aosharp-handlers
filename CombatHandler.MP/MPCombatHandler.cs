@@ -173,6 +173,7 @@ namespace CombatHandler.Metaphysicist
                 _settings.AddVariable("ProcType2Selection", (int)ProcType2Selection.DiffuseRage);
 
                 _settings.AddVariable("Replenish", false);
+                _settings.AddVariable("SpiritPerksOnCooldown", false);
 
                 _settings.AddVariable("Nukes", false);
                 _settings.AddVariable("NormalNuke", false);
@@ -286,6 +287,10 @@ namespace CombatHandler.Metaphysicist
                 RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDoubt, LEProc2, CombatActionPriority.Low);
                 RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistSowDespair, LEProc2, CombatActionPriority.Low);
                 RegisterPerkProcessor(PerkHash.LEProcMetaPhysicistDiffuseRage, LEProc2, CombatActionPriority.Low);
+
+                //Spirit Perks
+                RegisterPerkProcessor(PerkHash.SpiritOfBlessing, SpiritPerk, CombatActionPriority.High);
+                RegisterPerkProcessor(PerkHash.SpiritOfPurity, SpiritPerk, CombatActionPriority.High);
 
                 PluginDirectory = pluginDir;
 
@@ -1893,6 +1898,24 @@ namespace CombatHandler.Metaphysicist
         {
             IPCChannel.Broadcast(new PetFollowMessage());
             OnPetFollow(0, null);
+        }
+
+        private bool SpiritPerk(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
+        {
+            if (IsPlayerFlyingOrFalling()) { return false; }
+            if (!perk.IsAvailable) { return false; }
+
+            if (_settings["SpiritPerksOnCooldown"].AsBool())
+            {
+                actionTarget.ShouldSetTarget = false;
+                return true;
+            }
+
+            // Fall back to threshold-based behavior
+            if (perk.Hash == PerkHash.SpiritOfBlessing)
+                return PerkCondtionProcessors.TeamHealPerk(perk, fightingTarget, ref actionTarget);
+            else
+                return PerkCondtionProcessors.TeamNanoPerk(perk, fightingTarget, ref actionTarget);
         }
 
         private static class RelevantNanos

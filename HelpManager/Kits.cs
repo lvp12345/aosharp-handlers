@@ -36,8 +36,8 @@ namespace HelpManager
             if ((localPlayer.NanoPercent >= HelpManager.KitHealthPercentage && localPlayer.HealthPercent >= HelpManager.KitNanoPercentage) || InCombat() || localPlayer.Cooldowns.ContainsKey(Stat.Treatment)
                || !Spell.List.Any(spell => spell.IsReady) || Spell.HasPendingCast)
             {
-                // Stand up if sitting.
-                if (localPlayer.MovementState == MovementState.Sit)
+                // Don't stand up if a pet still needs a kit
+                if (localPlayer.MovementState == MovementState.Sit && !PetNeedsKit())
                 {
                     MovementController.Instance.SetMovement(MovementAction.LeaveSit);
                 }
@@ -78,6 +78,17 @@ namespace HelpManager
             int skillReq = sitKit.QualityLevel > 200 ? (sitKit.QualityLevel % 200 * 3) + 1501 : (int)(sitKit.QualityLevel * 7.5f);
 
             return localPlayer.GetStat(Stat.FirstAid) >= skillReq || localPlayer.GetStat(Stat.Treatment) >= skillReq;
+        }
+
+        public static bool PetNeedsKit()
+        {
+            var localPlayer = DynelManager.LocalPlayer;
+            if (localPlayer.Pets == null) return false;
+
+            return localPlayer.Pets.Any(p => p.Character != null
+                && localPlayer.DistanceFrom(p.Character) < 10f
+                && p.Character.IsInLineOfSight
+                && (p.Character.HealthPercent <= HelpManager.KitHealthPercentage || p.Character.NanoPercent <= HelpManager.KitNanoPercentage));
         }
 
         public static bool InCombat()

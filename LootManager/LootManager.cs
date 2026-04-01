@@ -420,10 +420,16 @@ namespace LootManager
             if (Time.AONormalTime < processCorpsesDelay) { return; }
             processCorpsesDelay = Time.AONormalTime + 0.5;
 
-            // Get all corpses within range that haven't been fully processed
+            // Get all corpses within range that haven't been fully processed, skipping player corpses
+            var playerNames = new HashSet<string>(
+                DynelManager.Players.Select(p => p.Name),
+                StringComparer.OrdinalIgnoreCase);
+            playerNames.Add(DynelManager.LocalPlayer.Name);
+
             var corpses = DynelManager.Corpses.Where(c =>
                 DynelManager.LocalPlayer.Position.DistanceFrom(c.Position) < 5 &&
-                !_fullyProcessedCorpses.Contains((uint)c.Identity.Instance)).ToList();
+                !_fullyProcessedCorpses.Contains((uint)c.Identity.Instance) &&
+                !playerNames.Contains(c.Name)).ToList();
 
             if (corpses.Count == 0) { return; }
             if (Spell.HasPendingCast) { return; }

@@ -341,7 +341,10 @@ namespace HelpManager
 
                     if (Time.AONormalTime > _sitPetUpdateTimer + 2)
                     {
-                        if (DynelManager.LocalPlayer.Profession == Profession.Metaphysicist)
+                        if (DynelManager.LocalPlayer.Profession == Profession.Metaphysicist
+                            || DynelManager.LocalPlayer.Profession == Profession.Bureaucrat
+                            || DynelManager.LocalPlayer.Profession == Profession.Engineer
+                            || DynelManager.LocalPlayer.Profession == Profession.Agent)
                         {
                             PetSitKit();
                         }
@@ -844,34 +847,37 @@ namespace HelpManager
         private void PetSitKit()
         {
             Kits kits = new Kits();
-            var healpet = DynelManager.LocalPlayer.Pets.Where(x => x.Type == PetType.Heal).FirstOrDefault();
             var kit = Inventory.Items.Where(x => KitItems.Kits.Contains(x.Id)).FirstOrDefault();
 
-            if (healpet == null || kit == null) { return; }
+            if (kit == null || DynelManager.LocalPlayer.Pets == null) { return; }
 
-            if (kits.CanUseSitKit() && DynelManager.LocalPlayer.DistanceFrom(healpet.Character) < 10f
-                && healpet.Character.IsInLineOfSight)
+            var petNeedingKit = DynelManager.LocalPlayer.Pets
+                .Where(p => p.Character != null
+                    && DynelManager.LocalPlayer.DistanceFrom(p.Character) < 10f
+                    && p.Character.IsInLineOfSight
+                    && (p.Character.HealthPercent <= KitHealthPercentage || p.Character.NanoPercent <= KitNanoPercentage))
+                .FirstOrDefault();
+
+            if (petNeedingKit == null) { return; }
+
+            if (kits.CanUseSitKit())
             {
-                if (healpet.Character.NanoPercent <= 75)
+                if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
                 {
-                    if (!DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment))
+                    if (DynelManager.LocalPlayer.MovementState != MovementState.Sit)
                     {
-                        if (DynelManager.LocalPlayer.MovementState != MovementState.Sit)
-                        {
-                            MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
-                        }
-                        else
-                        {
-
-                            kit.Use(healpet.Character, true);
-                        }
+                        MovementController.Instance.SetMovement(MovementAction.SwitchToSit);
                     }
                     else
                     {
-                        if (DynelManager.LocalPlayer.MovementState == MovementState.Sit)
-                        {
-                            MovementController.Instance.SetMovement(MovementAction.LeaveSit);
-                        }
+                        kit.Use(petNeedingKit.Character, true);
+                    }
+                }
+                else
+                {
+                    if (DynelManager.LocalPlayer.MovementState == MovementState.Sit)
+                    {
+                        MovementController.Instance.SetMovement(MovementAction.LeaveSit);
                     }
                 }
             }

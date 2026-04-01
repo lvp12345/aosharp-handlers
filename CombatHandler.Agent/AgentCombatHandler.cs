@@ -163,6 +163,7 @@ namespace CombatHandler.Agent
                 _settings.AddVariable("ACDrainSelection", 0);
                 _settings.AddVariable("DepriveSelection", 1);
                 _settings.AddVariable("RansackSelection", 1);
+                _settings.AddVariable("DrainRefresh", false);
                 _settings.AddVariable("TdrEvades", 0);
                 _settings.AddVariable("TraderModeSelection", 0);
 
@@ -2853,6 +2854,18 @@ namespace CombatHandler.Agent
 
             RansackSelection ransackSelection = (RansackSelection)_settings["RansackSelection"].AsInt32();
 
+            if (_settings["DrainRefresh"].AsBool()
+                && fightingTarget != null
+                && !NeedsReload()
+                && DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Ransack, out Buff ransackRefreshBuff)
+                && ransackRefreshBuff.RemainingTime <= 20)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = fightingTarget;
+                return true;
+            }
+
+            if (ransackSelection == RansackSelection.None) { return false; }
             if (NeedsReload()) { return false; }
 
             switch (ransackSelection)
@@ -2936,6 +2949,18 @@ namespace CombatHandler.Agent
 
             DepriveSelection depriveSelection = (DepriveSelection)_settings["DepriveSelection"].AsInt32();
 
+            if (_settings["DrainRefresh"].AsBool()
+                && fightingTarget != null
+                && !NeedsReload()
+                && DynelManager.LocalPlayer.Buffs.Find(NanoLine.TraderSkillTransferCasterBuff_Deprive, out Buff depriveRefreshBuff)
+                && depriveRefreshBuff.RemainingTime <= 20)
+            {
+                actionTarget.ShouldSetTarget = true;
+                actionTarget.Target = fightingTarget;
+                return true;
+            }
+
+            if (depriveSelection == DepriveSelection.None) { return false; }
             if (NeedsReload()) { return false; }
 
             switch (depriveSelection)

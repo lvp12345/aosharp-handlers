@@ -116,6 +116,7 @@ namespace CombatHandler.Trader
 
                 _settings.AddVariable("DepriveSelection", 4);
                 _settings.AddVariable("RansackSelection", 4);
+                _settings.AddVariable("DrainRefresh", false);
 
                 _settings.AddVariable("RKNanoDrainSelection", 2);
                 _settings.AddVariable("SLNanoDrainSelection", 2);
@@ -1194,6 +1195,24 @@ namespace CombatHandler.Trader
         private bool GenericDrain(Spell spell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget, string SelectionName)
         {
             var settingValue = _settings[SelectionName].AsInt32();
+
+            if (_settings["DrainRefresh"].AsBool()
+                && (SelectionName == "RansackSelection" || SelectionName == "DepriveSelection")
+                && fightingTarget != null
+                && !NeedsReload() && CanCast(spell))
+            {
+                NanoLine refreshCasterBuff = SelectionName == "RansackSelection"
+                    ? NanoLine.TraderSkillTransferCasterBuff_Ransack
+                    : NanoLine.TraderSkillTransferCasterBuff_Deprive;
+
+                if (DynelManager.LocalPlayer.Buffs.Find(refreshCasterBuff, out Buff refreshBuff)
+                    && refreshBuff.RemainingTime <= 20)
+                {
+                    actionTarget.ShouldSetTarget = true;
+                    actionTarget.Target = fightingTarget;
+                    return true;
+                }
+            }
 
             if (settingValue == 0) { return false; }
             if (NeedsReload()) { return false; }

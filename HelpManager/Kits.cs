@@ -17,7 +17,7 @@ namespace HelpManager
             var localPlayer = DynelManager.LocalPlayer;
 
             // Check if we should sit and use the kit..
-            if ((localPlayer.NanoPercent <= HelpManager.KitHealthPercentage || localPlayer.HealthPercent <= HelpManager.KitNanoPercentage) 
+            if ((localPlayer.HealthPercent <= HelpManager.KitHealthPercentage || localPlayer.NanoPercent <= HelpManager.KitNanoPercentage)
                 && !InCombat() && Spell.List.Any(spell => spell.IsReady) && !Spell.HasPendingCast
                 && !localPlayer.Cooldowns.ContainsKey(Stat.Treatment) && CanUseSitKit() && !localPlayer.IsFalling && !DynelManager.LocalPlayer.IsMoving)
             {
@@ -33,7 +33,7 @@ namespace HelpManager
                 }
             }
             // Check if we should stand.
-            if ((localPlayer.NanoPercent >= HelpManager.KitHealthPercentage && localPlayer.HealthPercent >= HelpManager.KitNanoPercentage) || InCombat() || localPlayer.Cooldowns.ContainsKey(Stat.Treatment)
+            if ((localPlayer.HealthPercent >= HelpManager.KitHealthPercentage && localPlayer.NanoPercent >= HelpManager.KitNanoPercentage) || InCombat() || localPlayer.Cooldowns.ContainsKey(Stat.Treatment)
                || !Spell.List.Any(spell => spell.IsReady) || Spell.HasPendingCast)
             {
                 // Don't stand up if a pet still needs a kit
@@ -88,7 +88,27 @@ namespace HelpManager
             return localPlayer.Pets.Any(p => p.Character != null
                 && localPlayer.DistanceFrom(p.Character) < 10f
                 && p.Character.IsInLineOfSight
-                && (p.Character.HealthPercent <= HelpManager.KitHealthPercentage || p.Character.NanoPercent <= HelpManager.KitNanoPercentage));
+                && (p.Character.HealthPercent <= HelpManager.KitHealthPercentage || GetPetNanoPercent(p.Character) <= HelpManager.KitNanoPercentage));
+        }
+
+        private static Dictionary<Identity, int> _petMaxNano = new Dictionary<Identity, int>();
+
+        public static int GetPetNanoPercent(SimpleChar pet)
+        {
+            float nanoPct = pet.NanoPercent;
+            if (nanoPct >= 0 && nanoPct <= 100)
+                return (int)nanoPct;
+
+            int currentNano = pet.Nano;
+            Identity id = pet.Identity;
+
+            if (!_petMaxNano.ContainsKey(id) || currentNano > _petMaxNano[id])
+                _petMaxNano[id] = currentNano;
+
+            int maxNano = _petMaxNano[id];
+            if (maxNano <= 0) return 100;
+
+            return (int)((float)currentNano / maxNano * 100);
         }
 
         public static bool InCombat()

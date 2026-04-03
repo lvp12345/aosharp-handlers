@@ -855,7 +855,7 @@ namespace HelpManager
                 .Where(p => p.Character != null
                     && DynelManager.LocalPlayer.DistanceFrom(p.Character) < 10f
                     && p.Character.IsInLineOfSight
-                    && (p.Character.HealthPercent <= KitHealthPercentage || p.Character.NanoPercent <= KitNanoPercentage))
+                    && (p.Character.HealthPercent <= KitHealthPercentage || Kits.GetPetNanoPercent(p.Character) <= KitNanoPercentage))
                 .FirstOrDefault();
 
             if (petNeedingKit == null) { return; }

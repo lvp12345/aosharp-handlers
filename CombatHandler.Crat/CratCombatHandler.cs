@@ -21,6 +21,8 @@ namespace CombatHandler.Bureaucrat
         private static bool ToggleBuffing = false;
         private static bool ToggleComposites = false;
         private static bool ToggleRez = false;
+        private static double _petKitTimer = 0;
+        private static Dictionary<Identity, int> _petMaxNano = new Dictionary<Identity, int>();
 
         public static bool _syncPets;
 
@@ -1238,6 +1240,37 @@ namespace CombatHandler.Bureaucrat
                 HandleCancelDebuffAuras();
                 HandleCancelBuffAuras();
 
+                if (_settings["Kits"].AsBool()
+                    && !Item.HasPendingUse
+                    && !DynelManager.LocalPlayer.Cooldowns.ContainsKey(Stat.Treatment)
+                    && DynelManager.LocalPlayer.MovementState == MovementState.Sit
+                    && DynelManager.LocalPlayer.Pets != null
+                    && Time.NormalTime > _petKitTimer + 5)
+                {
+                    var petNeedingKit = DynelManager.LocalPlayer.Pets
+                        .Where(p => p.Character != null
+                            && DynelManager.LocalPlayer.DistanceFrom(p.Character) < 10f
+                            && p.Character.IsInLineOfSight
+                            && (p.Character.HealthPercent < KitHealthPercentage
+                                || GetPetNanoPercent(p.Character) < KitNanoPercentage))
+                        .Select(p => p.Character)
+                        .FirstOrDefault();
+
+                    if (petNeedingKit != null)
+                    {
+                        var kit = Inventory.Items.FirstOrDefault(x => x.Id == RelevantGenericItems.PremSitKit || x.Id == RelevantGenericItems.AreteSitKit
+                                || x.Id == RelevantGenericItems.SitKit1 || x.Id == RelevantGenericItems.SitKit100
+                                || x.Id == RelevantGenericItems.SitKit200 || x.Id == RelevantGenericItems.SitKit300
+                                || x.Id == RelevantGenericItems.SitKit400);
+
+                        if (kit != null)
+                        {
+                            kit.Use(petNeedingKit, true);
+                        }
+                    }
+                    _petKitTimer = Time.NormalTime;
+                }
+
                 base.OnUpdate(deltaTime);
             }
             catch (Exception ex)
@@ -1251,6 +1284,24 @@ namespace CombatHandler.Bureaucrat
                     previousErrorMessage = errorMessage;
                 }
             }
+        }
+
+        private int GetPetNanoPercent(SimpleChar pet)
+        {
+            float nanoPct = pet.NanoPercent;
+            if (nanoPct >= 0 && nanoPct <= 100)
+                return (int)nanoPct;
+
+            int currentNano = pet.Nano;
+            Identity id = pet.Identity;
+
+            if (!_petMaxNano.ContainsKey(id) || currentNano > _petMaxNano[id])
+                _petMaxNano[id] = currentNano;
+
+            int maxNano = _petMaxNano[id];
+            if (maxNano <= 0) return 100;
+
+            return (int)((float)currentNano / maxNano * 100);
         }
 
         #region Exoneration

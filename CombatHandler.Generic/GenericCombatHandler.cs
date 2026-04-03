@@ -472,7 +472,10 @@ namespace CombatHandler.Generic
 
                 var fightingTarget = DynelManager.LocalPlayer?.FightingTarget;
 
-                if (fightingTarget != null)
+                // Skip combat actions if target is not in line of sight
+                bool hasLOS = fightingTarget == null || fightingTarget.IsInLineOfSight;
+
+                if (fightingTarget != null && hasLOS)
                 {
                     SpecialAttacks(fightingTarget);
                 }
@@ -542,7 +545,10 @@ namespace CombatHandler.Generic
 
                 #endregion
 
-                base.OnUpdate(deltaTime);
+                if (hasLOS)
+                {
+                    base.OnUpdate(deltaTime);
+                }
             }
             catch (Exception ex)
             {

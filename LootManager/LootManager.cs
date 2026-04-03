@@ -20,6 +20,12 @@ namespace LootManager
 {
     public class LootManager : AOPluginEntry
     {
+        [DllImport("user32.dll")]
+        private static extern short GetAsyncKeyState(int vKey);
+        private const int VK_DECIMAL = 0x6E; // Numpad .
+        private bool _renameBagKeyWasPressed = false;
+        private Backpack _lastOpenedBackpack = null;
+
         protected Settings _settings;
         public static Settings _settingsItems;
         private Window _infoWindow;
@@ -83,6 +89,7 @@ namespace LootManager
                 RegisterSettingsWindow("Loot Manager", "LootManagerSettingWindow.xml");
 
                 _settings.AddVariable("Enabled", false);
+                _settings.AddVariable("UseAnyBag", false);
                 _settings.AddVariable("Delete", false);
                 _settings.AddVariable("Disable", false);
                 _settings.AddVariable("ExactMatchSelection", 0);
@@ -183,6 +190,14 @@ namespace LootManager
         {
             try
             {
+                // Track opened backpacks for rename hotkey (works regardless of Enabled state)
+                var matchedBackpack = Inventory.Backpacks.FirstOrDefault(b =>
+                    b.Identity.Instance == container.Identity.Instance);
+                if (matchedBackpack != null)
+                {
+                    _lastOpenedBackpack = matchedBackpack;
+                }
+
                 if (!_settings["Enabled"].AsBool()) { return; }
 
                 switch (container.Identity.Type)
@@ -212,20 +227,33 @@ namespace LootManager
                             // Check if "Loot All" is enabled
                             if (_settings["LootAll"].AsBool())
                             {
-                                itemCouldBeProcessed = true;
-                                if (Inventory.NumFreeSlots >= 1)
+                                if (IsBlacklisted(item))
                                 {
-                                    LogLootAction(item.Name, "LOOTED", "Loot All enabled");
-
-                                    // Track this item by name and timestamp for Loot All
-                                    _lootAllItems[item.Name] = Time.AONormalTime;
-
-                                    item.MoveToInventory();
+                                    LogLootAction(item.Name, "SKIPPED", "blacklisted (quantity 0)");
+                                }
+                                else if (IsMarkedForDelete(item))
+                                {
+                                    LogLootAction(item.Name, "DELETED", "marked for delete in loot list");
+                                    item?.Delete();
                                     itemProcessed = true;
                                 }
                                 else
                                 {
-                                    inventoryWasFull = true;
+                                    itemCouldBeProcessed = true;
+                                    if (Inventory.NumFreeSlots >= 1)
+                                    {
+                                        LogLootAction(item.Name, "LOOTED", "Loot All enabled");
+
+                                        // Track this item by name and timestamp for Loot All
+                                        _lootAllItems[item.Name] = Time.AONormalTime;
+
+                                        item.MoveToInventory();
+                                        itemProcessed = true;
+                                    }
+                                    else
+                                    {
+                                        inventoryWasFull = true;
+                                    }
                                 }
                             }
                             else if (CheckRules(item, true))
@@ -242,7 +270,7 @@ namespace LootManager
                                     inventoryWasFull = true;
                                 }
                             }
-                            else if (_settings["Delete"].AsBool())
+                            else if (_settings["Delete"].AsBool() && !IsBlacklisted(item))
                             {
                                 LogLootAction(item.Name, "DELETED", "not in list");
                                 item?.Delete();
@@ -303,25 +331,20 @@ namespace LootManager
 
         private void MoveItemsToBag()
         {
-            // Find loot bags (case insensitive search)
-            var backpack = Inventory.Backpacks.Where(a => a.Name.ToLower().Contains("loot")).OrderBy(b => b.Name).FirstOrDefault(c => c.Items.Count >= 0 && c.Items.Count < 21);
+            // Find bags based on UseAnyBag setting
+            Backpack backpack;
+            if (_settings["UseAnyBag"].AsBool())
+            {
+                backpack = Inventory.Backpacks.OrderBy(b => b.Name).FirstOrDefault(c => c.Items.Count >= 0 && c.Items.Count < 21);
+            }
+            else
+            {
+                backpack = Inventory.Backpacks.Where(a => a.Name.ToLower().Contains("loot")).OrderBy(b => b.Name).FirstOrDefault(c => c.Items.Count >= 0 && c.Items.Count < 21);
+            }
 
             if (Time.AONormalTime < moveDelay) { return; }
 
-            // Show error if no loot bags found when Loot All is enabled
-            if (_settings["LootAll"].AsBool() && backpack == null)
-            {
-                var allBags = Inventory.Backpacks.ToList();
-                if (allBags.Count > 0)
-                {
-                    Chat.WriteLine($"No loot bags found. Available bags: {string.Join(", ", allBags.Select(b => b.Name))}");
-                }
-                else
-                {
-                    Chat.WriteLine("No backpacks found at all for moving items");
-                }
-                return;
-            }
+            if (backpack == null) { return; }
 
             foreach (var itemtomove in Inventory.Items.Where(c => c.Slot.Type == IdentityType.Inventory))
             {
@@ -366,7 +389,15 @@ namespace LootManager
         {
             if (isBackpackInfoInitialized) { return; }
 
-            var lootBags = Inventory.Backpacks.Where(bag => bag.Name.Contains("loot")).ToList();
+            List<Backpack> lootBags;
+            if (_settings["UseAnyBag"].AsBool())
+            {
+                lootBags = Inventory.Backpacks.ToList();
+            }
+            else
+            {
+                lootBags = Inventory.Backpacks.Where(bag => bag.Name.Contains("loot")).ToList();
+            }
             var bagItems = new List<Item>();
 
             // Collect all loot bag items
@@ -789,7 +820,17 @@ namespace LootManager
                     // Check if "Loot All" is enabled
                     if (_settings["LootAll"].AsBool())
                     {
-                        if (Inventory.NumFreeSlots >= 1)
+                        if (IsBlacklisted(item))
+                        {
+                            LogLootAction(item.Name, "SKIPPED", "blacklisted (quantity 0)");
+                        }
+                        else if (IsMarkedForDelete(item))
+                        {
+                            LogLootAction(item.Name, "DELETED", "marked for delete in loot list");
+                            item?.Delete();
+                            itemProcessed = true;
+                        }
+                        else if (Inventory.NumFreeSlots >= 1)
                         {
                             LogLootAction(item.Name, "LOOTED", "Loot All continued");
 
@@ -823,7 +864,7 @@ namespace LootManager
                             break;
                         }
                     }
-                    else if (_settings["Delete"].AsBool())
+                    else if (_settings["Delete"].AsBool() && !IsBlacklisted(item))
                     {
                         LogLootAction(item.Name, "DELETED", "not in list - continued");
                         item?.Delete();
@@ -871,11 +912,14 @@ namespace LootManager
             return false;
         }
 
-        private void CheckOpenCorpsesForNewItem(string itemName, string minQL, string maxQL, bool exactMatch)
+        private void CheckOpenCorpsesForNewItem(string itemName, string minQL, string maxQL, bool exactMatch, string quantity)
         {
             try
             {
                 if (_openCorpses.Count == 0) return;
+
+                // Don't loot items for blacklisted rules (quantity 0)
+                if (Convert.ToInt32(quantity) == 0) return;
 
                 // Silently check open corpses for newly added items
 
@@ -1011,6 +1055,9 @@ namespace LootManager
                     HandleItemNameAutocomplete();
                 }
 
+                // Check Numpad 0 hotkey to rename open bag to "loot"
+                CheckRenameBagHotkey();
+
                 #endregion
 
                 if (_settings["Enabled"].AsBool())
@@ -1090,19 +1137,28 @@ namespace LootManager
                 txErr.Text = "Max Quality must be 500!";
                 return;
             }
-            try
+            bool isDeleteRule = _itemQuantity.Text.Trim().ToLower() == "delete";
+            if (!isDeleteRule)
             {
-                quantity = Convert.ToInt32(_itemQuantity.Text);
-            }
-            catch
-            {
-                txErr.Text = "Quantity entries must be numbers!";
-                return;
-            }
-            if (maxql > 999)
-            {
-                txErr.Text = "Max Quantity must be no more than 999!";
-                return;
+                try
+                {
+                    quantity = Convert.ToInt32(_itemQuantity.Text);
+                }
+                catch
+                {
+                    txErr.Text = "Quantity entries must be numbers, or 'delete'!";
+                    return;
+                }
+                if (quantity > 999)
+                {
+                    txErr.Text = "Max Quantity must be no more than 999!";
+                    return;
+                }
+                if (quantity < 0)
+                {
+                    txErr.Text = "Quantity must be 0 or more! (0 = blacklist)";
+                    return;
+                }
             }
 
             SettingsController.settingsWindow.FindView("chkGlobal", out Checkbox chkGlobal);
@@ -1117,6 +1173,7 @@ namespace LootManager
             string addedItemName = _itemName.Text.Trim();
             string addedMinQL = _itemMinQL.Text;
             string addedMaxQL = _itemMaxQL.Text;
+            string addedQuantity = _itemQuantity.Text;
 
             Rules.Add(new Rule(addedItemName, addedMinQL, addedMaxQL, GlobalScope, _itemQuantity.Text, "loot", exactMatch));
 
@@ -1130,7 +1187,7 @@ namespace LootManager
             RefreshList();
 
             // Check open corpses for the newly added item
-            CheckOpenCorpsesForNewItem(addedItemName, addedMinQL, addedMaxQL, exactMatch);
+            CheckOpenCorpsesForNewItem(addedItemName, addedMinQL, addedMaxQL, exactMatch, addedQuantity);
         }
 
         private static void RefreshList()
@@ -1155,7 +1212,8 @@ namespace LootManager
                     entry.FindChild("ItemName", out TextView _textView);
                     string globalscope = r.Global ? "Global" : "Local";
                     string exactMatch = r.ExactMatch ? "Exact" : "NotExact";
-                    _textView.Text = $"{iEntry + 1} - {globalscope} - {exactMatch} - [ {r.Lql.PadLeft(3, ' ')} - {r.Hql.PadLeft(3, ' ')} ] - {r.Name} - {r.Quantity} - {r.BagName}";
+                    string quantityDisplay = r.Quantity.ToLower() == "delete" ? "DELETE" : (int.TryParse(r.Quantity, out int qd) && qd == 0 ? "BLOCKED" : r.Quantity);
+                    _textView.Text = $"{iEntry + 1} - {globalscope} - {exactMatch} - [ {r.Lql.PadLeft(3, ' ')} - {r.Hql.PadLeft(3, ' ')} ] - {r.Name} - {quantityDisplay} - {r.BagName}";
                     _multiListView.AddChild(entry, false);
                     iEntry++;
                 }
@@ -1330,16 +1388,78 @@ namespace LootManager
             }
         }
 
-        public bool CheckRules(Item item, bool updateRule = false)
+        public bool IsMarkedForDelete(Item item)
         {
             foreach (Rule rule in Rules)
             {
+                if (rule.Quantity.ToLower() != "delete") continue;
+
                 if (rule.ExactMatch)
                 {
                     if (string.Equals(item.Name, rule.Name, StringComparison.OrdinalIgnoreCase) &&
                         item.QualityLevel >= Convert.ToInt32(rule.Lql) &&
-                        item.QualityLevel <= Convert.ToInt32(rule.Hql) &&
-                        Convert.ToInt32(rule.Quantity) >= 1)
+                        item.QualityLevel <= Convert.ToInt32(rule.Hql))
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (item.Name.ToUpper().Contains(rule.Name.ToUpper()) &&
+                        item.QualityLevel >= Convert.ToInt32(rule.Lql) &&
+                        item.QualityLevel <= Convert.ToInt32(rule.Hql))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public bool IsBlacklisted(Item item)
+        {
+            foreach (Rule rule in Rules)
+            {
+                if (rule.Quantity.ToLower() == "delete") continue;
+                int qty;
+                if (!int.TryParse(rule.Quantity, out qty) || qty != 0) continue;
+
+                if (rule.ExactMatch)
+                {
+                    if (string.Equals(item.Name, rule.Name, StringComparison.OrdinalIgnoreCase) &&
+                        item.QualityLevel >= Convert.ToInt32(rule.Lql) &&
+                        item.QualityLevel <= Convert.ToInt32(rule.Hql))
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (item.Name.ToUpper().Contains(rule.Name.ToUpper()) &&
+                        item.QualityLevel >= Convert.ToInt32(rule.Lql) &&
+                        item.QualityLevel <= Convert.ToInt32(rule.Hql))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public bool CheckRules(Item item, bool updateRule = false)
+        {
+            foreach (Rule rule in Rules)
+            {
+                // Skip delete and blacklist rules
+                int qty;
+                if (rule.Quantity.ToLower() == "delete") continue;
+                if (!int.TryParse(rule.Quantity, out qty) || qty < 1) continue;
+
+                if (rule.ExactMatch)
+                {
+                    if (string.Equals(item.Name, rule.Name, StringComparison.OrdinalIgnoreCase) &&
+                        item.QualityLevel >= Convert.ToInt32(rule.Lql) &&
+                        item.QualityLevel <= Convert.ToInt32(rule.Hql))
                     {
                         UpdateRule(rule, updateRule);
                         return true;
@@ -1349,8 +1469,7 @@ namespace LootManager
                 {
                     if (item.Name.ToUpper().Contains(rule.Name.ToUpper()) &&
                         item.QualityLevel >= Convert.ToInt32(rule.Lql) &&
-                        item.QualityLevel <= Convert.ToInt32(rule.Hql) &&
-                        Convert.ToInt32(rule.Quantity) >= 1)
+                        item.QualityLevel <= Convert.ToInt32(rule.Hql))
                     {
                         UpdateRule(rule, updateRule);
                         return true;
@@ -1475,6 +1594,54 @@ namespace LootManager
             }
         }
 
+        private void CheckRenameBagHotkey()
+        {
+            try
+            {
+                bool keyIsDown = (GetAsyncKeyState(VK_DECIMAL) & 0x8000) != 0;
+
+                if (keyIsDown && !_renameBagKeyWasPressed)
+                {
+                    if (_lastOpenedBackpack != null)
+                    {
+                        if (_lastOpenedBackpack.Name.ToLower().Contains("loot"))
+                        {
+                            Chat.WriteLine($"Bag '{_lastOpenedBackpack.Name}' already contains 'loot' in its name");
+                        }
+                        else
+                        {
+                            string oldName = _lastOpenedBackpack.Name;
+                            _lastOpenedBackpack.SetName("loot");
+                            Chat.WriteLine($"Bag '{oldName}' renamed to 'loot'");
+
+                            // Close and reopen to refresh the visual name
+                            var bagItem = Inventory.Items.FirstOrDefault(item =>
+                                item.UniqueIdentity.Instance == _lastOpenedBackpack.Identity.Instance);
+                            if (bagItem != null)
+                            {
+                                bagItem.Use(); // Close
+                                Task.Delay(300).ContinueWith(_ =>
+                                {
+                                    try { bagItem.Use(); } // Reopen
+                                    catch { }
+                                });
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Chat.WriteLine("No bag detected. Open a bag first, then press Numpad .");
+                    }
+                }
+
+                _renameBagKeyWasPressed = keyIsDown;
+            }
+            catch (Exception ex)
+            {
+                Chat.WriteLine($"Error in bag rename hotkey: {ex.Message}");
+            }
+        }
+
         private void OpenLootManagerWindow()
         {
             try
@@ -1508,7 +1675,8 @@ namespace LootManager
 
                             string scope = r.Global ? "Global" : "Local";
                             string exactMatch = r.ExactMatch ? "Exact" : "NotExact";
-                            tx.Text = $"{(iEntry + 1)} - {scope} - {exactMatch} - [ {r.Lql.PadLeft(3, ' ')} - {r.Hql.PadLeft(3, ' ')} ] - {r.Name} - {r.Quantity} - {r.BagName}";
+                            string quantityDisplay = r.Quantity.ToLower() == "delete" ? "DELETE" : (int.TryParse(r.Quantity, out int qd) && qd == 0 ? "BLOCKED" : r.Quantity);
+                            tx.Text = $"{(iEntry + 1)} - {scope} - {exactMatch} - [ {r.Lql.PadLeft(3, ' ')} - {r.Hql.PadLeft(3, ' ')} ] - {r.Name} - {quantityDisplay} - {r.BagName}";
 
                             _multiListView.AddChild(entry, false);
                             iEntry++;
@@ -1978,7 +2146,16 @@ namespace LootManager
                             // Check if "Loot All" is enabled
                             if (_settings["LootAll"].AsBool())
                             {
-                                if (Inventory.NumFreeSlots >= 1)
+                                if (IsBlacklisted(item))
+                                {
+                                    LogLootAction(item.Name, "SKIPPED", "blacklisted (quantity 0)");
+                                }
+                                else if (IsMarkedForDelete(item))
+                                {
+                                    LogLootAction(item.Name, "DELETED", "marked for delete in loot list");
+                                    item?.Delete();
+                                }
+                                else if (Inventory.NumFreeSlots >= 1)
                                 {
                                     WriteToSelectedChatWindow($"{item.Name} looted (Loot All re-enabled)");
                                     LogLootAction(item.Name, "LOOTED", "Loot All re-enabled");
@@ -1998,7 +2175,7 @@ namespace LootManager
                                     item.MoveToInventory();
                                 }
                             }
-                            else if (_settings["Delete"].AsBool())
+                            else if (_settings["Delete"].AsBool() && !IsBlacklisted(item))
                             {
                                 WriteToSelectedChatWindow($"{item.Name} delete not in list (re-processing)");
                                 LogLootAction(item.Name, "DELETED", "not in list - re-processing");

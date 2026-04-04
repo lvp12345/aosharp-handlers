@@ -83,6 +83,8 @@ namespace CombatHandler.NanoTechnician
 
                 _settings.AddVariable("Illusionist", false);
                 _settings.AddVariable("NotumGraft", false);
+                _settings.AddVariable("CombatItems", true);
+                _settings.AddVariable("UseProcs", true);
                 _settings.AddVariable("SharpObjects", true);
                 _settings.AddVariable("Grenades", true);
 

@@ -125,6 +125,8 @@ namespace CombatHandler.Metaphysicist
 
                 _settings.AddVariable("AOEPerks", false);
 
+                _settings.AddVariable("CombatItems", true);
+                _settings.AddVariable("UseProcs", true);
                 _settings.AddVariable("SharpObjects", true);
                 _settings.AddVariable("Grenades", true);
 
@@ -232,12 +234,7 @@ namespace CombatHandler.Metaphysicist
 
                 RegisterSpellProcessor(RelevantNanos.PetWarp, PetWarp);
 
-                RegisterSpellProcessor(RelevantNanos.MatMetBuffs, MattMet);
-                RegisterSpellProcessor(RelevantNanos.BioMetBuffs, BioMet);
-                RegisterSpellProcessor(RelevantNanos.PsyModBuffs, PsyMod);
-                RegisterSpellProcessor(RelevantNanos.SenImpBuffs, SenImp);
-                RegisterSpellProcessor(RelevantNanos.MatCreBuffs, MatCre);
-                RegisterSpellProcessor(RelevantNanos.MatLocBuffs, MatLoc);
+                //Single nano skill buffs removed - composites handle these
 
                 RegisterSpellProcessor(Spell.GetSpellsForNanoline(NanoLine.InterruptModifier).OrderByStackingOrder(),
                     (Spell buffSpell, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
@@ -1340,10 +1337,6 @@ namespace CombatHandler.Metaphysicist
 
         private int GetPetNanoPercent(SimpleChar pet)
         {
-            float nanoPct = pet.NanoPercent;
-            if (nanoPct >= 0 && nanoPct <= 100)
-                return (int)nanoPct;
-
             int currentNano = pet.Nano;
             Identity id = pet.Identity;
 

@@ -435,8 +435,6 @@ namespace CombatHandler.Generic
                     var stop = (StopFightMessage)e;
                     if (stop.Identity != localPlayer.Identity) { return; }
                     if (state == AttackState.Stop) { return; }
-                    attackPet?.Follow();
-                    supportPet?.Follow();
                     state = AttackState.Stop;
                     break;
             }
@@ -887,6 +885,7 @@ namespace CombatHandler.Generic
 
         protected bool LEProc1(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!_settings["UseProcs"].AsBool()) { return false; }
             if (perk.Hash != ((PerkHash)_settings["ProcType1Selection"].AsInt32())) { return false; }
 
             if (!perk.IsAvailable) { return false; }
@@ -904,6 +903,7 @@ namespace CombatHandler.Generic
 
         protected bool LEProc2(PerkAction perk, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!_settings["UseProcs"].AsBool()) { return false; }
             if (perk.Hash != ((PerkHash)_settings["ProcType2Selection"].AsInt32())) { return false; }
 
             if (!perk.IsAvailable) { return false; }
@@ -1142,6 +1142,7 @@ namespace CombatHandler.Generic
 
         protected virtual bool DamageItem(Item item, SimpleChar fightingTarget, ref (SimpleChar Target, bool ShouldSetTarget) actionTarget)
         {
+            if (!_settings["CombatItems"].AsBool()) { return false; }
             if (fightingTarget == null) { return false; }
             if (item == null || Item.HasPendingUse) { return false; }
             if (DynelManager.LocalPlayer.Cooldowns.ContainsKey(GetSkillLockStat(item))) { return false; }

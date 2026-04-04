@@ -85,6 +85,8 @@ namespace CombatHandler.Enf
 
                 _settings.AddVariable("Ost", false);
 
+                _settings.AddVariable("CombatItems", true);
+                _settings.AddVariable("UseProcs", true);
                 _settings.AddVariable("SharpObjects", true);
                 _settings.AddVariable("Grenades", true);
 

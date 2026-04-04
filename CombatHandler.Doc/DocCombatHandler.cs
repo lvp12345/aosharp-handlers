@@ -83,6 +83,8 @@ namespace CombatHandler.Doctor
                 _settings.AddVariable("GlobalComposites", true);
                 _settings.AddVariable("GlobalRez", true);
 
+                _settings.AddVariable("CombatItems", true);
+                _settings.AddVariable("UseProcs", true);
                 _settings.AddVariable("SharpObjects", false);
                 _settings.AddVariable("Grenades", false);
 

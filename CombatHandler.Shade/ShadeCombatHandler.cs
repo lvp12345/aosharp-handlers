@@ -77,6 +77,8 @@ namespace CombatHandler.Shade
                 _settings.AddVariable("GlobalRez", true);
                 _settings.AddVariable("SpamHealthDrain", false);
 
+                _settings.AddVariable("CombatItems", true);
+                _settings.AddVariable("UseProcs", true);
                 _settings.AddVariable("SharpObjects", true);
                 _settings.AddVariable("Grenades", true);
 

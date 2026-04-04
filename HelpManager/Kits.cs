@@ -95,10 +95,6 @@ namespace HelpManager
 
         public static int GetPetNanoPercent(SimpleChar pet)
         {
-            float nanoPct = pet.NanoPercent;
-            if (nanoPct >= 0 && nanoPct <= 100)
-                return (int)nanoPct;
-
             int currentNano = pet.Nano;
             Identity id = pet.Identity;
 

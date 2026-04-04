@@ -74,6 +74,8 @@ namespace CombatHandler.Keeper
                 _settings.AddVariable("AAO", true);
                 _settings.AddVariable("KeeperStr_Stam_AgiBuff", false);
 
+                _settings.AddVariable("CombatItems", true);
+                _settings.AddVariable("UseProcs", true);
                 _settings.AddVariable("SharpObjects", false);
                 _settings.AddVariable("Grenades", false);
 

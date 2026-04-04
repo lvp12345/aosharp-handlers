@@ -79,6 +79,8 @@ namespace CombatHandler.Fixer
 
                 _settings.AddVariable("EncaseInStone", false);
 
+                _settings.AddVariable("CombatItems", true);
+                _settings.AddVariable("UseProcs", true);
                 _settings.AddVariable("SharpObjects", true);
                 _settings.AddVariable("Grenades", true);
 
